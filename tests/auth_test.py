@@ -89,3 +89,5 @@ def test_register_and_login_multiple():
     assert reg_id2 == log_id2
     assert reg_id3 == log_id3
 
+#might need tests for handle checking
+
