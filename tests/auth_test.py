@@ -52,3 +52,40 @@ def test_login_incorrect_password():
     auth_register_v1('anemail@email.com', 'verycoolpassword', 'Name', 'Name') 
     with pytest.raises(InputError):
         auth_login_v1('anemail@email.com', 'notcoolpassword')
+
+#Working tests
+def test_register_and_login():
+    clear_v1()
+    register_return = auth_register_v1('anemail@email.com', 'verycoolpassword', 'Name', 'Name') 
+    reg_id1 = register_return['auth_user_id']
+
+    login_return = auth_login_v1('anemail@email.com', 'verycoolpassword')
+    log_id1 = login_return['auth_user_id']
+
+    assert reg_id1 == log_id1
+
+def test_register_and_login_multiple():
+    clear_v1()
+
+    register_return1 = auth_register_v1('anemail@email.com', 'verycoolpassword', 'Name', 'Name') 
+    reg_id1 = register_return1['auth_user_id']
+
+    login_return1 = auth_login_v1('anemail@email.com', 'verycoolpassword')
+    log_id1 = login_return1['auth_user_id']
+     
+    register_return2 = auth_register_v1('random@email.com', 'verycoolpassword', 'Name', 'Name') 
+    reg_id2 = register_return2['auth_user_id']
+
+    register_return3 = auth_register_v1('gmail@yahoo.com', 'differentpasswordwow', 'Name', 'Name') 
+    reg_id3 = register_return3['auth_user_id']
+
+    login_return2 = auth_login_v1('random@email.com', 'verycoolpassword')
+    log_id2 = login_return2['auth_user_id']
+
+    login_return3 = auth_login_v1('gmail@yahoo.com', 'differentpasswordwow')
+    log_id3 = login_return3['auth_user_id']
+
+    assert reg_id1 == log_id1
+    assert reg_id2 == log_id2
+    assert reg_id3 == log_id3
+
