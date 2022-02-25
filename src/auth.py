@@ -5,6 +5,8 @@ import re
 
 
 def auth_login_v1(email, password):
+    storage = data_store.get()
+    
     return {
         'auth_user_id': 1,
     }
@@ -46,6 +48,7 @@ def auth_register_v1(email, password, name_first, name_last):
     
     new_id = len(storage['users']) + 1
     storage['users'].append((new_id, email, name_first, name_last, handle))
+    storage['passwords'].append(password)
     data_store.set(storage)
     return {
         'auth_user_id': new_id,
