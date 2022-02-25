@@ -6,9 +6,27 @@ import re
 
 def auth_login_v1(email, password):
     storage = data_store.get()
+
+    #sentinel variable I don't know how to do better
+    email_exists = False
+    u_id = 0
+
+    for i, user in enumerate(storage['users']):
+        if user[1] == email:
+            email_exists = True
+            u_id = i
     
+    #errors
+    if not email_exists:
+        raise InputError("Email Does Not Exist")
+  
+    if password != storage['passwords'][u_id]:
+        print(storage['passwords'])
+        raise InputError("Incorrect Password")
+
+    #the auth_user_id starts from 1 not zero
     return {
-        'auth_user_id': 1,
+        'auth_user_id': u_id + 1,
     }
 
 def auth_register_v1(email, password, name_first, name_last):

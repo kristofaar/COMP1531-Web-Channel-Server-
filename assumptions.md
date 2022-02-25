@@ -1,0 +1,1 @@
+Assuming that users cannot be deleted.

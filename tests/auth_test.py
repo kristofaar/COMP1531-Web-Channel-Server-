@@ -10,6 +10,11 @@ def test_register_invalid_email():
     with pytest.raises(InputError):
         auth_register_v1('a', 'verycoolpassword', 'Name', 'Name')
 
+def test_register_invalid_email2():
+    clear_v1()
+    with pytest.raises(InputError):
+        auth_register_v1('', 'verycoolpassword', 'Name', 'Name')
+
 def test_register_duplicate_email():
     clear_v1()
     auth_register_v1('anemail@email.com', 'verycoolpassword', 'Name', 'Name')
