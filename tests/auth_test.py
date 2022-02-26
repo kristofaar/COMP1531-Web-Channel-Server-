@@ -95,6 +95,15 @@ def test_register_and_login_multiple():
     assert reg_id2 == log_id2
     assert reg_id3 == log_id3
 
+
+def test_register_invalid_name():   # test for invalid name? feels like it'll return an empty space name cuz it's only symbols
+    '''
+    clear_v1()
+    with pytest.raises(InputError):
+        auth_register_v1('anemail@email.com', 'verycoolpassword', '!@#$%^', '!@#$%^')
+    '''    
+    pass
+
 #might need tests for handle checking
 
 @pytest.fixture
