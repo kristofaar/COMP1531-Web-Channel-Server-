@@ -12,7 +12,7 @@ def auth_login_v1(email, password):
     u_id = 0
 
     for i, user in enumerate(storage['users']):
-        if user[1] == email:
+        if user['email'] == email:
             email_exists = True
             u_id = i
     
@@ -39,7 +39,7 @@ def auth_register_v1(email, password, name_first, name_last):
 
     #each user will have the following objects in this order: id, email, name_first, name_last, handle
     for user in storage['users']:
-        if user[1] == email:
+        if user['email'] == email:
             raise InputError("Email Duplicate")
 
     if len(password) < 6:
@@ -57,7 +57,7 @@ def auth_register_v1(email, password, name_first, name_last):
 
     num_of_same_handle = 0
     for user in storage['users']:
-        if user[4][:20] == handle:
+        if user['handle'][:20] == handle:
             num_of_same_handle += 1
     
     #if not unique add the iteration of the handle to the end of the handle
@@ -65,7 +65,8 @@ def auth_register_v1(email, password, name_first, name_last):
         handle += str(num_of_same_handle - 1)
     
     new_id = len(storage['users']) + 1
-    storage['users'].append((new_id, email, name_first, name_last, handle))
+
+    storage['users'].append({'id': new_id, 'email': email, 'name_first': name_first, 'name_last': name_last, 'handle': handle})
     storage['passwords'].append(password)
     data_store.set(storage)
     return {
