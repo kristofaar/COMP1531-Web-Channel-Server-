@@ -30,6 +30,7 @@ initial_object = {
     'users': [],
     #passwords contain a list of dictionaries containing in order: id, password
     'passwords': [],
+    'channels' : [],
 }
 ## YOU SHOULD MODIFY THIS OBJECT ABOVE
 
