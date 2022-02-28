@@ -17,10 +17,6 @@ Return Value:
     Returns channel name when successful
 '''
 def channels_list_v1(auth_user_id):
-    storage = data_store.get()
-    return{
-
-    }
     return {
         'channels': [
         	{
@@ -78,8 +74,6 @@ def channels_create_v1(auth_user_id, name, is_public):
     #updating the data store
     channels.append({'id' : ch_id, 'name' : name, 'is_public' : is_public, 
     'owner' : auth_user_id, 'members' : auth_user_id})
-    #adding channel details to the user
-    #users.append({'user_channels' : {'ch_id' : ch_id, 'name' : name}})
     data_store.set(storage)
     return{
         'channel_id' : ch_id
