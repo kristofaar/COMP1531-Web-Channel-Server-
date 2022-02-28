@@ -5,7 +5,7 @@ from src.channels import channels_create_v1,channels_listall_v1,channels_list_v1
 from src.error import InputError
 from src.error import AccessError
 from src.other import clear_v1
-
+from src.data_store import data_store
 #Error tests
 def test_invalid_user_id():
     clear_v1()
@@ -27,4 +27,24 @@ def test_register_and_create_channel():
     register_return = auth_register_v1('anemail@email.com', 'verycoolpassword', 'Name', 'Name')
     channel_return = channels_create_v1(1, 'coolname', True)
     assert channel_return == {'channel_id' : 1}
+
+def test_list_channel_public_private():
+    clear_v1()
+    auth_register_v1('anemail@email.com', 'verycoolpassword', 'Name', 'Name')
+    channels_create_v1(1, 'public', True)
+    channels_create_v1(1, 'private', False)
+
+    storage = data_store.get()
+    users = storage['users']
+    channels = storage['channels']
+    for channel in channels:
+        if channel['name'] == 'public':
+            assert channel['is_public'] == True
+        elif channel['name'] == 'private':
+            assert channel['is_public'] == False
+
+def test_list_channel_owner():      # working on it
+    clear_v1()
+    auth_register_v1('anemail@email.com', 'verycoolpassword', 'Name', 'Name')
+    pass
 
