@@ -104,7 +104,7 @@ def test_register_invalid_name():   # test for invalid name? feels like it'll re
     '''    
     pass
 
-#might need tests for handle checking
+#might need tests for handle checking 11
 
 @pytest.fixture
 def clear_and_handle():     # clears, and returns 'users' for access - Didn't end up using it
