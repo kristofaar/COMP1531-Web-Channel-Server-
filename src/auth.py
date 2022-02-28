@@ -14,19 +14,18 @@ def auth_login_v1(email, password):
     for i, user in enumerate(storage['users']):
         if user['email'] == email:
             email_exists = True
-            u_id = i
+            u_id = user['id']
     
     #errors
     if not email_exists:
         raise InputError("Email Does Not Exist")
   
-    if password != storage['passwords'][u_id]:
-        print(storage['passwords'])
-        raise InputError("Incorrect Password")
+    for user in storage['passwords']:
+        if user['id'] == u_id and user['password'] != password:
+            raise InputError('Password does not match')
 
-    #the auth_user_id starts from 1 not zero
     return {
-        'auth_user_id': u_id + 1,
+        'auth_user_id': u_id,
     }
 
 def auth_register_v1(email, password, name_first, name_last):
@@ -38,7 +37,7 @@ def auth_register_v1(email, password, name_first, name_last):
     if not re.fullmatch(regex_email, email):
         raise InputError("Invalid Email")
 
-    #each user will have the following objects in this order: id, email, name_first, name_last, handle
+    #errors
     for user in storage['users']:
         if user['email'] == email:
             raise InputError("Email Duplicate")
@@ -52,23 +51,33 @@ def auth_register_v1(email, password, name_first, name_last):
     if not (len(name_last) <= 50 and len(name_last) >= 1):
         raise InputError("Invalid Last Name") 
 
+    #handle creation
     #regular expression to get rid of all non alphanumeric characters
     handle = re.sub(r'\W+', '', name_first).lower() + re.sub(r'\W+', '', name_last).lower()
     handle = handle[:20]
-
-    num_of_same_handle = 0
-    for user in storage['users']:
-        if user['handle'][:20] == handle:
-            num_of_same_handle += 1
+    #-1 would be the case where there are no numbers at the end of the handle
+    num_of_same_handle = -1
+    while num_of_same_handle + 1 < len(storage['users']):
+        same_handle = False
+        for user in storage['users']:
+            if user['handle'] == handle or user['handle'] == handle + str(num_of_same_handle):
+                same_handle = True
+                num_of_same_handle += 1
+        if not same_handle:
+            break
     
     #if not unique add the iteration of the handle to the end of the handle
-    if num_of_same_handle:
-        handle += str(num_of_same_handle - 1)
+    if num_of_same_handle >= 0:
+        handle += str(num_of_same_handle)
     
-    new_id = len(storage['users']) + 1
+    #id creation is based off the last person's id
+    new_id = 1
+    if len(storage['users']):
+        new_id = storage['users'][len(storage['users']) - 1]['id'] + 1
 
     storage['users'].append({'id': new_id, 'email': email, 'name_first': name_first, 'name_last': name_last, 'handle': handle, 'channels' : []})
-    storage['passwords'].append(password)
+    storage['passwords'].append({'id': new_id, 'password': password})
+
     data_store.set(storage)
     return {
         'auth_user_id': new_id,

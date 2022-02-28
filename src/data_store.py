@@ -26,7 +26,9 @@ Example usage:
 
 ## YOU SHOULD MODIFY THIS OBJECT BELOW
 initial_object = {
+    #users will contain a list of dictionaries containing in order: id, email, name_first, name_last, handle
     'users': [],
+    #passwords contain a list of dictionaries containing in order: id, password
     'passwords': [],
     'channels' : [],
 }
