@@ -116,20 +116,17 @@ def channel_messages_v1(auth_user_id, channel_id, start):
     if not id_exists:
         raise AccessError("Unauthorised ID")
     
+    if start + 1 > len(temp_channel['messages']) and start != 0:
+        raise InputError("Start index is greater than number of messages")
     
-    
+    ret_messages = []
+    for i in range(start, start + 50 if start + 50 < len(temp_channel['messages']) else len(temp_channel['messages'])):
+        ret_messages.append(temp_channel['messages'][i])
 
     return {
-        'messages': [
-            {
-                'message_id': 1,
-                'u_id': 1,
-                'message': 'Hello world',
-                'time_created': 1582426789,
-            }
-        ],
-        'start': 0,
-        'end': 50,
+        'messages': ret_messages,
+        'start': start,
+        'end': start + 50 if start + 50 < len(temp_channel['messages']) else -1,
     }
 
 '''<Brief description of what the function does>
