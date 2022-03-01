@@ -76,5 +76,43 @@ def test_channel_details_unauthorised_user(one_user_made_two_channels):     # se
     with pytest.raises(AccessError):
         channel_details_v1(1,3)             # first user tries accessing second user channels    
 
+# testing channel_join_v1, relies on channel_details working properly
+# Most if at all don't work currently, channel_join incomplete
+
+def test_channel_join_new_member_join_valid_channel(one_user_made_two_channels):        
+    auth_register_v1('notanemail@email.com', 'verycoolpassword', 'Second', 'User') 
+    channel_join_v1(2, 1)   # second user joins channel 1 made by first user
+    first_channel_details = channel_details_v1(1, 1)
+    members = first_channel_details['all_members']
+    assert members[1]['id'] == 2    # check if second user is member of channel 1 now
+
+def test_channel_join_invalid_user_join_valid_channel(one_user_made_two_channels):
+    with pytest.raises(InputError):
+        channel_join_v1(2, 1)   # second user not registered yet
+
+def test_channel_join_new_member_joins_invalid_channel(one_user_made_two_channels):     
+    auth_register_v1('notanemail@email.com', 'verycoolpassword', 'Second', 'User') 
+    with pytest.raises(InputError):
+        channel_join_v1(2, 3)       # second user tries joining channel 3 (doesn't exist, only 1 and 2)
+
+def test_channel_join_already_a_member(one_user_made_two_channels):
+    auth_register_v1('notanemail@email.com', 'verycoolpassword', 'Second', 'User') 
+    channel_join_v1(2, 1)   
+    with pytest.raises(InputError):
+        channel_join_v1(2, 1)   # second user tries joining channel 1 again
+
+def test_channel_join_new_member_joins_private_channel(one_user_made_two_channels):    
+    auth_register_v1('notanemail@email.com', 'verycoolpassword', 'Second', 'User') 
+    with pytest.raises(AccessError):
+        channel_join_v1(2, 2)   # second user tries joining channel 2, which is private
+    
+
+
+def test_channel_details_multiple_owners():
+    pass
+
+def test_channel_details_multiple_members():
+    pass
+
 #def two_users_each_make_channel():
     

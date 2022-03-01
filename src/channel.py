@@ -117,5 +117,31 @@ Return Value:
     Returns <return value> on <condition>
 '''
 def channel_join_v1(auth_user_id, channel_id):
+    #staging variables
+    storage = data_store.get()
+    channels = storage['channels']
+    users = storage['users']
+    
+    # check auth_user_id is valid user 
+    user = next((user for user in users if user['id'] == auth_user_id), None)
+    if user == None: # User not found
+        raise InputError('Unregistered user id')
+
+    # check channel is valid 
+    channel = next((channel for channel in channels if channel_id == channel['id']), None)
+    if channel == None:
+        raise InputError("Invalid Channel Id")
+
+    # check if already a member 
+    member = next((member for member in channel['all_members'] if auth_user_id == member), None)
+    if member != None:  # Existing member 
+        raise InputError('User already a channel member')
+    elif channel['is_public'] == False:  # New member but private channel
+        raise AccessError('Channel is private and user is not a member')
+    
+    # If conditions met, add new member to channel
+    member_list = channel['all_members']
+    member_list.append(auth_user_id)
+
     return {
     }
