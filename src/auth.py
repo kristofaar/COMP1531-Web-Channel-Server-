@@ -77,6 +77,7 @@ def auth_register_v1(email, password, name_first, name_last):
 
     storage['users'].append({'id': new_id, 'email': email, 'name_first': name_first, 'name_last': name_last, 'handle': handle, 'channels' : []})
     storage['passwords'].append({'id': new_id, 'password': password})
+    
 
     data_store.set(storage)
     return {
