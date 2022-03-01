@@ -44,30 +44,32 @@ Return Value:
 def channel_details_v1(auth_user_id, channel_id):
     #staging variables
     storage = data_store.get()
-    return storage['channels'][channel_id - 1]  
-            # channel_id - 1 cuz list starts from 0, channel_id's start from 1 ie. id of the first channel made
-    return {
-        'name': 'Hayden',
-        'is_public': True,
-        'owner_members': [
-            {
-                'u_id': 1,
-                'email': 'example@gmail.com',
-                'name_first': 'Hayden',
-                'name_last': 'Jacobs',
-                'handle_str': 'haydenjacobs',
-            }
-        ],
-        'all_members': [
-            {
-                'u_id': 1,
-                'email': 'example@gmail.com',
-                'name_first': 'Hayden',
-                'name_last': 'Jacobs',
-                'handle_str': 'haydenjacobs',
-            }
-        ],
-    }
+    channels = storage['channels']
+    users = storage['users']
+    #search through channels by id until id is matched
+    ch = next((channel for channel in channels if channel_id == channel['id']), None)
+    if ch == None:
+        raise InputError("Invalid Channel Id")
+
+    #check if auth_user_id is a member of the channel queried
+    if auth_user_id not in ch['all_members']:
+        raise AccessError("Unauthorised User: User is not in channel")
+
+    #generate lists of users 
+    owner_members = []
+    all_members = []
+    for member in ch['owner_members']:
+        curr_user = next((user for user in users if member == user['id']), None)
+        owner_members.append(curr_user)
+    for member in ch['all_members']:
+        curr_user = next((user for user in users if member == user['id']), None)
+        all_members.append(curr_user)
+
+    return {'id': channel_id,
+            'name': ch['name'],
+            'is_public': ch['is_public'],
+            'owner_members': owner_members,
+            'all_members': all_members}
 
 '''
 <Brief description of what the function does>
