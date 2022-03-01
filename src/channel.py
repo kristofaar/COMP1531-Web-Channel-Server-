@@ -47,6 +47,7 @@ def channel_details_v1(auth_user_id, channel_id):
     return storage['channels'][channel_id]
     return {
         'name': 'Hayden',
+        'is_public': True,
         'owner_members': [
             {
                 'u_id': 1,
