@@ -44,7 +44,8 @@ Return Value:
 def channel_details_v1(auth_user_id, channel_id):
     #staging variables
     storage = data_store.get()
-    return storage['channels'][channel_id]
+    return storage['channels'][channel_id - 1]  
+            # channel_id - 1 cuz list starts from 0, channel_id's start from 1 ie. id of the first channel made
     return {
         'name': 'Hayden',
         'is_public': True,
