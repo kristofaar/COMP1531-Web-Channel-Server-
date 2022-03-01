@@ -6,7 +6,7 @@ from src.auth import auth_register_v1, auth_login_v1
 from src.error import InputError
 from src.error import AccessError
 from src.other import clear_v1
-from src.data_store import data_store
+
 #Error tests
 '''
 def test_invalid_user_id():
@@ -56,4 +56,17 @@ def test_channel_details_check_members(one_user_made_two_channels):
     assert one_user_made_two_channels['first']['all_members'] == [1]
     assert one_user_made_two_channels['second']['all_members'] == [1]
 
+def test_channel_details_invalid_channel_id(one_user_made_two_channels):
+    with pytest.raises(InputError):
+        channel_details_v1(1, 5)
+
+def test_channel_details_unauthorised_user(one_user_made_two_channels):     # second user tries accessing first user channels
+    auth_register_v1('notanemail@email.com', 'verycoolpassword', 'Second', 'User')
+    channels_create_v1(2, 'third_channel', True)    # second user makes a channel (third one in storage)
+    with pytest.raises(AccessError):
+        channel_details_v1(2, 1)
+    with pytest.raises(AccessError):
+        channel_details_v1(1,3)             # first user tries accessing second user channels    
+
+#def two_users_each_make_channel():
     
