@@ -49,9 +49,11 @@ def test_channel_details_check_name(one_user_made_two_channels):
      assert one_user_made_two_channels['second']['name'] == 'private'
 
 def test_channel_details_check_owner(one_user_made_two_channels):
-    assert one_user_made_two_channels['first']['owner'] == 1
-    assert one_user_made_two_channels['second']['owner'] == 1
+    assert one_user_made_two_channels['first']['owner_members'] == 1
+    assert one_user_made_two_channels['second']['owner_members'] == 1
 
 def test_channel_details_check_members(one_user_made_two_channels):
-    assert one_user_made_two_channels['first']['members'] == 1
-    assert one_user_made_two_channels['second']['members'] == 1
+    assert one_user_made_two_channels['first']['all_members'] == [1]
+    assert one_user_made_two_channels['second']['all_members'] == [1]
+
+    
