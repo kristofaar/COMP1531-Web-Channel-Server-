@@ -68,22 +68,57 @@ def channel_details_v1(auth_user_id, channel_id):
     }
 
 '''
-<Brief description of what the function does>
+<Returns information on up to 50 messages within the channel>
 
 Arguments:
-    <name> (<data type>)    - <description>
-    <name> (<data type>)    - <description>
-    ...
+    <auth_user_id> (<Integer>)    - <User who is trying to access the messages>
+    <channel_id> (<Integer>)    - <Id of channel that the messages are being outputted from>
+    <start> (<Integer>)    - <Which index of messages to start outputting
 
 Exceptions:
-    InputError  - Occurs when ...
-    AccessError - Occurs when ...
+    InputError  - Occurs when:
+        - channel_id does not refer to a valid channel
+        - start is greater than the total number of messages in the channel
+    AccessError - Occurs when:
+        - channel_id is valid and the authorised user is not a member of the channel
+        - auth_user_id is not a valid id in the system
 
 Return Value:
-    Returns <return value> on <condition>
-    Returns <return value> on <condition>
+    Returns <{messages, start, end}> always, where end is the index of the final message, -1 if up to date.
 '''
 def channel_messages_v1(auth_user_id, channel_id, start):
+    storage = data_store.get()
+
+    #errors
+    id_exists = False
+    for user in storage['users']:
+        if user['id'] == auth_user_id:
+            id_exists = True
+    
+    if not id_exists:
+        raise AccessError("ID does not exist")
+
+    channel_exists = False
+    temp_channel = {}
+    for channel in storage['channels']:
+        if channel['id'] == channel_id:
+            channel_exists = True
+            temp_channel = channel
+
+    if not channel_exists:
+        raise InputError("Channel ID does not exist")
+    
+    id_exists = False
+    for user in temp_channel['members']:
+        if user == auth_user_id:
+            id_exists = True
+    
+    if not id_exists:
+        raise AccessError("Unauthorised ID")
+    
+    
+    
+
     return {
         'messages': [
             {

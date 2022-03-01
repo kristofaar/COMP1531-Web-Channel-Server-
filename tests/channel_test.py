@@ -1,3 +1,4 @@
+from email import message
 import pytest
 
 from src.channels import channels_create_v1,channels_listall_v1,channels_list_v1
@@ -62,6 +63,21 @@ def test_channel_messages_invalid_user():
     with pytest.raises(AccessError):
         channel_messages_v1(2, 1, 0)
 
+def test_channel_messages_double_error1():
+    clear_v1()
+    auth_register_v1('anemail@email.com', 'verycoolpassword', 'Name', 'Name')
+    channels_create_v1(1, 'channelName', True)
+    with pytest.raises(AccessError):
+        channel_messages_v1(2, 1, 3)
+
+def test_channel_messages_double_error1():
+    clear_v1()
+    auth_register_v1('anemail@email.com', 'verycoolpassword', 'Name', 'Name')
+    channels_create_v1(1, 'channelName', True)
+    with pytest.raises(AccessError):
+        channel_messages_v1(2, 2, 3)
+
+
 #Working tests
 
 def test_channel_messages_empty():
@@ -99,3 +115,4 @@ def test_channel_messages_sixty_start_15():
     for i in range(60):
         storage['channels'][0]['messages'].append(i)
     assert channel_messages_v1(1, 1, 15) == {'messages': list(range(15, 60)), 'start': 15, 'end': -1}
+
