@@ -26,17 +26,32 @@ def test_invalid_user_id():
 '''
 #Working tests
 
-def test_channel_list_details_public_private():
+@pytest.fixture
+def one_user_made_two_channels():   # one public and one private, returns both 
     clear_v1()
     auth_register_v1('anemail@email.com', 'verycoolpassword', 'Name', 'Name')
     channels_create_v1(1, 'public', True)
     channels_create_v1(1, 'private', False)
+    first_channel_details = channel_details_v1(1, 1)
+    second_channel_details = channel_details_v1(1, 2)
+    return {'first': first_channel_details, 'second': second_channel_details}
 
-    storage = data_store.get()
-    users = storage['users']
-    channels = storage['channels']
-    for channel in channels:
-        if channel['name'] == 'public':
-            assert channel['is_public'] == True
-        elif channel['name'] == 'private':
-            assert channel['is_public'] == False
+def test_channel_details_check_id(one_user_made_two_channels):
+    assert one_user_made_two_channels['first']['id'] == 1
+    assert one_user_made_two_channels['second']['id'] == 2
+
+def test_channel_details_check_public_private(one_user_made_two_channels):
+    assert one_user_made_two_channels['first']['is_public'] == True
+    assert one_user_made_two_channels['second']['is_public']  == False
+
+def test_channel_details_check_name(one_user_made_two_channels):
+     assert one_user_made_two_channels['first']['name'] == 'public'
+     assert one_user_made_two_channels['second']['name'] == 'private'
+
+def test_channel_details_check_owner(one_user_made_two_channels):
+    assert one_user_made_two_channels['first']['owner'] == 1
+    assert one_user_made_two_channels['second']['owner'] == 1
+
+def test_channel_details_check_members(one_user_made_two_channels):
+    assert one_user_made_two_channels['first']['members'] == 1
+    assert one_user_made_two_channels['second']['members'] == 1
