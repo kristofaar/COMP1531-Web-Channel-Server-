@@ -24,4 +24,17 @@ def test_invalid_user_id():
     with pytest.raises(InputError):
         channel_invite_v1(1,1,0)
 '''
+def test_channel_messages_invalid_channel_id():
+    clear_v1()
+    auth_register_v1('anemail@email.com', 'verycoolpassword', 'Name', 'Name')
+    channels_create_v1(1, 'channelName', True)
+    with pytest.raises(InputError):
+        channel_messages_v1(1, 3, 0)
+
+def test_channel_messages_invalid_channel_id_empty():
+    clear_v1()
+    auth_register_v1('anemail@email.com', 'verycoolpassword', 'Name', 'Name')
+    with pytest.raises(InputError):
+        channel_messages_v1(1, 3, 0)
+        
 #Working tests
