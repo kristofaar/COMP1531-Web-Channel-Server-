@@ -32,7 +32,7 @@ def auth_register_v1(email, password, name_first, name_last):
     storage = data_store.get()
 
     #using regular expressions to check if email is valid
-    regex_email = '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}$'
+    regex_email = '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Z|a-z]{2,}$'
     if not re.fullmatch(regex_email, email):
         raise InputError("Invalid Email")
 
