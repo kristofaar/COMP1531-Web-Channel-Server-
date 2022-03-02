@@ -101,7 +101,7 @@ def channel_messages_v1(auth_user_id, channel_id, start):
     channel_exists = False
     temp_channel = {}
     for channel in storage['channels']:
-        if channel['id'] == channel_id:
+        if channel['channel_id_and_name']['id'] == channel_id:
             channel_exists = True
             temp_channel = channel
 
