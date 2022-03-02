@@ -33,7 +33,10 @@ def auth_register_v1(email, password, name_first, name_last):
 
     #using regular expressions to check if email is valid
     regex_email = '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Z|a-z]{2,}$'
+<<<<<<< HEAD
     # \\ is used as \ is an escape character and produces a warning when used on its own
+=======
+>>>>>>> channel
     if not re.fullmatch(regex_email, email):
         raise InputError("Invalid Email")
 
