@@ -16,14 +16,36 @@ Exceptions:
                 - Occurs when u_id does not refer to a valid user
                 - Occurs when u_id refers to a user who is already a member of the channel
     AccessError - Occurs when channel_id is valid and the authorised user is not a member of the channel
-
-Return Value:
-    Returns <return value> on <condition>
-    Returns <return value> on <condition>
 '''
 def channel_invite_v1(auth_user_id, channel_id, u_id):
-    return {
-    }
+    #staging variables
+    storage = data_store.get()
+    channels = storage['channels']
+    users = storage['users']
+
+    #search through channels by id until id is matched
+    ch = next((channel for channel in channels if channel_id == channel['id']), None)
+    if ch == None:
+        raise InputError("Invalid Channel Id")
+    
+    #search through users until u_id is matched
+    add_user = next((user for user in users if u_id == user['id']), None)
+    if add_user == None:
+        raise InputError("Adding an Invalid User")
+    
+    #check u_id is not in channel members
+    if u_id in ch['all_members']:
+        raise InputError("User already in channel")
+    
+    if auth_user_id not in ch['all_members']:
+        raise AccessError("Authorised user not in channel")
+
+    #add user to channel
+    ch['members'].append(u_id)
+
+    #update user
+    add_user['channels'].append({'id': ch['channel_id_and_name']['id'], 'name': ch['channel_id_and_name']['name']})
+    data_store.set(storage)
 
 '''
 channel_details_v1 provides basic details about the channel given a channel with ID channel_id that the 
@@ -38,8 +60,8 @@ Exceptions:
     AccessError - Occurs when channel_id is valid and the authorised user is not a member of the channel
 
 Return Value:
-    Returns <return value> on <condition>
-    Returns <return value> on <condition>
+    Returns channel_id, channel name, whether or not the channel is 
+    public, the owner members, and all members of the channel.
 '''
 def channel_details_v1(auth_user_id, channel_id):
     #staging variables
