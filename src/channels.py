@@ -13,27 +13,39 @@ Exceptions:
     N/A
 
 Return Value:
-    Returns channel id when successful
-    Returns channel name when successful
+    Returns a dictionary of channel ids and channel names when successful
 '''
 def channels_list_v1(auth_user_id):
+    storage = data_store.get()
+    users = storage['users']
+    channels = storage['channels']
+    curr_user = next((user for user in users if auth_user_id == user['id']), None)
+    
     return {
-        'channels': [
-        	{
-        		'channel_id': 1,
-        		'name': 'My Channel',
-        	}
-        ],
+        'channels': curr_user['channels']
     }
 
+'''channels_listall_v1 Provide a list of all channels, including private channels
+
+Arguments:
+    auth_user_id     (int)  - passes in the unique user id of whoever ran the funtion
+    ...
+
+Exceptions:
+    N/A
+
+Return Value:
+    Returns a dictionary of channel ids and channel names when successful
+'''
 def channels_listall_v1(auth_user_id):
+    channel_list = []
+    storage = data_store.get()
+    channels = storage['channels']
+    #add all the channels that have been created to a list 
+    for channel in storage['channels']:
+        channel_list.append(channel['channel_id_and_name'])
     return {
-        'channels': [
-        	{
-        		'channel_id': 1,
-        		'name': 'My Channel',
-        	}
-        ],
+        'channels': channel_list
     }
 
 '''
@@ -75,9 +87,8 @@ def channels_create_v1(auth_user_id, name, is_public):
     channels.append({'channel_id_and_name' :{'id' : ch_id, 'name' : name}, 'is_public' : is_public, 
     'owner' : [auth_user_id], 'members' : [auth_user_id], 'messages' : []})
 
-
     #updating user
-    curr_user['channels'].append(ch_id)
+    curr_user['channels'].append({'id' : ch_id, 'name' : name})
     data_store.set(storage)
     return{
         'channel_id' : ch_id
