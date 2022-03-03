@@ -106,13 +106,19 @@ def test_channel_join_new_member_joins_private_channel(one_user_made_two_channel
     with pytest.raises(AccessError):
         channel_join_v1(2, 2)   # second user tries joining channel 2, which is private
     
-
-
-def test_channel_details_multiple_owners():
-    pass
-
-def test_channel_details_multiple_members():
-    pass
+def test_channel_details_multiple_members(one_user_made_two_channels):
+    auth_register_v1('notanemail@email.com', 'verycoolpassword', 'Second', 'User') 
+    channel_join_v1(2, 1) #second user joins channel 1
+    assert channel_details_v1(1,1)['all_members'] == [{'email': 'anemail@email.com',
+                                                       'handle': 'namename',
+                                                        'id': 1,
+                                                        'name_first': 'Name',
+                                                        'name_last': 'Name'},
+                                                        {'email': 'notanemail@email.com',
+                                                        'handle': 'seconduser',
+                                                        'id': 2,
+                                                        'name_first': 'Second',
+                                                        'name_last': 'User'}]
 
 #def two_users_each_make_channel():
     
