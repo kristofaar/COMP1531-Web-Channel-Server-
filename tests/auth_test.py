@@ -94,6 +94,8 @@ def test_register_and_login_multiple():
     assert reg_id1 == log_id1
     assert reg_id2 == log_id2
     assert reg_id3 == log_id3
+<<<<<<< HEAD
+=======
 
 
 def test_register_invalid_name():   # test for invalid name? feels like it'll return an empty space name cuz it's only symbols
@@ -165,3 +167,4 @@ def test_handle_multiple_users():
 
 
 
+>>>>>>> channel

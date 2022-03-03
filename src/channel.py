@@ -24,7 +24,7 @@ def channel_invite_v1(auth_user_id, channel_id, u_id):
     users = storage['users']
 
     #search through channels by id until id is matched
-    ch = next((channel for channel in channels if channel_id == channel['id']), None)
+    ch = next((channel for channel in channels if channel_id == channel['channel_id_and_name']['id']), None)
     if ch == None:
         raise InputError("Invalid Channel Id")
     
@@ -34,14 +34,14 @@ def channel_invite_v1(auth_user_id, channel_id, u_id):
         raise InputError("Adding an Invalid User")
     
     #check u_id is not in channel members
-    if u_id in ch['all_members']:
+    if u_id in ch['members']:
         raise InputError("User already in channel")
     
-    if auth_user_id not in ch['all_members']:
+    if auth_user_id not in ch['members']:
         raise AccessError("Authorised user not in channel")
 
     #add user to channel
-    ch['all_members'].append(u_id)
+    ch['members'].append(u_id)
 
     #update user
     add_user['channels'].append({'id': ch['channel_id_and_name']['id'], 'name': ch['channel_id_and_name']['name']})
@@ -69,29 +69,29 @@ def channel_details_v1(auth_user_id, channel_id):
     channels = storage['channels']
     users = storage['users']
     #search through channels by id until id is matched
-    ch = next((channel for channel in channels if channel_id == channel['id']), None)
+    ch = next((channel for channel in channels if channel_id == channel['channel_id_and_name']['id']), None)
     if ch == None:
         raise InputError("Invalid Channel Id")
 
     #check if auth_user_id is a member of the channel queried
-    if auth_user_id not in ch['all_members']:
+    if auth_user_id not in ch['members']:
         raise AccessError("Unauthorised User: User is not in channel")
 
     #generate lists of users 
     owner_members = []
     all_members = []
-    for member in ch['owner_members']:
+    for member in ch['owner']:
         curr_user = next((user for user in users if member == user['id']), None)
         owner_members.append(curr_user)
-    for member in ch['all_members']:
+    for member in ch['members']:
         curr_user = next((user for user in users if member == user['id']), None)
         all_members.append(curr_user)
 
     return {'id': channel_id,
-            'name': ch['name'],
+            'name': ch['channel_id_and_name']['name'],
             'is_public': ch['is_public'],
-            'owner_members': owner_members,
-            'all_members': all_members}
+            'owner': owner_members,
+            'members': all_members}
 
 '''
 <Brief description of what the function does>
@@ -150,20 +150,24 @@ def channel_join_v1(auth_user_id, channel_id):
         raise InputError('Unregistered user id')
 
     # check channel is valid 
-    channel = next((channel for channel in channels if channel_id == channel['id']), None)
+    channel = next((channel for channel in channels if channel_id == channel['channel_id_and_name']['id']), None)
     if channel == None:
         raise InputError("Invalid Channel Id")
 
     # check if already a member 
-    member = next((member for member in channel['all_members'] if auth_user_id == member), None)
+    member = next((member for member in channel['members'] if auth_user_id == member), None)
     if member != None:  # Existing member 
         raise InputError('User already a channel member')
     elif channel['is_public'] == False:  # New member but private channel
         raise AccessError('Channel is private and user is not a member')
     
     # If conditions met, add new member to channel
-    member_list = channel['all_members']
+    member_list = channel['members']
     member_list.append(auth_user_id)
+
+    #update user
+    user['channels'].append({'id': channel['channel_id_and_name']['id'], 'name': channel['channel_id_and_name']['name']})
+    data_store.set(storage)
 
     return {
     }
