@@ -3,19 +3,19 @@ from src.data_store import data_store
 from src.error import InputError
 from src.error import AccessError
 
-'''channels_list_v1 provides a list of all the channels that the user is a part of
-
-Arguments:
-    auth_user_id     (int)  - passes in the unique user id of whoever ran the funtion
-    ...
-
-Exceptions:
-    N/A
-
-Return Value:
-    Returns a dictionary of channel ids and channel names when successful
-'''
 def channels_list_v1(auth_user_id):
+    '''
+    Provides a list of all the channels that the user is a part of
+
+    Arguments:
+        auth_user_id     (int)  - passes in the unique user id of whoever ran the funtion
+    
+    Exceptions:
+        N/A
+
+    Return Value:
+        Returns a dictionary of channel ids and channel names when successful
+    '''
     storage = data_store.get()
     users = storage['users']
     channels = storage['channels']
@@ -25,19 +25,20 @@ def channels_list_v1(auth_user_id):
         'channels': curr_user['channels']
     }
 
-'''channels_listall_v1 Provide a list of all channels, including private channels
 
-Arguments:
-    auth_user_id     (int)  - passes in the unique user id of whoever ran the funtion
-    ...
-
-Exceptions:
-    N/A
-
-Return Value:
-    Returns a dictionary of channel ids and channel names when successful
-'''
 def channels_listall_v1(auth_user_id):
+    '''
+    Provides a list of all channels, including private channels
+
+    Arguments:
+        auth_user_id     (int)  - passes in the unique user id of whoever ran the funtion
+        
+    Exceptions:
+        N/A
+
+    Return Value:
+        Returns a dictionary of channel ids and channel names when successful
+    '''
     channel_list = []
     storage = data_store.get()
     channels = storage['channels']
@@ -48,23 +49,24 @@ def channels_listall_v1(auth_user_id):
         'channels': channel_list
     }
 
-'''
-Channels_create_v1 creates a new channel with the given name and public status>
 
-Arguments:
-    auth_user_id    (int)       - passes in the unique user id of whoever ran the funtion
-    name            (string)    - Gives a name to the channel that is to be created
-    is_public       (boolean)   - Sets who can and cant see the new channel 
-    ...
-
-Exceptions:
-    AccessError - Occurrs when the user id provided is not valid    
-    InputError  - Occurs when length of name is less than 1 or more than 20 characters
-
-Return Value:
-    Returns channel_id after creating the channel
-'''
 def channels_create_v1(auth_user_id, name, is_public):
+    '''
+    Creates a new channel with the given name and public status>
+
+    Arguments:
+        auth_user_id    (int)       - passes in the unique user id of whoever ran the funtion
+        name            (string)    - Gives a name to the channel that is to be created
+        is_public       (boolean)   - Sets who can and cant see the new channel 
+        ...
+
+    Exceptions:
+        AccessError - Occurrs when the user id provided is not valid    
+        InputError  - Occurs when length of name is less than 1 or more than 20 characters
+
+    Return Value:
+        Returns channel_id after creating the channel
+    '''
     #staging variables
     storage = data_store.get()
     users = storage['users']
