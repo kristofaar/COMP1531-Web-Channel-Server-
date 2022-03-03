@@ -41,7 +41,7 @@ def channel_invite_v1(auth_user_id, channel_id, u_id):
         raise AccessError("Authorised user not in channel")
 
     #add user to channel
-    ch['members'].append(u_id)
+    ch['all_members'].append(u_id)
 
     #update user
     add_user['channels'].append({'id': ch['channel_id_and_name']['id'], 'name': ch['channel_id_and_name']['name']})
