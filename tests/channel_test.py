@@ -110,25 +110,6 @@ def test_channel_invite_member(one_user_made_two_channels):
     channel_invite_v1(1,1,2) # invite second user to channel 1
     assert channel_details_v1(1,1)['members'] == [{'channels': [{'id': 1, 'name': 'public'}, {'id': 2, 'name': 'private'}],  'email': 'anemail@email.com',  'handle': 'namename',  'id': 1,  'name_first': 'Name',  'name_last': 'Name'}, {'channels': [{'id': 1, 'name': 'public'}],  'email': 'notanemail@email.com',  'handle': 'seconduser',  'id': 2,  'name_first': 'Second',  'name_last': 'User'}]
 
-#def two_users_each_make_channel():
-
-#Error tests
-'''
-def test_invalid_user_id():
-    clear_v1()
-    with pytest.raises(InputError):
-        channel_invite_v1(0, 1, 1)
-
-def test_invalid_channel_id():
-    clear_v1()
-    with pytest.raises(AccessError):
-        channel_invite_v1(1,0,1)
-
-def test_invalid_user_id():
-    clear_v1()
-    with pytest.raises(InputError):
-        channel_invite_v1(1,1,0)
-'''
 def test_channel_messages_invalid_channel_id():
     clear_v1()
     auth_register_v1('anemail@email.com', 'verycoolpassword', 'Name', 'Name')
