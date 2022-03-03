@@ -16,14 +16,36 @@ Exceptions:
                 - Occurs when u_id does not refer to a valid user
                 - Occurs when u_id refers to a user who is already a member of the channel
     AccessError - Occurs when channel_id is valid and the authorised user is not a member of the channel
-
-Return Value:
-    Returns <return value> on <condition>
-    Returns <return value> on <condition>
 '''
 def channel_invite_v1(auth_user_id, channel_id, u_id):
-    return {
-    }
+    #staging variables
+    storage = data_store.get()
+    channels = storage['channels']
+    users = storage['users']
+
+    #search through channels by id until id is matched
+    ch = next((channel for channel in channels if channel_id == channel['channel_id_and_name']['id']), None)
+    if ch == None:
+        raise InputError("Invalid Channel Id")
+    
+    #search through users until u_id is matched
+    add_user = next((user for user in users if u_id == user['id']), None)
+    if add_user == None:
+        raise InputError("Adding an Invalid User")
+    
+    #check u_id is not in channel members
+    if u_id in ch['members']:
+        raise InputError("User already in channel")
+    
+    if auth_user_id not in ch['members']:
+        raise AccessError("Authorised user not in channel")
+
+    #add user to channel
+    ch['members'].append(u_id)
+
+    #update user
+    add_user['channels'].append({'id': ch['channel_id_and_name']['id'], 'name': ch['channel_id_and_name']['name']})
+    data_store.set(storage)
 
 '''
 channel_details_v1 provides basic details about the channel given a channel with ID channel_id that the 
@@ -38,34 +60,38 @@ Exceptions:
     AccessError - Occurs when channel_id is valid and the authorised user is not a member of the channel
 
 Return Value:
-    Returns <return value> on <condition>
-    Returns <return value> on <condition>
+    Returns channel_id, channel name, whether or not the channel is 
+    public, the owner members, and all members of the channel.
 '''
 def channel_details_v1(auth_user_id, channel_id):
     #staging variables
     storage = data_store.get()
-    return storage['channels'][channel_id]
-    return {
-        'name': 'Hayden',
-        'owner_members': [
-            {
-                'u_id': 1,
-                'email': 'example@gmail.com',
-                'name_first': 'Hayden',
-                'name_last': 'Jacobs',
-                'handle_str': 'haydenjacobs',
-            }
-        ],
-        'all_members': [
-            {
-                'u_id': 1,
-                'email': 'example@gmail.com',
-                'name_first': 'Hayden',
-                'name_last': 'Jacobs',
-                'handle_str': 'haydenjacobs',
-            }
-        ],
-    }
+    channels = storage['channels']
+    users = storage['users']
+    #search through channels by id until id is matched
+    ch = next((channel for channel in channels if channel_id == channel['channel_id_and_name']['id']), None)
+    if ch == None:
+        raise InputError("Invalid Channel Id")
+
+    #check if auth_user_id is a member of the channel queried
+    if auth_user_id not in ch['members']:
+        raise AccessError("Unauthorised User: User is not in channel")
+
+    #generate lists of users 
+    owner_members = []
+    all_members = []
+    for member in ch['owner']:
+        curr_user = next((user for user in users if member == user['id']), None)
+        owner_members.append(curr_user)
+    for member in ch['members']:
+        curr_user = next((user for user in users if member == user['id']), None)
+        all_members.append(curr_user)
+
+    return {'id': channel_id,
+            'name': ch['channel_id_and_name']['name'],
+            'is_public': ch['is_public'],
+            'owner': owner_members,
+            'members': all_members}
 
 '''
 <Returns information on up to 50 messages within the channel>
@@ -144,6 +170,37 @@ Return Value:
     Returns <return value> on <condition>
     Returns <return value> on <condition>
 '''
+
 def channel_join_v1(auth_user_id, channel_id):
+    #staging variables
+    storage = data_store.get()
+    channels = storage['channels']
+    users = storage['users']
+    
+    # check auth_user_id is valid user 
+    user = next((user for user in users if user['id'] == auth_user_id), None)
+    if user == None: # User not found
+        raise InputError('Unregistered user id')
+
+    # check channel is valid 
+    channel = next((channel for channel in channels if channel_id == channel['channel_id_and_name']['id']), None)
+    if channel == None:
+        raise InputError("Invalid Channel Id")
+
+    # check if already a member 
+    member = next((member for member in channel['members'] if auth_user_id == member), None)
+    if member != None:  # Existing member 
+        raise InputError('User already a channel member')
+    elif channel['is_public'] == False:  # New member but private channel
+        raise AccessError('Channel is private and user is not a member')
+    
+    # If conditions met, add new member to channel
+    member_list = channel['members']
+    member_list.append(auth_user_id)
+
+    #update user
+    user['channels'].append({'id': channel['channel_id_and_name']['id'], 'name': channel['channel_id_and_name']['name']})
+    data_store.set(storage)
+
     return {
     }
