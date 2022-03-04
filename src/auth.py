@@ -69,7 +69,8 @@ def auth_register_v1(email, password, name_first, name_last):
     storage = data_store.get()
 
     #using regular expressions to check if email is valid
-    regex_email = '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}$'
+    regex_email = '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Z|a-z]{2,}$'
+    # \\ is used as \ is an escape character and produces a warning when used on its own
     if not re.fullmatch(regex_email, email):
         raise InputError("Invalid Email")
 
@@ -111,9 +112,10 @@ def auth_register_v1(email, password, name_first, name_last):
     if len(storage['users']):
         new_id = storage['users'][len(storage['users']) - 1]['id'] + 1
 
-
-    storage['users'].append({'id': new_id, 'email': email, 'name_first': name_first, 'name_last': name_last, 'handle': handle})
+    storage['users'].append({'id': new_id, 'email': email, 'name_first': name_first, 'name_last': name_last, 'handle': handle, 'channels' : []})
     storage['passwords'].append({'id': new_id, 'password': password})
+    
+
     data_store.set(storage)
     return {
         'auth_user_id': new_id,
