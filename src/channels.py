@@ -21,9 +21,8 @@ def channels_list_v1(auth_user_id):
     channels = storage['channels']
     curr_user = next((user for user in users if auth_user_id == user['id']), None)
     
-    return {
-        'channels': curr_user['channels']
-    }
+    return curr_user['channels']
+    
 
 '''channels_listall_v1 Provide a list of all channels, including private channels
 

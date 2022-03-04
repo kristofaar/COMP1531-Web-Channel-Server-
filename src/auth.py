@@ -66,6 +66,7 @@ def auth_register_v1(email, password, name_first, name_last):
     Return Value:
         Returns auth_user_id always.
     '''
+    
     storage = data_store.get()
 
     #using regular expressions to check if email is valid
