@@ -87,11 +87,10 @@ def channel_details_v1(auth_user_id, channel_id):
         curr_user = next((user for user in users if member == user['id']), None)
         all_members.append(curr_user)
 
-    return {'id': channel_id,
-            'name': ch['channel_id_and_name']['name'],
+    return {'name': ch['channel_id_and_name']['name'],
             'is_public': ch['is_public'],
-            'owner': owner_members,
-            'members': all_members}
+            'owner_members': owner_members,
+            'all_members': all_members}
 
 '''
 <Returns information on up to 50 messages within the channel>
