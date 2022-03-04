@@ -11,7 +11,7 @@ def channels_list_v1(auth_user_id):
         auth_user_id     (int)  - passes in the unique user id of whoever ran the funtion
     
     Exceptions:
-        N/A
+        AccessError - Occurrs when the user id provided is not valid
 
     Return Value:
         Returns a dictionary of channel ids and channel names when successful
@@ -19,8 +19,12 @@ def channels_list_v1(auth_user_id):
     storage = data_store.get()
     users = storage['users']
     channels = storage['channels']
+    #iterate through users until a user with the corresponding id is found
     curr_user = next((user for user in users if auth_user_id == user['id']), None)
-    
+    #if no user has the given id raise an error
+    if curr_user == None:
+        raise AccessError("Invalid User Id ")
+
     return {
         'channels': curr_user['channels']
     }
@@ -72,6 +76,12 @@ def channels_create_v1(auth_user_id, name, is_public):
     users = storage['users']
     channels = storage['channels']
     ch_id = 0
+    if auth_user_id == None:
+        raise InputError("User Id Entered Is Null")
+    if name == None:
+        raise InputError("Channel Name Entered Is Null")
+    if is_public == None:
+        raise InputError("Public Status Entered Is Null")
     #look through users to see if the given id matches any of their ids
     curr_user = next((user for user in users if auth_user_id == user['id']), None)
     if 20 < len(name):
@@ -86,11 +96,11 @@ def channels_create_v1(auth_user_id, name, is_public):
     ch_id = len(channels) + 1
 
     #updating the data store
-    channels.append({'channel_id_and_name' :{'id' : ch_id, 'name' : name}, 'is_public' : is_public, 
+    channels.append({'channel_id_and_name' :{'channel_id' : ch_id, 'name' : name}, 'is_public' : is_public, 
     'owner' : [auth_user_id], 'members' : [auth_user_id], 'messages' : []})
 
     #updating user
-    curr_user['channels'].append({'id' : ch_id, 'name' : name})
+    curr_user['channels'].append({'channel_id' : ch_id, 'name' : name})
     data_store.set(storage)
     return{
         'channel_id' : ch_id
