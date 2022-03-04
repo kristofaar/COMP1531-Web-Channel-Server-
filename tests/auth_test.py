@@ -123,7 +123,7 @@ def test_handle_no_alphanumeric():      #DOES NOT WORK FOR NAMES WITH UNDERSCORE
     result = True
     for user in users:
         if not user['handle'].isalnum():  # if not alphanumeric - this was supposed to be for multiple users 
-            result = false    
+            result = False    
 
     assert result == True
 
