@@ -53,7 +53,6 @@ def test_channel_details_check_owner(one_user_made_two_channels):
     assert one_user_made_two_channels['second']['owner_members'][0]['u_id'] == 1
 
 def test_channel_details_check_members(one_user_made_two_channels):
-
     assert one_user_made_two_channels['first']['all_members'] == [{'email': 'anemail@email.com',  'handle_str': 'namename',  'name_first': 'Name', 'name_last': 'Name',  'u_id': 1}]
     assert one_user_made_two_channels['second']['all_members'] == [{'email': 'anemail@email.com', 'handle_str': 'namename',  'name_first': 'Name',  'name_last': 'Name', 'u_id': 1}]
 
