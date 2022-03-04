@@ -5,7 +5,7 @@ from src.channels import channels_create_v1,channels_listall_v1,channels_list_v1
 from src.error import InputError
 from src.error import AccessError
 from src.other import clear_v1
-
+from src.data_store import data_store
 #Error tests
 def test_channel_create_empty_id():
     clear_v1()
