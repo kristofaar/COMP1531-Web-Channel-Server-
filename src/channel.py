@@ -24,7 +24,7 @@ def channel_invite_v1(auth_user_id, channel_id, u_id):
     users = storage['users']
 
     #search through channels by id until id is matched
-    ch = next((channel for channel in channels if channel_id == channel['channel_id_and_name']['id']), None)
+    ch = next((channel for channel in channels if channel_id == channel['channel_id_and_name']['channel_id']), None)
     if ch == None:
         raise InputError("Invalid Channel Id")
     
@@ -44,7 +44,7 @@ def channel_invite_v1(auth_user_id, channel_id, u_id):
     ch['members'].append(u_id)
 
     #update user
-    add_user['channels'].append({'id': ch['channel_id_and_name']['id'], 'name': ch['channel_id_and_name']['name']})
+    add_user['channels'].append({'id': ch['channel_id_and_name']['channel_id'], 'name': ch['channel_id_and_name']['name']})
     data_store.set(storage)
 
 '''
@@ -69,7 +69,7 @@ def channel_details_v1(auth_user_id, channel_id):
     channels = storage['channels']
     users = storage['users']
     #search through channels by id until id is matched
-    ch = next((channel for channel in channels if channel_id == channel['channel_id_and_name']['id']), None)
+    ch = next((channel for channel in channels if channel_id == channel['channel_id_and_name']['channel_id']), None)
     if ch == None:
         raise InputError("Invalid Channel Id")
 
@@ -87,7 +87,7 @@ def channel_details_v1(auth_user_id, channel_id):
         curr_user = next((user for user in users if member == user['id']), None)
         all_members.append(curr_user)
 
-    return {'id': channel_id,
+    return {'channel_id': channel_id,
             'name': ch['channel_id_and_name']['name'],
             'is_public': ch['is_public'],
             'owner': owner_members,
@@ -127,7 +127,7 @@ def channel_messages_v1(auth_user_id, channel_id, start):
     channel_exists = False
     temp_channel = {}
     for channel in storage['channels']:
-        if channel['channel_id_and_name']['id'] == channel_id:
+        if channel['channel_id_and_name']['channel_id'] == channel_id:
             channel_exists = True
             temp_channel = channel
 
@@ -183,7 +183,7 @@ def channel_join_v1(auth_user_id, channel_id):
         raise InputError('Unregistered user id')
 
     # check channel is valid 
-    channel = next((channel for channel in channels if channel_id == channel['channel_id_and_name']['id']), None)
+    channel = next((channel for channel in channels if channel_id == channel['channel_id_and_name']['channel_id']), None)
     if channel == None:
         raise InputError("Invalid Channel Id")
 
@@ -199,7 +199,7 @@ def channel_join_v1(auth_user_id, channel_id):
     member_list.append(auth_user_id)
 
     #update user
-    user['channels'].append({'id': channel['channel_id_and_name']['id'], 'name': channel['channel_id_and_name']['name']})
+    user['channels'].append({'id': channel['channel_id_and_name']['channel_id'], 'name': channel['channel_id_and_name']['name']})
     data_store.set(storage)
 
     return {
