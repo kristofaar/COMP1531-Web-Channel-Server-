@@ -95,7 +95,6 @@ def test_register_and_login_multiple():
     assert reg_id2 == log_id2
     assert reg_id3 == log_id3
 
-
 def test_register_invalid_name():   # test for invalid name? feels like it'll return an empty space name cuz it's only symbols
     '''
     clear_v1()
@@ -160,8 +159,5 @@ def test_handle_no_alphanumeric_name(): # test for name with no letters/numbers 
 def test_handle_multiple_users():   
     clear_v1()
     pass
-
-
-
 
 
