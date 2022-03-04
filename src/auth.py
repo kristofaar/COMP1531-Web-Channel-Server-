@@ -6,23 +6,23 @@ import re
 
 
 def auth_login_v1(email, password):
-    '''<Given a correct email and associated password returns the user's id.>
+    '''Given a correct email and associated password returns the user's id.
 
     Arguments:
-        <email> (<String>)    - <The user's email, must be unique.>
-        <password> (<String>)    - <Password must be greater or equal to 6 characters long.>
+        email (String)       - The user's email, must be unique.
+        password (String)    - Password must be greater or equal to 6 characters long.
 
     Exceptions:
         InputError  - Occurs when: 
             -email entered does not belong to a user
             -password is not correct
     Return Value:
-        Returns <auth_user_id> always.
+        Returns auth_user_id always.
     '''
 
     storage = data_store.get()
 
-    #sentinel variable I don't know how to do better
+    #sentinel variable 
     email_exists = False
     u_id = 0
 
@@ -46,14 +46,14 @@ def auth_login_v1(email, password):
 
 
 def auth_register_v1(email, password, name_first, name_last):
-    '''<Registers a user storing their email, password, name_first, name_last. Creates a unique id and handle which is also stored.
-    That user can now interact with with other functions.>
+    '''Registers a user storing their email, password, name_first, name_last. Creates a unique id and handle which is also stored.
+    That user can now interact with with other functions.
 
     Arguments:
-        <email> (<String>)    - <The user's email, must be unique.>
-        <password> (<String>)    - <Password must be greater or equal to 6 characters long.>
-        <name_first> (<String>)    -<Must be between 1 and 50 characters.>
-        <name_last> (<String>)    -<Must be between 1 and 50 characters.>   
+        email (String)         - The user's email, must be unique.
+        password (String)      - Password must be greater or equal to 6 characters long.
+        name_first (String)    - Must be between 1 and 50 characters.
+        name_last (String)     - Must be between 1 and 50 characters.   
 
     Exceptions:
         InputError  - Occurs when: 
@@ -64,7 +64,7 @@ def auth_register_v1(email, password, name_first, name_last):
             -length of name_last is not between 1 and 50 characters inclusive
 
     Return Value:
-        Returns <auth_user_id> always.
+        Returns auth_user_id always.
     '''
     storage = data_store.get()
 
