@@ -2,6 +2,8 @@ import pytest
 
 from src.auth import auth_register_v1, auth_login_v1
 from src.error import InputError
+from src.channels import channels_create_v1
+from src.channel import channel_details_v1
 from src.other import clear_v1
 
 #Error tests
@@ -94,39 +96,11 @@ def test_register_and_login_multiple():
     assert reg_id2 == log_id2
     assert reg_id3 == log_id3
 
-def test_register_invalid_name():   # test for invalid name? feels like it'll return an empty space name cuz it's only symbols
-    '''
-    clear_v1()
-    with pytest.raises(InputError):
-        auth_register_v1('anemail@email.com', 'verycoolpassword', '!@#$%^', '!@#$%^')
-    '''    
-    pass
-
-#might need tests for handle checking
-'''
-@pytest.fixture
-def clear_and_handle():     # clears, and returns 'users' for access - Didn't end up using it
-    clear_v1()
-    storage = data_store.get()
-    users = storage['users']
-    return users
-'''
-
 def test_handle_no_alphanumeric():      #DOES NOT WORK FOR NAMES WITH UNDERSCORES ie. Name___123
     clear_v1()
     auth_register_v1('anemail@email.com', 'verycoolpassword', 'Name123!@#', 'Name123!@#')
-    '''
-    storage = data_store.get()
-    users = storage['users']
-
-    result = True
-    for user in users:
-        if not user['handle'].isalnum():  # if not alphanumeric - this was supposed to be for multiple users 
-            result = False    
-
-    assert result == True
-    '''
-    pass
+    channels_create_v1(1, 'hi', True)
+    assert channel_details_v1(1, 1)['all_members'][0]['handle_str'] == 'name123name123'
 
 def test_handle_less_than_20():   # check name over 20 letters
     clear_v1()
