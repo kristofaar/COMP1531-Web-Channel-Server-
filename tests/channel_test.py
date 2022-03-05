@@ -73,6 +73,9 @@ def test_channel_details_multiple_members(one_user_made_two_channels):
     channel_join_v1(2, 1) #second user joins channel 1
     assert channel_details_v1(1,1)['all_members'] == [{'email': 'anemail@email.com',  'handle_str': 'namename',  'name_first': 'Name',  'name_last': 'Name', 'u_id': 1}, {'email': 'notanemail@email.com',  'handle_str': 'seconduser',  'name_first': 'Second',  'name_last': 'User',  'u_id': 2}]
 
+def test_channel_details_invalid_user():
+    with pytest.raises(AccessError):
+        channel_details_v1(2, 1)    # second user doesn't exist
 
 # testing channel_join_v1
 
@@ -81,10 +84,14 @@ def test_channel_join_new_member_join_valid_channel(one_user_made_two_channels):
     channel_join_v1(2, 1)   # second user joins channel 1 made by first user
     first_channel_details = channel_details_v1(1, 1)
     members = first_channel_details['all_members']
-    assert members[1]['u_id'] == 2    # check if second user is member of channel 1 now
+    second_user_exists = False
+    for user in members:
+        if user['u_id'] == 2:
+            second_user_exists = True
+    assert second_user_exists == True   # check if second user is member of channel 1 now
 
 def test_channel_join_invalid_user_join_valid_channel(one_user_made_two_channels):
-    with pytest.raises(InputError):
+    with pytest.raises(AccessError):
         channel_join_v1(2, 1)   # second user not registered yet
 
 def test_channel_join_new_member_joins_invalid_channel(one_user_made_two_channels):     
@@ -120,7 +127,7 @@ def test_channel_invite_invalid_channel(one_user_made_two_channels):
         channel_invite_v1(1,3,2)    # one user invites second user to 3rd channel (doesn't exist)
 
 def test_channel_invite_invalid_inviter_id(one_user_made_two_channels):   #invalid auth_user_id (one inviting)
-    with pytest.raises(InputError):
+    with pytest.raises(AccessError):
         channel_invite_v1(2,1,1)    # second user (not registered) invites first user 
         
 def test_channel_invite_invalid_invitee_id(one_user_made_two_channels):   #invalid u_id (one getting invited)
