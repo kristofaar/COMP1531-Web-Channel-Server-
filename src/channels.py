@@ -92,13 +92,14 @@ def channels_create_v1(auth_user_id, name, is_public):
         raise InputError("Public Status Entered Is Null")
     #look through users to see if the given id matches any of their ids
     curr_user = next((user for user in users if auth_user_id == user['id']), None)
+    #if the given id is not found in users then spit out error message
+    if curr_user == None:
+        raise AccessError("Invalid User Id ")
     if 20 < len(name):
         raise InputError("Channel Name Is Too Long")
     if 1 > len(name):
         raise InputError("Channel Name Is Too Short")
-    #if the given id is not found in users then spit out error message
-    if curr_user == None:
-        raise AccessError("Invalid User Id ")
+    
 
     #generate channel id based on its position in the list
     ch_id = len(channels) + 1
