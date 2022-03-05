@@ -19,6 +19,10 @@ def channels_list_v1(auth_user_id):
     storage = data_store.get()
     users = storage['users']
     channels = storage['channels']
+
+    if auth_user_id == None:
+        raise InputError("User Id Entered Is Null")
+        
     #iterate through users until a user with the corresponding id is found
     curr_user = next((user for user in users if auth_user_id == user['id']), None)
     #if no user has the given id raise an error
