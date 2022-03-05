@@ -46,6 +46,14 @@ def channels_listall_v1(auth_user_id):
     channel_list = []
     storage = data_store.get()
     channels = storage['channels']
+    users = storage['users']
+    #iterate through users until a user with the corresponding id is found
+    curr_user = next((user for user in users if auth_user_id == user['id']), None)
+
+    #if no user has the given id raise an error
+    if curr_user == None:
+        raise AccessError("Invalid User Id ")
+
     #add all the channels that have been created to a list 
     for channel in storage['channels']:
         channel_list.append(channel['channel_id_and_name'])
