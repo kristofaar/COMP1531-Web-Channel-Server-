@@ -74,6 +74,12 @@ def channel_details_v1(auth_user_id, channel_id):
     storage = data_store.get()
     channels = storage['channels']
     users = storage['users']
+
+    # Check auth_user_id is registered 
+    check_auth_user_id = next((user for user in users if auth_user_id == user['id']), None)
+    if check_auth_user_id == None:
+        raise AccessError("Invalid User (Channel Inviter)")
+
     #search through channels by id until id is matched
     ch = next((channel for channel in channels if channel_id == channel['channel_id_and_name']['id']), None)
     if ch == None:
