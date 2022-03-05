@@ -75,6 +75,9 @@ def test_channel_details_multiple_members(one_user_made_two_channels):
     channel_join_v1(u_id2, one_user_made_two_channels['ch_id1']) #second user joins channel 1
     assert channel_details_v1(one_user_made_two_channels['u_id'], one_user_made_two_channels['ch_id1'])['all_members'] == [{'email': 'anemail@email.com',  'handle_str': 'namename',  'name_first': 'Name',  'name_last': 'Name', 'u_id': one_user_made_two_channels['u_id']}, {'email': 'notanemail@email.com',  'handle_str': 'seconduser',  'name_first': 'Second',  'name_last': 'User',  'u_id': u_id2}]
 
+def test_channel_details_invalid_user():
+    with pytest.raises(AccessError):
+        channel_details_v1(2, 1)    # second user doesn't exist
 
 # testing channel_join_v1
 
