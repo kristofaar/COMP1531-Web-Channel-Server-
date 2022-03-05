@@ -66,6 +66,7 @@ def auth_register_v1(email, password, name_first, name_last):
     Return Value:
         Returns auth_user_id always.
     '''
+    
     storage = data_store.get()
 
     #using regular expressions to check if email is valid
@@ -90,7 +91,7 @@ def auth_register_v1(email, password, name_first, name_last):
 
     #handle creation
     #regular expression to get rid of all non alphanumeric characters
-    handle = re.sub(r'\W+', '', name_first).lower() + re.sub(r'\W+', '', name_last).lower()
+    handle = re.sub(r'[^a-zA-Z0-9]', '', name_first).lower() + re.sub(r'[^a-zA-Z0-9]', '', name_last).lower()
     handle = handle[:20]
     #-1 would be the case where there are no numbers at the end of the handle
     num_of_same_handle = -1

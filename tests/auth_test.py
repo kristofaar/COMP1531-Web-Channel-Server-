@@ -2,8 +2,9 @@ import pytest
 
 from src.auth import auth_register_v1, auth_login_v1
 from src.error import InputError
+from src.channels import channels_create_v1
+from src.channel import channel_details_v1
 from src.other import clear_v1
-from src.data_store import data_store
 
 #Error tests
 def test_register_invalid_email():
@@ -95,69 +96,46 @@ def test_register_and_login_multiple():
     assert reg_id2 == log_id2
     assert reg_id3 == log_id3
 
-def test_register_invalid_name():   # test for invalid name? feels like it'll return an empty space name cuz it's only symbols
-    '''
+def test_handle_no_alphanumeric():
     clear_v1()
-    with pytest.raises(InputError):
-        auth_register_v1('anemail@email.com', 'verycoolpassword', '!@#$%^', '!@#$%^')
-    '''    
-    pass
-
-#might need tests for handle checking
-
-@pytest.fixture
-def clear_and_handle():     # clears, and returns 'users' for access - Didn't end up using it
-    clear_v1()
-    storage = data_store.get()
-    users = storage['users']
-    return users
-
-def test_handle_no_alphanumeric():      #DOES NOT WORK FOR NAMES WITH UNDERSCORES ie. Name___123
-    clear_v1()
-    auth_register_v1('anemail@email.com', 'verycoolpassword', 'Name123!@#', 'Name123!@#')
-
-    storage = data_store.get()
-    users = storage['users']
-
-    result = True
-    for user in users:
-        if not user['handle'].isalnum():  # if not alphanumeric - this was supposed to be for multiple users 
-            result = False    
-
-    assert result == True
+    u_id = auth_register_v1('anemail@email.com', 'verycoolpassword', 'Name123_!@#', 'Name123!@#')['auth_user_id']
+    ch_id = channels_create_v1(u_id, 'hi', True)['channel_id']
+    assert channel_details_v1(u_id, ch_id)['all_members'][0]['handle_str'] == 'name123name123'
 
 def test_handle_less_than_20():   # check name over 20 letters
     clear_v1()
-    auth_register_v1('anemail@email.com', 'verycoolpassword', 'NameIsWayPast', 'TwentyCharacters')
-
-    storage = data_store.get()
-    users = storage['users']
-    handle = users[0]['handle']     # checks first user 
-    length = len(handle)
-
-    assert length == 20
+    u_id = auth_register_v1('anemail@email.com', 'verycoolpassword', 'NameIsWayPast', 'TwentyCharacters')['auth_user_id']
+    ch_id = channels_create_v1(u_id, 'hi', True)['channel_id']
+    assert channel_details_v1(u_id, ch_id)['all_members'][0]['handle_str'] == 'nameiswaypasttwentyc'
 
 # todo
 
 def test_handle_less_than_20_duplicate():    # check if both handles less than 20, ignore number append (next one tests it)
     clear_v1()
-    auth_register_v1('anemail@email.com', 'verycoolpassword', 'NameIsWayPast', 'TwentyCharacters')
-    auth_register_v1('random@email.com', 'verycoolpassword', 'NameIsWayPast', 'TwentyCharacters')
-    pass
+    auth_register_v1('anemail1@email.com', 'verycoolpassword', 'Name#@', 'nAme!@89')
+    auth_register_v1('anemail2@email.com', 'verycoolpassword', 'Name', 'nAme!@89')
+    u_id = auth_register_v1('anemail3@email.com', 'verycoolpassword', '!@&name', 'nAme!@89')['auth_user_id']
+    ch_id = channels_create_v1(u_id, 'hi', True)['channel_id']
+    assert channel_details_v1(u_id, ch_id)['all_members'][0]['handle_str'] == 'namename891'
 
 def test_handle_append_number(): # check if right number is appended to handle for identical names over 20 characters
     clear_v1()
-    auth_register_v1('anemail@email.com', 'verycoolpassword', 'NameIsWayPast', 'TwentyCharacters')
-    auth_register_v1('random@email.com', 'verycoolpassword', 'NameIsWayPast', 'TwentyCharacters')
-    pass
+    auth_register_v1('anemail1@email.com', 'verycoolpassword', 'NameIsWayPast', 'TwentyCharacters')
+    auth_register_v1('anemail2@email.com', 'verycoolpassword', 'NameIsWayPast', 'TwentyCharacters')
+    u_id = auth_register_v1('anemail3@email.com', 'verycoolpassword', 'NameIsWayPast', 'TwentyCharacters')['auth_user_id']
+    ch_id = channels_create_v1(u_id, 'hi', True)['channel_id']
+    assert channel_details_v1(u_id, ch_id)['all_members'][0]['handle_str'] == 'nameiswaypasttwentyc1'
 
 def test_handle_no_alphanumeric_name(): # test for name with no letters/numbers so end up with empty space name? 
     clear_v1()
-    auth_register_v1('anemail@email.com', 'verycoolpassword', '!@#$%^123', '!@#$%^123')     # is this even allowed as valid name? 
-    pass
+    u_id = auth_register_v1('anemail3@email.com', 'verycoolpassword', '$^#^*&', '_!@&)@#')['auth_user_id']
+    ch_id = channels_create_v1(u_id, 'hi', True)['channel_id']
+    assert channel_details_v1(u_id, ch_id)['all_members'][0]['handle_str'] == ''
 
-def test_handle_multiple_users():   
+def test_handle_no_alphanumeric_name_multiple():
     clear_v1()
-    pass
-
-
+    auth_register_v1('anemail1@email.com', 'verycoolpassword', '$^#^*&', '_!@&)@#')
+    auth_register_v1('anemail2@email.com', 'verycoolpassword', '$^#^*&', '_!@&)@#')
+    u_id = auth_register_v1('anemail3@email.com', 'verycoolpassword', '$^#^*&', '_!@&)@#')['auth_user_id']
+    ch_id = channels_create_v1(u_id, 'hi', True)['channel_id']
+    assert channel_details_v1(u_id, ch_id)['all_members'][0]['handle_str'] == '1'
