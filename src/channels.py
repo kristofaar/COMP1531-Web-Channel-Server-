@@ -19,6 +19,10 @@ def channels_list_v1(auth_user_id):
     storage = data_store.get()
     users = storage['users']
     channels = storage['channels']
+
+    if auth_user_id == None:
+        raise InputError("User Id Entered Is Null")
+        
     #iterate through users until a user with the corresponding id is found
     curr_user = next((user for user in users if auth_user_id == user['id']), None)
     #if no user has the given id raise an error
@@ -28,7 +32,6 @@ def channels_list_v1(auth_user_id):
     return {
         'channels': curr_user['channels']
     }
-
 
 
 def channels_listall_v1(auth_user_id):
@@ -46,14 +49,25 @@ def channels_listall_v1(auth_user_id):
     '''
     channel_list = []
     storage = data_store.get()
+    users = storage['users']
     channels = storage['channels']
+
+    if auth_user_id == None:
+        raise InputError("User Id Entered Is Null")
+
+    #iterate through users until a user with the corresponding id is found
+    curr_user = next((user for user in users if auth_user_id == user['id']), None)
+
+    #if no user has the given id raise an error
+    if curr_user == None:
+        raise AccessError("Invalid User Id ")
+    
     #add all the channels that have been created to a list 
     for channel in storage['channels']:
         channel_list.append(channel['channel_id_and_name'])
     return {
         'channels': channel_list
     }
-
 
 def channels_create_v1(auth_user_id, name, is_public):
     '''
