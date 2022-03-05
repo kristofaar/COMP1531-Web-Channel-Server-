@@ -33,6 +33,7 @@ def channels_list_v1(auth_user_id):
         'channels': curr_user['channels']
     }
 
+
 def channels_listall_v1(auth_user_id):
     '''
     Provides a list of all channels, including private channels
