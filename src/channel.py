@@ -2,7 +2,10 @@ from src.data_store import data_store
 from src.error import InputError
 from src.error import AccessError
 
-'''
+
+def channel_invite_v1(auth_user_id, channel_id, u_id):
+
+    '''
 channel_invite_v1 invites a user with ID u_id to join a channel with ID channel_id. Once invited, the user is 
 added to the channel immediately. In both public and private channels, all members are able to invite users.
 
@@ -17,7 +20,7 @@ Exceptions:
                 - Occurs when u_id refers to a user who is already a member of the channel
     AccessError - Occurs when channel_id is valid and the authorised user is not a member of the channel
 '''
-def channel_invite_v1(auth_user_id, channel_id, u_id):
+
     #staging variables
     storage = data_store.get()
     channels = storage['channels']
@@ -53,7 +56,10 @@ def channel_invite_v1(auth_user_id, channel_id, u_id):
     add_user['channels'].append({'channel_id': ch['channel_id_and_name']['id'], 'name': ch['channel_id_and_name']['name']})
     data_store.set(storage)
 
-'''
+
+def channel_details_v1(auth_user_id, channel_id):
+
+    '''
 channel_details_v1 provides basic details about the channel given a channel with ID channel_id that the 
 authorised user is a member of.
 
@@ -69,7 +75,7 @@ Return Value:
     Returns channel_id, channel name, whether or not the channel is 
     public, the owner members, and all members of the channel.
 '''
-def channel_details_v1(auth_user_id, channel_id):
+
     #staging variables
     storage = data_store.get()
     channels = storage['channels']
@@ -104,7 +110,10 @@ def channel_details_v1(auth_user_id, channel_id):
             'owner_members': owner_members,
             'all_members': all_members}
 
-'''
+
+def channel_messages_v1(auth_user_id, channel_id, start):
+
+    '''
 <Returns information on up to 50 messages within the channel>
 
 Arguments:
@@ -123,7 +132,7 @@ Exceptions:
 Return Value:
     Returns <{messages, start, end}> always, where end is the index of the final message, -1 if up to date.
 '''
-def channel_messages_v1(auth_user_id, channel_id, start):
+
     storage = data_store.get()
 
     #errors
@@ -166,7 +175,11 @@ def channel_messages_v1(auth_user_id, channel_id, start):
         'end': start + 50 if start + 50 < len(temp_channel['messages']) else -1,
     }
 
-'''<Brief description of what the function does>
+
+
+def channel_join_v1(auth_user_id, channel_id):
+
+    '''<Brief description of what the function does>
 
 Arguments:
     <name> (<data type>)    - <description>
@@ -182,7 +195,6 @@ Return Value:
     Returns <return value> on <condition>
 '''
 
-def channel_join_v1(auth_user_id, channel_id):
     #staging variables
     storage = data_store.get()
     channels = storage['channels']
