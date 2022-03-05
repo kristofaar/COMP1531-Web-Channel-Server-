@@ -32,7 +32,7 @@ Exceptions:
         raise AccessError("Invalid User (Channel Inviter)")
 
     #search through channels by id until id is matched
-    ch = next((channel for channel in channels if channel_id == channel['channel_id_and_name']['id']), None)
+    ch = next((channel for channel in channels if channel_id == channel['channel_id_and_name']['channel_id']), None)
     if ch == None:
         raise InputError("Invalid Channel Id")
     
@@ -53,7 +53,7 @@ Exceptions:
     ch['members'].append(u_id)
 
     #update user
-    add_user['channels'].append({'channel_id': ch['channel_id_and_name']['id'], 'name': ch['channel_id_and_name']['name']})
+    add_user['channels'].append({'channel_id': ch['channel_id_and_name']['channel_id'], 'name': ch['channel_id_and_name']['name']})
     data_store.set(storage)
 
 
@@ -87,7 +87,7 @@ Return Value:
         raise AccessError("Invalid User (Channel Inviter)")
 
     #search through channels by id until id is matched
-    ch = next((channel for channel in channels if channel_id == channel['channel_id_and_name']['id']), None)
+    ch = next((channel for channel in channels if channel_id == channel['channel_id_and_name']['channel_id']), None)
     if ch == None:
         raise InputError("Invalid Channel Id")
 
@@ -106,6 +106,7 @@ Return Value:
         all_members.append({'u_id': curr_user['id'], 'email': curr_user['email'], 'name_first': curr_user['name_first'], 'name_last': curr_user['name_last'], 'handle_str': curr_user['handle']})
 
     return {'name': ch['channel_id_and_name']['name'],
+
             'is_public': ch['is_public'],
             'owner_members': owner_members,
             'all_members': all_members}
@@ -147,7 +148,7 @@ Return Value:
     channel_exists = False
     temp_channel = {}
     for channel in storage['channels']:
-        if channel['channel_id_and_name']['id'] == channel_id:
+        if channel['channel_id_and_name']['channel_id'] == channel_id:
             channel_exists = True
             temp_channel = channel
 
@@ -206,7 +207,7 @@ Return Value:
         raise AccessError('Unregistered user id')
 
     # check channel is valid 
-    channel = next((channel for channel in channels if channel_id == channel['channel_id_and_name']['id']), None)
+    channel = next((channel for channel in channels if channel_id == channel['channel_id_and_name']['channel_id']), None)
     if channel == None:
         raise InputError("Invalid Channel Id")
 
@@ -223,7 +224,7 @@ Return Value:
     member_list.append(auth_user_id)
 
     #update user
-    user['channels'].append({'channel_id': channel['channel_id_and_name']['id'], 'name': channel['channel_id_and_name']['name']})
+    user['channels'].append({'channel_id': channel['channel_id_and_name']['channel_id'], 'name': channel['channel_id_and_name']['name']})
     data_store.set(storage)
 
     return {

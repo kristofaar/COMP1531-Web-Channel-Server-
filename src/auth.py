@@ -4,10 +4,25 @@ from src.error import InputError
 import re
 
 
+
 def auth_login_v1(email, password):
+    '''Given a correct email and associated password returns the user's id.
+
+    Arguments:
+        email (String)       - The user's email, must be unique.
+        password (String)    - Password must be greater or equal to 6 characters long.
+
+    Exceptions:
+        InputError  - Occurs when: 
+            -email entered does not belong to a user
+            -password is not correct
+    Return Value:
+        Returns auth_user_id always.
+    '''
+
     storage = data_store.get()
 
-    #sentinel variable I don't know how to do better
+    #sentinel variable 
     email_exists = False
     u_id = 0
 
@@ -28,7 +43,30 @@ def auth_login_v1(email, password):
         'auth_user_id': u_id,
     }
 
+
+
 def auth_register_v1(email, password, name_first, name_last):
+    '''Registers a user storing their email, password, name_first, name_last. Creates a unique id and handle which is also stored.
+    That user can now interact with with other functions.
+
+    Arguments:
+        email (String)         - The user's email, must be unique.
+        password (String)      - Password must be greater or equal to 6 characters long.
+        name_first (String)    - Must be between 1 and 50 characters.
+        name_last (String)     - Must be between 1 and 50 characters.   
+
+    Exceptions:
+        InputError  - Occurs when: 
+            -email entered is not a valid email
+            -email address is already being used by another user
+            -length of password is less than 6 characters
+            -length of name_first is not between 1 and 50 characters inclusive
+            -length of name_last is not between 1 and 50 characters inclusive
+
+    Return Value:
+        Returns auth_user_id always.
+    '''
+    
     storage = data_store.get()
 
     #using regular expressions to check if email is valid
@@ -53,7 +91,7 @@ def auth_register_v1(email, password, name_first, name_last):
 
     #handle creation
     #regular expression to get rid of all non alphanumeric characters
-    handle = re.sub(r'\W+', '', name_first).lower() + re.sub(r'\W+', '', name_last).lower()
+    handle = re.sub(r'[^a-zA-Z0-9]', '', name_first).lower() + re.sub(r'[^a-zA-Z0-9]', '', name_last).lower()
     handle = handle[:20]
     #-1 would be the case where there are no numbers at the end of the handle
     num_of_same_handle = -1

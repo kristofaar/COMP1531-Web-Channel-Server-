@@ -56,6 +56,7 @@ def test_channel_details_check_members(one_user_made_two_channels):
     assert one_user_made_two_channels['first']['all_members'] == [{'email': 'anemail@email.com',  'handle_str': 'namename',  'name_first': 'Name', 'name_last': 'Name',  'u_id': one_user_made_two_channels['u_id']}]
     assert one_user_made_two_channels['second']['all_members'] == [{'email': 'anemail@email.com', 'handle_str': 'namename',  'name_first': 'Name',  'name_last': 'Name', 'u_id': one_user_made_two_channels['u_id']}]
 
+
 def test_channel_details_invalid_channel_id(one_user_made_two_channels):
     for i in range(3):
         if i != one_user_made_two_channels['ch_id1'] and i != one_user_made_two_channels['ch_id2']:
@@ -113,6 +114,7 @@ def test_channel_join_new_member_joins_private_channel(one_user_made_two_channel
 
 # testing channel_invite_v1
 
+
 def test_channel_invite_member(one_user_made_two_channels):
     u_id2 = auth_register_v1('notanemail@email.com', 'verycoolpassword', 'Second', 'User')['auth_user_id']
     channel_invite_v1(one_user_made_two_channels['u_id'], one_user_made_two_channels['ch_id1'], u_id2) # invite second user to channel 1
@@ -150,6 +152,7 @@ def test_channel_invite_not_a_member(one_user_made_two_channels):
 
 
 # testing channel_messages
+
 
 def test_channel_messages_invalid_channel_id():
     clear_v1()
