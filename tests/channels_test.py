@@ -82,7 +82,6 @@ def test_channels_list(made_one_user):
     channel_list = channels_list_v1(made_one_user['u_id'])
     assert channel_list['channels'] == [{'channel_id': 1, 'name': 'coolname'}]
 
-
 def test_mutliple_channels_list(made_one_user):
     channel_return1 = channels_create_v1(made_one_user['u_id'], 'coolname', True)
     channel_return2 = channels_create_v1(made_one_user['u_id'], 'coolname2', True)
@@ -105,14 +104,12 @@ def test_channels_listall(made_one_user):
     channel_list = channels_listall_v1(made_one_user['u_id'])
     assert channel_list['channels'] == [{'channel_id': 1, 'name': 'coolname'}]
 
-
 def test_mutliple_channels_listall(made_one_user):
     channel_return1 = channels_create_v1(made_one_user['u_id'], 'coolname', True)
     channel_return2 = channels_create_v1(made_one_user['u_id'], 'coolname2', True)
 
     channel_list = channels_listall_v1(made_one_user['u_id'])
     assert channel_list['channels'] == [{'channel_id': 1, 'name': 'coolname'}, {'channel_id': 2, 'name': 'coolname2'}]
-
 
 def test_mutliple_users_listall(made_one_user):
     channel_return1 = channels_create_v1(made_one_user['u_id'], 'coolname', True)
