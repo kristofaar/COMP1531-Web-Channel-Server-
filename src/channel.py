@@ -44,7 +44,7 @@ def channel_invite_v1(auth_user_id, channel_id, u_id):
     ch['members'].append(u_id)
 
     #update user
-    add_user['channels'].append({'id': ch['channel_id_and_name']['id'], 'name': ch['channel_id_and_name']['name']})
+    add_user['channels_id'].append({'id': ch['channel_id_and_name']['id'], 'name': ch['channel_id_and_name']['name']})
     data_store.set(storage)
 
 '''
@@ -199,7 +199,7 @@ def channel_join_v1(auth_user_id, channel_id):
     member_list.append(auth_user_id)
 
     #update user
-    user['channels'].append({'id': channel['channel_id_and_name']['id'], 'name': channel['channel_id_and_name']['name']})
+    user['channels_id'].append({'id': channel['channel_id_and_name']['id'], 'name': channel['channel_id_and_name']['name']})
     data_store.set(storage)
 
     return {
