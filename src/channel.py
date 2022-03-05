@@ -55,6 +55,8 @@ Exceptions:
     #update user
     add_user['channels'].append({'channel_id': ch['channel_id_and_name']['channel_id'], 'name': ch['channel_id_and_name']['name']})
     data_store.set(storage)
+    return {
+    }
 
 
 def channel_details_v1(auth_user_id, channel_id):
@@ -115,12 +117,12 @@ Return Value:
 def channel_messages_v1(auth_user_id, channel_id, start):
 
     '''
-<Returns information on up to 50 messages within the channel>
+Returns information on up to 50 messages within the channel
 
 Arguments:
-    <auth_user_id> (<Integer>)    - <User who is trying to access the messages>
-    <channel_id> (<Integer>)    - <Id of channel that the messages are being outputted from>
-    <start> (<Integer>)    - <Which index of messages to start outputting
+    auth_user_id (Integer)    - User who is trying to access the messages
+    channel_id (Integer)      - Id of channel that the messages are being outputted from
+    start (Integer)           - Which index of messages to start outputting
 
 Exceptions:
     InputError  - Occurs when:
@@ -131,7 +133,7 @@ Exceptions:
         - auth_user_id is not a valid id in the system
 
 Return Value:
-    Returns <{messages, start, end}> always, where end is the index of the final message, -1 if up to date.
+    Returns {messages, start, end} always, where end is the index of the final message, -1 if up to date.
 '''
 
     storage = data_store.get()
@@ -180,20 +182,23 @@ Return Value:
 
 def channel_join_v1(auth_user_id, channel_id):
 
-    '''<Brief description of what the function does>
+    '''User with id auth_user_id is added into channel with id channel_id if public
 
 Arguments:
-    <name> (<data type>)    - <description>
-    <name> (<data type>)    - <description>
+    auth_user_id (int)    - id of the user
+    channel_id (int)      - id of the channel
     ...
 
 Exceptions:
-    InputError  - Occurs when ...
-    AccessError - Occurs when ...
+    InputError  - Occurs when:
+        - channel_id does not refer to a valid channel
+        - the authorised user is already a member of the channel
+
+    AccessError - Occurs when:
+        - channel_id refers to a channel that is private and the authorised user is not already a channel member and is not a global owner
 
 Return Value:
-    Returns <return value> on <condition>
-    Returns <return value> on <condition>
+    Returns {} always
 '''
 
     #staging variables
