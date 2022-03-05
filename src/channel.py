@@ -23,11 +23,20 @@ def channel_invite_v1(auth_user_id, channel_id, u_id):
     channels = storage['channels']
     users = storage['users']
 
+    # Check auth_user_id is registered 
+    check_auth_user_id = next((user for user in users if auth_user_id == user['id']), None)
+    if check_auth_user_id == None:
+        raise AccessError("Invalid User (Channel Inviter)")
+
     #search through channels by id until id is matched
     ch = next((channel for channel in channels if channel_id == channel['channel_id_and_name']['id']), None)
     if ch == None:
         raise InputError("Invalid Channel Id")
     
+    #Check auth_user_id is a member 
+    if auth_user_id not in ch['members']:
+        raise AccessError("Authorised user not in channel")
+
     #search through users until u_id is matched
     add_user = next((user for user in users if u_id == user['id']), None)
     if add_user == None:
@@ -37,9 +46,6 @@ def channel_invite_v1(auth_user_id, channel_id, u_id):
     if u_id in ch['members']:
         raise InputError("User already in channel")
     
-    if auth_user_id not in ch['members']:
-        raise AccessError("Authorised user not in channel")
-
     #add user to channel
     ch['members'].append(u_id)
 
