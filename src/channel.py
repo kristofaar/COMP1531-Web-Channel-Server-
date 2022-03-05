@@ -179,7 +179,7 @@ def channel_join_v1(auth_user_id, channel_id):
     # check auth_user_id is valid user 
     user = next((user for user in users if user['id'] == auth_user_id), None)
     if user == None: # User not found
-        raise InputError('Unregistered user id')
+        raise AccessError('Unregistered user id')
 
     # check channel is valid 
     channel = next((channel for channel in channels if channel_id == channel['channel_id_and_name']['id']), None)
@@ -188,10 +188,11 @@ def channel_join_v1(auth_user_id, channel_id):
 
     # check if already a member 
     member = next((member for member in channel['members'] if auth_user_id == member), None)
-    if member != None:  # Existing member 
-        raise InputError('User already a channel member')
-    elif channel['is_public'] == False:  # New member but private channel
+    if channel['is_public'] == False and member == None:  # New member but private channel
         raise AccessError('Channel is private and user is not a member')
+    elif member != None:  # Existing member 
+        raise InputError('User already a channel member')
+        
     
     # If conditions met, add new member to channel
     member_list = channel['members']
