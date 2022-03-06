@@ -121,3 +121,7 @@ def test_mutliple_users_listall(made_one_user):
 
     channel_list = channels_listall_v1(made_one_user['u_id'])
     assert channel_list['channels'] == [{'channel_id': channel_return1, 'name': 'coolname'}, {'channel_id': channel_return2, 'name': 'coolname2'}]
+
+def test_listall(made_one_user):
+    channel_list = channels_listall_v1(made_one_user['u_id'])
+    assert channel_list['channels'] == []
