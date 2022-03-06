@@ -90,7 +90,6 @@ def channels_create_v1(auth_user_id, name, is_public):
     storage = data_store.get()
     users = storage['users']
     channels = storage['channels']
-    ch_id = 0
     if auth_user_id == None:
         raise InputError("User Id Entered Is Null")
     if name == None:
@@ -107,9 +106,10 @@ def channels_create_v1(auth_user_id, name, is_public):
     if 1 > len(name):
         raise InputError("Channel Name Is Too Short")
     
-
-    #generate channel id based on its position in the list
-    ch_id = len(channels) + 1
+    #id creation is based off the last channel's id
+    ch_id = 1
+    if len(storage['channels']):
+        ch_id = storage['channels'][len(storage['channels']) - 1]['channel_id_and_name']['channel_id'] + 1
 
     #updating the data store
     channels.append({'channel_id_and_name' :{'channel_id' : ch_id, 'name' : name}, 'is_public' : is_public, 

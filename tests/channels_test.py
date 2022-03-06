@@ -64,58 +64,60 @@ def test_chanel_listall_empty_id():
         channels_listall_v1(None)
 #Working tests
 def test_register_and_create_channel(made_one_user):
-    channel_return = channels_create_v1(made_one_user['u_id'], 'coolname', True)
-
-    assert channel_return['channel_id'] == 1
+    channel_return = channels_create_v1(made_one_user['u_id'], 'coolname', True)['channel_id']
+    channel_list = channels_list_v1(made_one_user['u_id'])['channels']
+    assert channel_return == channel_list[0]['channel_id']
 
 def test_register_and_create_multiple_channels(made_one_user):
     u_id2 = auth_register_v1('random@email.com', 'verycoolpassword', 'Name', 'Name')['auth_user_id'] # second user
 
-    channel_return1 = channels_create_v1(made_one_user['u_id'], 'coolname', True) 
-    channel_return2 = channels_create_v1(u_id2, 'coolname2', True)
+    channel_return1 = channels_create_v1(made_one_user['u_id'], 'coolname', True)['channel_id']
+    channel_return2 = channels_create_v1(u_id2, 'coolname2', True)['channel_id']
+    channel_list1 = channels_list_v1(made_one_user['u_id'])['channels']
+    channel_list2 = channels_list_v1(u_id2)['channels']
 
-    assert channel_return1['channel_id'] == 1 and channel_return2['channel_id'] == 2
+    assert channel_return1 == channel_list1[0]['channel_id'] and channel_return2 == channel_list2[0]['channel_id']
 
 def test_channels_list(made_one_user):
-    channel_return1 = channels_create_v1(made_one_user['u_id'], 'coolname', True)
+    channel_return1 = channels_create_v1(made_one_user['u_id'], 'coolname', True)['channel_id']
 
     channel_list = channels_list_v1(made_one_user['u_id'])
-    assert channel_list['channels'] == [{'channel_id': 1, 'name': 'coolname'}]
+    assert channel_list['channels'] == [{'channel_id': channel_return1, 'name': 'coolname'}]
 
 def test_mutliple_channels_list(made_one_user):
-    channel_return1 = channels_create_v1(made_one_user['u_id'], 'coolname', True)
-    channel_return2 = channels_create_v1(made_one_user['u_id'], 'coolname2', True)
+    channel_return1 = channels_create_v1(made_one_user['u_id'], 'coolname', True)['channel_id']
+    channel_return2 = channels_create_v1(made_one_user['u_id'], 'coolname2', True)['channel_id']
 
     channel_list = channels_list_v1(made_one_user['u_id'])
-    assert channel_list['channels'] == [{'channel_id': 1, 'name': 'coolname'}, {'channel_id': 2, 'name': 'coolname2'}]
+    assert channel_list['channels'] == [{'channel_id': channel_return1, 'name': 'coolname'}, {'channel_id': channel_return2, 'name': 'coolname2'}]
 
 def test_mutliple_users_list(made_one_user):
     u_id2 = auth_register_v1('random@email.com', 'verycoolpassword', 'Name', 'Name')['auth_user_id']
 
-    channel_return1 = channels_create_v1(made_one_user['u_id'], 'coolname', True) 
-    channel_return2 = channels_create_v1(u_id2, 'coolname2', True)
+    channel_return1 = channels_create_v1(made_one_user['u_id'], 'coolname', True)['channel_id'] 
+    channel_return2 = channels_create_v1(u_id2, 'coolname2', True)['channel_id']
 
     channel_list = channels_list_v1(made_one_user['u_id'])
-    assert channel_list['channels'] == [{'channel_id': 1, 'name': 'coolname'}]
+    assert channel_list['channels'] == [{'channel_id': channel_return1, 'name': 'coolname'}]
 
 def test_channels_listall(made_one_user):
-    channel_return1 = channels_create_v1(made_one_user['u_id'], 'coolname', True)
+    channel_return1 = channels_create_v1(made_one_user['u_id'], 'coolname', True)['channel_id']
 
     channel_list = channels_listall_v1(made_one_user['u_id'])
-    assert channel_list['channels'] == [{'channel_id': 1, 'name': 'coolname'}]
+    assert channel_list['channels'] == [{'channel_id': channel_return1, 'name': 'coolname'}]
 
 def test_mutliple_channels_listall(made_one_user):
-    channel_return1 = channels_create_v1(made_one_user['u_id'], 'coolname', True)
-    channel_return2 = channels_create_v1(made_one_user['u_id'], 'coolname2', True)
+    channel_return1 = channels_create_v1(made_one_user['u_id'], 'coolname', True)['channel_id']
+    channel_return2 = channels_create_v1(made_one_user['u_id'], 'coolname2', True)['channel_id']
 
     channel_list = channels_listall_v1(made_one_user['u_id'])
-    assert channel_list['channels'] == [{'channel_id': 1, 'name': 'coolname'}, {'channel_id': 2, 'name': 'coolname2'}]
+    assert channel_list['channels'] == [{'channel_id': channel_return1, 'name': 'coolname'}, {'channel_id': channel_return2, 'name': 'coolname2'}]
 
 def test_mutliple_users_listall(made_one_user):
-    channel_return1 = channels_create_v1(made_one_user['u_id'], 'coolname', True)
+    channel_return1 = channels_create_v1(made_one_user['u_id'], 'coolname', True)['channel_id']
 
     u_id2 = auth_register_v1('random@email.com', 'verycoolpassword', 'Name', 'Name')['auth_user_id'] 
-    channel_return2 = channels_create_v1(u_id2, 'coolname2', True)
+    channel_return2 = channels_create_v1(u_id2, 'coolname2', True)['channel_id']
 
     channel_list = channels_listall_v1(made_one_user['u_id'])
-    assert channel_list['channels'] == [{'channel_id': 1, 'name': 'coolname'}, {'channel_id': 2, 'name': 'coolname2'}]
+    assert channel_list['channels'] == [{'channel_id': channel_return1, 'name': 'coolname'}, {'channel_id': channel_return2, 'name': 'coolname2'}]
