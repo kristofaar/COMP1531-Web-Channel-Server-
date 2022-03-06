@@ -5,120 +5,119 @@ from src.channels import channels_create_v1,channels_listall_v1,channels_list_v1
 from src.error import InputError
 from src.error import AccessError
 from src.other import clear_v1
-from src.data_store import data_store
-#Error tests
-def test_channel_create_empty_id():
+
+@pytest.fixture
+
+def made_one_user():
     clear_v1()
+    u_id = auth_register_v1('anemail@email.com', 'verycoolpassword', 'Name', 'Name')['auth_user_id']
+    # ch_id1 = channels_create_v1(u_id, 'public', True)['channel_id'] , 'ch_id1': ch_id1
+    return {'u_id': u_id}
+
+#Error tests
+def test_channel_create_empty_id(made_one_user):
     with pytest.raises(InputError):
         channels_create_v1(None,"name",True)
 
-def test_channel_create_none_name():
-    clear_v1()
+def test_channel_create_none_name(made_one_user):
     with pytest.raises(InputError):
-        channels_create_v1(1,None,True)
+        channels_create_v1(made_one_user['u_id'],None,True)
 
-def test_channel_create_empty_is_public():
-    clear_v1()
+def test_channel_create_empty_is_public(made_one_user):
     with pytest.raises(InputError):
-        channels_create_v1(1,'name',None) 
+        channels_create_v1(made_one_user['u_id'],'name',None) 
 
-def test_channel_create_empty_all():
-    clear_v1()
+def test_channel_create_empty_all(made_one_user):
     with pytest.raises(InputError):
         channels_create_v1(None,None,None)
 
-def test_channel_create_invalid_user_id():
-    clear_v1()
+def test_channel_create_invalid_user_id(made_one_user):
     with pytest.raises(AccessError):
-        channels_create_v1(0, "name", True)
+        channels_create_v1(made_one_user['u_id'] + 1, "name", True)
 
-def test_channel_create_channel_name_too_long():
-    clear_v1()
+def test_channel_create_channel_name_too_long(made_one_user):
     with pytest.raises(InputError):
-        channels_create_v1(1, "thelengthofthisnameisover20characters", True)
+        channels_create_v1(made_one_user['u_id'], "thelengthofthisnameisover20characters", True)
 
-def test_channel_create_channel_name_too_short():
-    clear_v1()
+def test_channel_create_channel_name_too_short(made_one_user):
     with pytest.raises(InputError):
-        channels_create_v1(1, "", True)
+        channels_create_v1(made_one_user['u_id'], "", True)
 
 def test_channel_list_invalid_user():
     clear_v1()
     with pytest.raises(AccessError):
         channels_list_v1(1)
+
+def test_chanel_list_empty_id():
+    clear_v1()
+    with pytest.raises(InputError):
+        channels_list_v1(None)
+
+def test_channel_listall_invalid_user():
+    clear_v1()
+    with pytest.raises(AccessError):
+        channels_listall_v1(1)
+
+def test_chanel_listall_empty_id():
+    clear_v1()
+    with pytest.raises(InputError):
+        channels_listall_v1(None)
 #Working tests
-def test_register_and_create_channel():
-    clear_v1()
-    auth_register_v1('anemail@email.com', 'verycoolpassword', 'Name', 'Name')
+def test_register_and_create_channel(made_one_user):
+    channel_return = channels_create_v1(made_one_user['u_id'], 'coolname', True)['channel_id']
+    channel_list = channels_list_v1(made_one_user['u_id'])['channels']
+    assert channel_return == channel_list[0]['channel_id']
 
-    channel_return = channels_create_v1(1, 'coolname', True)
+def test_register_and_create_multiple_channels(made_one_user):
+    u_id2 = auth_register_v1('random@email.com', 'verycoolpassword', 'Name', 'Name')['auth_user_id'] # second user
 
-    assert channel_return == {'channel_id' : 1}
+    channel_return1 = channels_create_v1(made_one_user['u_id'], 'coolname', True)['channel_id']
+    channel_return2 = channels_create_v1(u_id2, 'coolname2', True)['channel_id']
+    channel_list1 = channels_list_v1(made_one_user['u_id'])['channels']
+    channel_list2 = channels_list_v1(u_id2)['channels']
 
-def test_register_and_create_multiple_channels():
-    clear_v1()
-    auth_register_v1('anemail@email.com', 'verycoolpassword', 'Name', 'Name')
-    auth_register_v1('random@email.com', 'verycoolpassword', 'Name', 'Name')
+    assert channel_return1 == channel_list1[0]['channel_id'] and channel_return2 == channel_list2[0]['channel_id']
 
-    channel_return1 = channels_create_v1(1, 'coolname', True) 
-    channel_return2 = channels_create_v1(2, 'coolname2', True)
+def test_channels_list(made_one_user):
+    channel_return1 = channels_create_v1(made_one_user['u_id'], 'coolname', True)['channel_id']
 
-    assert channel_return1 == {'channel_id' : 1} and channel_return2 == {'channel_id' : 2}
+    channel_list = channels_list_v1(made_one_user['u_id'])
+    assert channel_list['channels'] == [{'channel_id': channel_return1, 'name': 'coolname'}]
 
-def test_channels_list():
-    clear_v1()
-    auth_register_v1('anemail@email.com', 'verycoolpassword', 'Name', 'Name')
+def test_mutliple_channels_list(made_one_user):
+    channel_return1 = channels_create_v1(made_one_user['u_id'], 'coolname', True)['channel_id']
+    channel_return2 = channels_create_v1(made_one_user['u_id'], 'coolname2', True)['channel_id']
 
-    channel_return1 = channels_create_v1(1, 'coolname', True)
+    channel_list = channels_list_v1(made_one_user['u_id'])
+    assert channel_list['channels'] == [{'channel_id': channel_return1, 'name': 'coolname'}, {'channel_id': channel_return2, 'name': 'coolname2'}]
 
-    channel_list = channels_list_v1(1)
-    assert channel_list == {'channels': [{'channel_id': 1, 'name': 'coolname'}]}
+def test_mutliple_users_list(made_one_user):
+    u_id2 = auth_register_v1('random@email.com', 'verycoolpassword', 'Name', 'Name')['auth_user_id']
 
-def test_mutliple_channels_list():
-    clear_v1()
-    auth_register_v1('anemail@email.com', 'verycoolpassword', 'Name', 'Name')
+    channel_return1 = channels_create_v1(made_one_user['u_id'], 'coolname', True)['channel_id'] 
+    channel_return2 = channels_create_v1(u_id2, 'coolname2', True)['channel_id']
 
-    channel_return1 = channels_create_v1(1, 'coolname', True)
-    channel_return2 = channels_create_v1(1, 'coolname2', True)
+    channel_list = channels_list_v1(made_one_user['u_id'])
+    assert channel_list['channels'] == [{'channel_id': channel_return1, 'name': 'coolname'}]
 
-    channel_list = channels_list_v1(1)
-    assert channel_list == {'channels': [{'channel_id': 1, 'name': 'coolname'}, {'channel_id': 2, 'name': 'coolname2'}]}
+def test_channels_listall(made_one_user):
+    channel_return1 = channels_create_v1(made_one_user['u_id'], 'coolname', True)['channel_id']
 
-def test_mutliple_users_list():
-    clear_v1()
-    auth_register_v1('anemail@email.com', 'verycoolpassword', 'Name', 'Name')
-    auth_register_v1('random@email.com', 'verycoolpassword', 'Name', 'Name')
+    channel_list = channels_listall_v1(made_one_user['u_id'])
+    assert channel_list['channels'] == [{'channel_id': channel_return1, 'name': 'coolname'}]
 
-    channel_return1 = channels_create_v1(1, 'coolname', True) 
-    channel_return2 = channels_create_v1(2, 'coolname2', True)
+def test_mutliple_channels_listall(made_one_user):
+    channel_return1 = channels_create_v1(made_one_user['u_id'], 'coolname', True)['channel_id']
+    channel_return2 = channels_create_v1(made_one_user['u_id'], 'coolname2', True)['channel_id']
 
-    channel_list = channels_list_v1(1)
-    assert channel_list == {'channels': [{'channel_id': 1, 'name': 'coolname'}]}
+    channel_list = channels_listall_v1(made_one_user['u_id'])
+    assert channel_list['channels'] == [{'channel_id': channel_return1, 'name': 'coolname'}, {'channel_id': channel_return2, 'name': 'coolname2'}]
 
-def test_channels_listall():
-    clear_v1()
-    auth_register_v1('anemail@email.com', 'verycoolpassword', 'Name', 'Name')
-    channel_return1 = channels_create_v1(1, 'coolname', True)
+def test_mutliple_users_listall(made_one_user):
+    channel_return1 = channels_create_v1(made_one_user['u_id'], 'coolname', True)['channel_id']
 
-    channel_list = channels_listall_v1(1)
-    assert channel_list == {'channels': [{'channel_id': 1, 'name': 'coolname'}]}
+    u_id2 = auth_register_v1('random@email.com', 'verycoolpassword', 'Name', 'Name')['auth_user_id'] 
+    channel_return2 = channels_create_v1(u_id2, 'coolname2', True)['channel_id']
 
-def test_mutliple_channels_listall():
-    clear_v1()
-    auth_register_v1('anemail@email.com', 'verycoolpassword', 'Name', 'Name')
-    channel_return1 = channels_create_v1(1, 'coolname', True)
-    channel_return2 = channels_create_v1(1, 'coolname2', True)
-
-    channel_list = channels_listall_v1(1)
-    assert channel_list == {'channels': [{'channel_id': 1, 'name': 'coolname'}, {'channel_id': 2, 'name': 'coolname2'}]}
-
-def test_mutliple_users_listall():
-    clear_v1()
-    auth_register_v1('anemail@email.com', 'verycoolpassword', 'Name', 'Name')
-    channel_return1 = channels_create_v1(1, 'coolname', True)
-
-    auth_register_v1('random@email.com', 'verycoolpassword', 'Name', 'Name') 
-    channel_return2 = channels_create_v1(2, 'coolname2', True)
-
-    channel_list = channels_listall_v1(1)
-    assert channel_list == {'channels': [{'channel_id': 1, 'name': 'coolname'}, {'channel_id': 2, 'name': 'coolname2'}]}
+    channel_list = channels_listall_v1(made_one_user['u_id'])
+    assert channel_list['channels'] == [{'channel_id': channel_return1, 'name': 'coolname'}, {'channel_id': channel_return2, 'name': 'coolname2'}]
