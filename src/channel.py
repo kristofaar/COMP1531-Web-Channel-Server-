@@ -147,6 +147,7 @@ Return Value:
     if not id_exists:
         raise AccessError("ID does not exist")
 
+    #getting channel
     channel_exists = False
     temp_channel = {}
     for channel in storage['channels']:
@@ -154,6 +155,7 @@ Return Value:
             channel_exists = True
             temp_channel = channel
 
+    #errors
     if not channel_exists:
         raise InputError("Channel ID does not exist")
     
@@ -165,9 +167,10 @@ Return Value:
     if not id_exists:
         raise AccessError("Unauthorised ID")
     
-    if start + 1 > len(temp_channel['messages']) and start != 0:
+    if start > len(temp_channel['messages']):
         raise InputError("Start index is greater than number of messages")
     
+    #storing 50 messages into ret_messages
     ret_messages = []
     for i in range(start, start + 50 if start + 50 < len(temp_channel['messages']) else len(temp_channel['messages'])):
         ret_messages.append(temp_channel['messages'][i])
