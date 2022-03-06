@@ -125,3 +125,13 @@ def test_mutliple_users_listall(made_one_user):
 def test_listall(made_one_user):
     channel_list = channels_listall_v1(made_one_user['u_id'])
     assert channel_list['channels'] == []
+
+def test_clear_v1_channels(made_one_user):
+    channel_return = channels_create_v1(made_one_user['u_id'], 'coolname', True)['channel_id']
+    channel_list = channels_list_v1(made_one_user['u_id'])['channels']
+
+    clear_v1()
+    u_id = auth_register_v1('anemail@email.com', 'verycoolpassword', 'Name', 'Name')['auth_user_id']
+    channel_return = channels_create_v1(made_one_user['u_id'], 'coolname', True)['channel_id']
+    channel_list = channels_list_v1(made_one_user['u_id'])['channels']
+    assert channel_return == channel_list[0]['channel_id']
