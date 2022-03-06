@@ -191,6 +191,13 @@ def test_channel_messages_invalid_user():
     with pytest.raises(AccessError):
         channel_messages_v1(u_id + 1, ch_id, 0)
 
+def test_channel_messages_invalid_start():
+    clear_v1()
+    u_id = auth_register_v1('anemail@email.com', 'verycoolpassword', 'Name', 'Name')['auth_user_id']
+    ch_id = channels_create_v1(u_id, 'channelName', True)['channel_id']
+    with pytest.raises(InputError):
+        channel_messages_v1(u_id, ch_id, 3)
+
 def test_channel_messages_double_error1():
     clear_v1()
     u_id = auth_register_v1('anemail@email.com', 'verycoolpassword', 'Name', 'Name')['auth_user_id']
