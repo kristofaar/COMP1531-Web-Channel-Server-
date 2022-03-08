@@ -97,8 +97,9 @@ def auth_register_v1(email, password, name_first, name_last):
     num_of_same_handle = -1
     while num_of_same_handle + 1 < len(storage['users']):
         same_handle = False
+        temp_handle = handle if num_of_same_handle == -1 else handle + str(num_of_same_handle)
         for user in storage['users']:
-            if user['handle'] == handle or user['handle'] == handle + str(num_of_same_handle):
+            if user['handle'] == temp_handle:
                 same_handle = True
                 num_of_same_handle += 1
         if not same_handle:
