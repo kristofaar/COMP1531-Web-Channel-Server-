@@ -191,7 +191,7 @@ def channel_join_v1(auth_user_id, channel_id):
     member = next((member for member in channel['members'] if auth_user_id == member), None)
     if member != None:  # Existing member 
         raise InputError('User already a channel member')
-    elif channel['is_public'] == False:  # New member but private channel
+    elif channel['is_public'] == False and not member['global_owner']:  # New member but private channel
         raise AccessError('Channel is private and user is not a member')
     
     # If conditions met, add new member to channel

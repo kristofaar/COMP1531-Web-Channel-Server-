@@ -113,8 +113,13 @@ def auth_register_v1(email, password, name_first, name_last):
     new_id = 1
     if len(storage['users']):
         new_id = storage['users'][len(storage['users']) - 1]['id'] + 1
+    
+    is_first = False
+    if storage['no_users']:
+        storage['no_users'] = False
+        is_first = True
 
-    storage['users'].append({'id': new_id, 'email': email, 'name_first': name_first, 'name_last': name_last, 'handle': handle, 'channels' : []})
+    storage['users'].append({'id': new_id, 'email': email, 'name_first': name_first, 'name_last': name_last, 'handle': handle, 'channels' : [], 'global_owner': is_first})
     storage['passwords'].append({'id': new_id, 'password': password})
     
 

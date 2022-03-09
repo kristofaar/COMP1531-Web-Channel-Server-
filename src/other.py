@@ -5,4 +5,5 @@ def clear_v1():
     store['users'] = []
     store['passwords'] = []
     store['channels'] = []
+    store['no_users'] = True
     data_store.set(store)
