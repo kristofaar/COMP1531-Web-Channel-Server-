@@ -7,3 +7,5 @@ def clear_v1():
     store['channels'] = []
     store['no_users'] = True
     data_store.set(store)
+    return {
+    }

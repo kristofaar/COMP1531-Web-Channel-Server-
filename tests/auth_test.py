@@ -140,3 +140,20 @@ def test_handle_no_alphanumeric_name_multiple():
     u_id = auth_register_v1('anemail3@email.com', 'verycoolpassword', '$^#^*&', '_!@&)@#')['auth_user_id']
     ch_id = channels_create_v1(u_id, 'hi', True)['channel_id']
     assert channel_details_v1(u_id, ch_id)['all_members'][0]['handle_str'] == '1'
+
+def test_clear_v1_users():
+    clear_v1()
+    register_return = auth_register_v1('anemail@email.com', 'verycoolpassword', 'Name', 'Name') 
+    reg_id1 = register_return['auth_user_id']
+
+    login_return = auth_login_v1('anemail@email.com', 'verycoolpassword')
+    log_id1 = login_return['auth_user_id']
+
+    clear_v1() #test that once we clear the data_store, we can add the same exact user without an error
+    register_return = auth_register_v1('anemail@email.com', 'verycoolpassword', 'Name', 'Name') 
+    reg_id1 = register_return['auth_user_id']
+
+    login_return = auth_login_v1('anemail@email.com', 'verycoolpassword')
+    log_id1 = login_return['auth_user_id']
+
+    assert reg_id1 == log_id1

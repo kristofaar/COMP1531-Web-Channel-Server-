@@ -19,6 +19,10 @@ def channels_list_v1(auth_user_id):
     storage = data_store.get()
     users = storage['users']
     channels = storage['channels']
+
+    if auth_user_id == None:
+        raise InputError("User Id Entered Is Null")
+        
     #iterate through users until a user with the corresponding id is found
     curr_user = next((user for user in users if auth_user_id == user['id']), None)
     #if no user has the given id raise an error
@@ -28,7 +32,6 @@ def channels_list_v1(auth_user_id):
     return {
         'channels': curr_user['channels']
     }
-
 
 
 def channels_listall_v1(auth_user_id):
@@ -46,14 +49,25 @@ def channels_listall_v1(auth_user_id):
     '''
     channel_list = []
     storage = data_store.get()
+    users = storage['users']
     channels = storage['channels']
+
+    if auth_user_id == None:
+        raise InputError("User Id Entered Is Null")
+
+    #iterate through users until a user with the corresponding id is found
+    curr_user = next((user for user in users if auth_user_id == user['id']), None)
+
+    #if no user has the given id raise an error
+    if curr_user == None:
+        raise AccessError("Invalid User Id ")
+    
     #add all the channels that have been created to a list 
     for channel in storage['channels']:
         channel_list.append(channel['channel_id_and_name'])
     return {
         'channels': channel_list
     }
-
 
 def channels_create_v1(auth_user_id, name, is_public):
     '''
@@ -76,7 +90,6 @@ def channels_create_v1(auth_user_id, name, is_public):
     storage = data_store.get()
     users = storage['users']
     channels = storage['channels']
-    ch_id = 0
     if auth_user_id == None:
         raise InputError("User Id Entered Is Null")
     if name == None:
@@ -85,16 +98,18 @@ def channels_create_v1(auth_user_id, name, is_public):
         raise InputError("Public Status Entered Is Null")
     #look through users to see if the given id matches any of their ids
     curr_user = next((user for user in users if auth_user_id == user['id']), None)
+    #if the given id is not found in users then spit out error message
+    if curr_user == None:
+        raise AccessError("Invalid User Id ")
     if 20 < len(name):
         raise InputError("Channel Name Is Too Long")
     if 1 > len(name):
         raise InputError("Channel Name Is Too Short")
-    #if the given id is not found in users then spit out error message
-    if curr_user == None:
-        raise AccessError("Invalid User Id ")
-
-    #generate channel id based on its position in the list
-    ch_id = len(channels) + 1
+    
+    #id creation is based off the last channel's id
+    ch_id = 1
+    if len(storage['channels']):
+        ch_id = storage['channels'][len(storage['channels']) - 1]['channel_id_and_name']['channel_id'] + 1
 
     #updating the data store
     channels.append({'channel_id_and_name' :{'channel_id' : ch_id, 'name' : name}, 'is_public' : is_public, 

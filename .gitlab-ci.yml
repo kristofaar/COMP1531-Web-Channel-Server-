@@ -4,7 +4,7 @@
 # If you feel for some reason this file MUST be changed, please post on the course forum so it can
 # be discussed between you and course staff.
 #
-image: comp1531/basic:20T3
+image: comp1531/basic:latest
 
 stages:
   - checks
@@ -12,4 +12,21 @@ stages:
 pytest:
   stage: checks
   script:
-    - pytest
+    - SERVER_LOG=$(mktemp)
+    - coverage run -m src.server >& $SERVER_LOG &
+    - pytest tests/
+    - kill -SIGINT %1
+    - cat $SERVER_LOG
+    - coverage report
+    - coverage html
+  coverage: '/TOTAL.*\s+(\d+%)$/'
+  artifacts:
+    paths:
+      - htmlcov/
+    expose_as: Coverage Report
+    expire_in: 1 week
+
+pylint:
+  stage: checks
+  script:
+    - find . -type f -name "*.py" | egrep -v ".git/*" | xargs pylint
