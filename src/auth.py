@@ -26,7 +26,7 @@ def auth_login_v1(email, password):
     email_exists = False
     u_id = 0
 
-    for i, user in enumerate(storage['users']):
+    for user in storage['users']:
         if user['email'] == email:
             email_exists = True
             u_id = user['id']
@@ -40,6 +40,7 @@ def auth_login_v1(email, password):
             raise InputError('Password does not match')
 
     return {
+        'token': u_id,
         'auth_user_id': u_id,
     }
 
@@ -125,5 +126,6 @@ def auth_register_v1(email, password, name_first, name_last):
 
     data_store.set(storage)
     return {
+        'token': new_id,
         'auth_user_id': new_id,
     }
