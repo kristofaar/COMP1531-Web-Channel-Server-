@@ -141,7 +141,7 @@ Return Value:
     #errors
     id_exists = False
     for user in storage['users']:
-        if user['id'] == auth_user_id:
+        if user['id'] == int(auth_user_id):
             id_exists = True
     
     if not id_exists:
