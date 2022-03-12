@@ -46,6 +46,7 @@
 ## 0. Change log:
 
 * 09/03 - Changed auth_user_id to token in 6.3 and some other areas
+* 12/03 - Removed a sentence that doesn't make sense until iteration 3
 
 ## 1. Aims:
 
@@ -609,7 +610,7 @@ These interface specifications come from Andrea and Andrew, who are building the
     </td>
   </tr>
   <tr>
-    <td><code>message/edit/v1</code><br /><br />Given a message, update its text with new text. If the new message is an empty string, the message is deleted. If a shared/standup message is edited, the entire contents will be edited as if it was a normal message.</td>
+    <td><code>message/edit/v1</code><br /><br />Given a message, update its text with new text. If the new message is an empty string, the message is deleted.</td>
     <td style="font-weight: bold; color: brown;">PUT</td>
     <td><b>Parameters:</b><br /><code>{ token, message_id, message }</code><br /><br /><b>Return Type:</b><br /><code>{}</code></td>
     <td>
