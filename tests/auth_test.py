@@ -112,6 +112,7 @@ def test_handle_less_than_20():   # check name over 20 letters
 
 def test_handle_less_than_20_duplicate():    # check if both handles less than 20, ignore number append (next one tests it)
     clear_v1()
+    auth_register_v1('blah@email.com', 'verycoolpassword', 'a', 'a')
     auth_register_v1('anemail1@email.com', 'verycoolpassword', 'Name#@', 'nAme!@89')
     auth_register_v1('anemail2@email.com', 'verycoolpassword', 'Name', 'nAme!@89')
     u_id = auth_register_v1('anemail3@email.com', 'verycoolpassword', '!@&name', 'nAme!@89')['auth_user_id']

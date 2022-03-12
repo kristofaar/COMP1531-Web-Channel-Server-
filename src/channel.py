@@ -221,7 +221,7 @@ Return Value:
 
     # check if already a member 
     member = next((member for member in channel['members'] if auth_user_id == member), None)
-    if channel['is_public'] == False and member == None:  # New member but private channel
+    if channel['is_public'] == False and member == None and not user['global_owner']:  # New member but private channel
         raise AccessError('Channel is private and user is not a member')
     elif member != None:  # Existing member 
         raise InputError('User already a channel member')

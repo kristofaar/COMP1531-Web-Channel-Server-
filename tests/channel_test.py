@@ -65,7 +65,7 @@ def test_channel_details_invalid_channel_id(one_user_made_two_channels):
 
 def test_channel_details_unauthorised_user(one_user_made_two_channels):     # second user tries accessing first user channels
     u_id2 = auth_register_v1('notanemail@email.com', 'verycoolpassword', 'Second', 'User')['auth_user_id']
-    ch_id3 = channels_create_v1(2, 'third_channel', True)['channel_id']    # second user makes a channel (third one in storage)
+    ch_id3 = channels_create_v1(u_id2, 'third_channel', True)['channel_id']    # second user makes a channel (third one in storage)
     with pytest.raises(AccessError):
         channel_details_v1(u_id2, one_user_made_two_channels['ch_id1'])
     with pytest.raises(AccessError):
@@ -110,7 +110,14 @@ def test_channel_join_new_member_joins_private_channel(one_user_made_two_channel
     u_id2 = auth_register_v1('notanemail@email.com', 'verycoolpassword', 'Second', 'User')['auth_user_id']
     with pytest.raises(AccessError):
         channel_join_v1(u_id2, one_user_made_two_channels['ch_id2'])   # second user tries joining channel 2, which is private
-    
+
+def test_channel_join_global_owner(one_user_made_two_channels):
+    u_id2 = auth_register_v1('notanemail@email.com', 'verycoolpassword', 'Second', 'User')['auth_user_id']
+    ch_id3 = channels_create_v1(u_id2, 'third_channel', True)['channel_id']    # second user makes a channel (third one in storage)
+    channel_join_v1(one_user_made_two_channels['u_id'], ch_id3)
+    assert channel_details_v1(one_user_made_two_channels['u_id'], ch_id3)['all_members'] == [{'email': 'notanemail@email.com',  'handle_str': 'seconduser',  'name_first': 'Second', 'name_last': 'User', 'u_id': u_id2},
+    {'email': 'anemail@email.com',  'handle_str': 'namename',  'name_first': 'Name', 'name_last': 'Name',  'u_id': one_user_made_two_channels['u_id']}]
+    assert channel_details_v1(one_user_made_two_channels['u_id'], ch_id3)['owner_members'] == [{'email': 'notanemail@email.com',  'handle_str': 'seconduser',  'name_first': 'Second', 'name_last': 'User', 'u_id': u_id2}]
 
 # testing channel_invite_v1
 

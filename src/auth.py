@@ -26,7 +26,7 @@ def auth_login_v1(email, password):
     email_exists = False
     u_id = 0
 
-    for i, user in enumerate(storage['users']):
+    for user in storage['users']:
         if user['email'] == email:
             email_exists = True
             u_id = user['id']
@@ -40,6 +40,7 @@ def auth_login_v1(email, password):
             raise InputError('Password does not match')
 
     return {
+        'token': u_id,
         'auth_user_id': u_id,
     }
 
@@ -97,8 +98,9 @@ def auth_register_v1(email, password, name_first, name_last):
     num_of_same_handle = -1
     while num_of_same_handle + 1 < len(storage['users']):
         same_handle = False
+        temp_handle = handle if num_of_same_handle == -1 else handle + str(num_of_same_handle)
         for user in storage['users']:
-            if user['handle'] == handle or user['handle'] == handle + str(num_of_same_handle):
+            if user['handle'] == temp_handle:
                 same_handle = True
                 num_of_same_handle += 1
         if not same_handle:
@@ -112,12 +114,18 @@ def auth_register_v1(email, password, name_first, name_last):
     new_id = 1
     if len(storage['users']):
         new_id = storage['users'][len(storage['users']) - 1]['id'] + 1
+    
+    is_first = False
+    if storage['no_users']:
+        storage['no_users'] = False
+        is_first = True
 
-    storage['users'].append({'id': new_id, 'email': email, 'name_first': name_first, 'name_last': name_last, 'handle': handle, 'channels' : []})
+    storage['users'].append({'id': new_id, 'email': email, 'name_first': name_first, 'name_last': name_last, 'handle': handle, 'channels' : [], 'global_owner': is_first})
     storage['passwords'].append({'id': new_id, 'password': password})
     
 
     data_store.set(storage)
     return {
+        'token': new_id,
         'auth_user_id': new_id,
     }
