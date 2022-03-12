@@ -6,6 +6,8 @@ from flask_cors import CORS
 from src.error import InputError
 from src import config
 from src.auth import auth_login_v1, auth_register_v1
+from src.channel import channel_details_v1, channel_join_v1, channel_invite_v1, channel_messages_v1
+from src.other import clear_v1
 
 def quit_gracefully(*args):
     '''For coverage'''
@@ -43,21 +45,21 @@ def echo():
 @APP.route("/auth/login/v2", methods=['POST'])
 def login():
     data = request.get_json()
-    details = auth_login_v1(data['email'], data['password'])
-    return dumps({
-        'token': details['token'],
-        'auth_user_id': details['auth_user_id']
-    })
+    return dumps(auth_login_v1(data['email'], data['password']))
 
 @APP.route("/auth/register/v2", methods=['POST'])
 def register():
     data = request.get_json()
-    details = auth_register_v1(data['email'], data['password'], data['name_first'], data['name_last'])
-    return dumps({
-        'token': details['token'],
-        'auth_user_id': details['auth_user_id']
-    })
+    return dumps(auth_register_v1(data['email'], data['password'], data['name_first'], data['name_last']))
 
+@APP.route("/channel/messages/v2", methods=['GET'])
+def messages():
+    return dumps(channel_messages_v1(request.args.get('token'), request.args.get('channel_id'), request.args.get('start')))
+    
+@APP.route("clear/v1", methods=['DELETE'])
+def clear():
+    return dumps(clear_v1())
+    
 
 #### NO NEED TO MODIFY BELOW THIS POINT
 
