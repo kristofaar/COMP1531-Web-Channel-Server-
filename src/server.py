@@ -37,7 +37,7 @@ APP.register_error_handler(Exception, defaultHandler)
 def echo():
     data = request.args.get('data')
     if data == 'echo':
-   	    raise InputError(description='Cannot echo "echo"')
+        raise InputError(description='Cannot echo "echo"')
     return dumps({
         'data': data
     })
@@ -55,11 +55,10 @@ def register():
 @APP.route("/channel/messages/v2", methods=['GET'])
 def messages():
     return dumps(channel_messages_v1(request.args.get('token'), request.args.get('channel_id'), request.args.get('start')))
-    
-@APP.route("clear/v1", methods=['DELETE'])
+
+@APP.route("/clear/v1", methods=['DELETE'])
 def clear():
     return dumps(clear_v1())
-    
 
 #### NO NEED TO MODIFY BELOW THIS POINT
 
