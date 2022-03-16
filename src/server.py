@@ -81,6 +81,14 @@ def register():
         'auth_user_id': details['auth_user_id']
     })
 
+@APP.route("/channel/messages/v2", methods=['GET'])
+def messages():
+    return dumps(channel_messages_v1(request.args.get('token'), request.args.get('channel_id'), request.args.get('start')))
+    
+@APP.route("clear/v1", methods=['DELETE'])
+def clear():
+    return dumps(clear_v1())
+    
 
 #### NO NEED TO MODIFY BELOW THIS POINT
 
