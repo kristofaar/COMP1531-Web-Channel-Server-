@@ -1,9 +1,9 @@
 from multiprocessing import dummy
 from src.data_store import data_store
 from src.error import InputError
-import re
+import re, hashlib, jwt
 
-
+SECRET = 'heheHAHA111'
 
 def auth_login_v1(email, password):
     '''Given a correct email and associated password returns the user's id.
@@ -23,24 +23,22 @@ def auth_login_v1(email, password):
     storage = data_store.get()
 
     #sentinel variable 
-    email_exists = False
+    login_error = False
     u_id = 0
-
+    handle = ''
     for user in storage['users']:
-        if user['email'] == email:
-            email_exists = True
+        if user['email'] == email and user['password'] == hashlib.sha256(password.encode()).hexdigest():
+            login_error = True
             u_id = user['id']
+            user['logged_in'] = True
+            handle = user['handle']
     
     #errors
-    if not email_exists:
-        raise InputError("Email Does Not Exist")
-  
-    for user in storage['passwords']:
-        if user['id'] == u_id and user['password'] != password:
-            raise InputError('Password does not match')
+    if not login_error:
+        raise InputError("Email/Password Does Not Exist")
 
     return {
-        'token': u_id,
+        'token': jwt.encode({'handle': handle}, SECRET, algorithm='HS256'),
         'auth_user_id': u_id,
     }
 
@@ -120,12 +118,11 @@ def auth_register_v1(email, password, name_first, name_last):
         storage['no_users'] = False
         is_first = True
 
-    storage['users'].append({'id': new_id, 'email': email, 'name_first': name_first, 'name_last': name_last, 'handle': handle, 'channels' : [], 'global_owner': is_first})
-    storage['passwords'].append({'id': new_id, 'password': password})
+    storage['users'].append({'id': new_id, 'email': email, 'name_first': name_first, 'name_last': name_last, 'handle': handle, 
+                            'channels' : [], 'global_owner': is_first, 'password': hashlib.sha256(password.encode()).hexdigest(), 'logged_in': True})
     
-
     data_store.set(storage)
     return {
-        'token': new_id,
+        'token': jwt.encode({'handle': handle}, SECRET, algorithm='HS256'),
         'auth_user_id': new_id,
     }
