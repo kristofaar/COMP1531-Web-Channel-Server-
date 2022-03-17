@@ -3,14 +3,14 @@ from src.error import InputError
 from src.error import AccessError
 
 
-def channel_invite_v1(auth_user_id, channel_id, u_id):
+def channel_invite_v2(token, channel_id, u_id):
 
     '''
 channel_invite_v1 invites a user with ID u_id to join a channel with ID channel_id. Once invited, the user is 
 added to the channel immediately. In both public and private channels, all members are able to invite users.
 
 Arguments:
-    auth_user_id (int)    - passes in the unique user id of whoever ran the funtion
+    token        (str)    - passes in the unique token of whoever ran the function
     channel_id   (int)    - passes in the unique channel id of the channel we are inviting someone to
     u_id         (int)    - passes in the unique user id of who we are inviting into the channel
 
@@ -59,14 +59,14 @@ Exceptions:
     }
 
 
-def channel_details_v1(auth_user_id, channel_id):
+def channel_details_v2(token, channel_id):
 
     '''
 channel_details_v1 provides basic details about the channel given a channel with ID channel_id that the 
 authorised user is a member of.
 
 Arguments:
-    auth_user_id (int)    - passes in the unique user id of whoever ran the funtion
+    token        (str)    - passes in the unique token of whoever ran the funtion
     channel_id   (int)    - passes in the unique channel id of the channel we are enquiring about
 
 Exceptions:
@@ -74,8 +74,7 @@ Exceptions:
     AccessError - Occurs when channel_id is valid and the authorised user is not a member of the channel
 
 Return Value:
-    Returns channel_id, channel name, whether or not the channel is 
-    public, the owner members, and all members of the channel.
+    Returns channel name, whether or not the channel is public, the owner members, and all members of the channel.
 '''
 
     #staging variables
@@ -108,7 +107,6 @@ Return Value:
         all_members.append({'u_id': curr_user['id'], 'email': curr_user['email'], 'name_first': curr_user['name_first'], 'name_last': curr_user['name_last'], 'handle_str': curr_user['handle']})
 
     return {'name': ch['channel_id_and_name']['name'],
-
             'is_public': ch['is_public'],
             'owner_members': owner_members,
             'all_members': all_members}
