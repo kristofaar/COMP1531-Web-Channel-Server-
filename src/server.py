@@ -91,7 +91,7 @@ def messages():
 def clear():
     clear_v1()
     save()
-    return dumps({}})
+    return dumps({})
     
 
 #### NO NEED TO MODIFY BELOW THIS POINT
