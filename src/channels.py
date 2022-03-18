@@ -2,6 +2,7 @@ from multiprocessing import dummy
 from src.data_store import data_store
 from src.error import InputError
 from src.error import AccessError
+from src.other import create_token, read_token
 
 def channels_list_v1(auth_user_id):
     '''
@@ -18,7 +19,7 @@ def channels_list_v1(auth_user_id):
     '''
     storage = data_store.get()
     users = storage['users']
-    channels = storage['channels']
+    
 
     if auth_user_id == None:
         raise InputError("User Id Entered Is Null")
@@ -50,7 +51,7 @@ def channels_listall_v1(auth_user_id):
     channel_list = []
     storage = data_store.get()
     users = storage['users']
-    channels = storage['channels']
+    
 
     if auth_user_id == None:
         raise InputError("User Id Entered Is Null")
@@ -69,12 +70,12 @@ def channels_listall_v1(auth_user_id):
         'channels': channel_list
     }
 
-def channels_create_v1(auth_user_id, name, is_public):
+def channels_create_v1(token, name, is_public):
     '''
-    Creates a new channel with the given name and public status>
+    Creates a new channel with the given name and public status
 
     Arguments:
-        auth_user_id    (int)       - passes in the unique user id of whoever ran the funtion
+        token           (string)\   - passes in the unique user token of whoever ran the funtion
         name            (string)    - Gives a name to the channel that is to be created
         is_public       (boolean)   - Sets who can and cant see the new channel 
         ...
@@ -88,23 +89,17 @@ def channels_create_v1(auth_user_id, name, is_public):
     '''
     #staging variables
     storage = data_store.get()
+    user_id = read_token(token)
     users = storage['users']
     channels = storage['channels']
-    if auth_user_id == None:
-        raise InputError("User Id Entered Is Null")
-    if name == None:
-        raise InputError("Channel Name Entered Is Null")
-    if is_public == None:
-        raise InputError("Public Status Entered Is Null")
+   
     #look through users to see if the given id matches any of their ids
-    curr_user = next((user for user in users if auth_user_id == user['id']), None)
+    curr_user = next((user for user in users if user_id == user['id']), None)
     #if the given id is not found in users then spit out error message
     if curr_user == None:
         raise AccessError("Invalid User Id ")
-    if 20 < len(name):
-        raise InputError("Channel Name Is Too Long")
-    if 1 > len(name):
-        raise InputError("Channel Name Is Too Short")
+    if 1 > len(name) > 20:
+        raise InputError("Channel Name Is Invalid")
     
     #id creation is based off the last channel's id
     ch_id = 1
