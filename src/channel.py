@@ -189,7 +189,7 @@ Return Value:
 
 
 
-def channel_join_v1(auth_user_id, channel_id):
+def channel_join_v1(token, channel_id):
 
     '''User with id auth_user_id is added into channel with id channel_id if public
 
@@ -212,6 +212,8 @@ Return Value:
 
     #staging variables
     storage = data_store.get()
+    auth_user_id = jwt.decode(token, SECRET, algorithms=["HS256"])['id']
+
     channels = storage['channels']
     users = storage['users']
     
