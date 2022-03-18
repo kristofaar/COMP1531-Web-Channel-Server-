@@ -5,12 +5,30 @@ SECRET = 'heheHAHA111'
 def clear_v1():
     store = data_store.get()
     store['users'] = []
-    store['passwords'] = []
     store['channels'] = []
     store['no_users'] = True
+    store['session_id'] = 0
     data_store.set(store)
     return {
     }
+
+"""Session Id functions"""
+def generate_new_session_id():
+    store = data_store.get()
+    store['session_id'] += 1
+    data_store.set(store)
+    return store['session_id']
+
+#checks if the session id is valid, assumes that u_id exists
+def check_if_valid_session(token):
+    store = data_store.get()
+    details = jwt.decode(token, SECRET, algorithms=["HS256"])
+    user = next((user for user in store['user'] if details['id'] == user['id']), None)
+    id = next ((id for id in user['session_id'] if id == details['session_id']), None)
+    if id != None:
+        return True
+    else:
+        return False
 
 """ Token functions """
 

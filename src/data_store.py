@@ -30,6 +30,7 @@ initial_object = {
     'users': [],
     'channels': [],
     'no_users': True,
+    'session_id': 0,
 }
 ## YOU SHOULD MODIFY THIS OBJECT ABOVE
 

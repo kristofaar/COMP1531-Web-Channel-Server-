@@ -1,5 +1,6 @@
 from multiprocessing import dummy
 from src.data_store import data_store
+from src.other import generate_new_session_id
 from src.error import InputError
 import re, hashlib, jwt
 
@@ -29,14 +30,16 @@ def auth_login_v1(email, password):
         if user['email'] == email and user['password'] == hashlib.sha256(password.encode()).hexdigest():
             login_error = True
             u_id = user['id']
-            user['logged_in'] = True
+            session_id = generate_new_session_id()
+            user['session_list'].append(session_id)
+            print(session_id)
     
     #errors
     if not login_error:
         raise InputError("Email/Password Does Not Exist")
-
+    
     return {
-        'token': jwt.encode({'id': u_id}, SECRET, algorithm='HS256'),
+        'token': jwt.encode({'id': u_id, 'session_id': session_id}, SECRET, algorithm='HS256'),
         'auth_user_id': u_id,
     }
 
@@ -115,12 +118,14 @@ def auth_register_v1(email, password, name_first, name_last):
     if storage['no_users']:
         storage['no_users'] = False
         is_first = True
+    
+    session_id = generate_new_session_id()
 
     storage['users'].append({'id': new_id, 'email': email, 'name_first': name_first, 'name_last': name_last, 'handle': handle, 
-                            'channels' : [], 'global_owner': is_first, 'password': hashlib.sha256(password.encode()).hexdigest(), 'logged_in': True})
+                            'channels' : [], 'global_owner': is_first, 'password': hashlib.sha256(password.encode()).hexdigest(), 'session_list': [session_id]})
     
     data_store.set(storage)
     return {
-        'token': jwt.encode({'id': new_id}, SECRET, algorithm='HS256'),
+        'token': jwt.encode({'id': new_id, 'session_id': session_id}, SECRET, algorithm='HS256'),
         'auth_user_id': new_id,
     }
