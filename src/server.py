@@ -34,14 +34,13 @@ APP.register_error_handler(Exception, defaultHandler)
 
 #### NO NEED TO MODIFY ABOVE THIS POINT, EXCEPT IMPORTS
 
-#data store
-data_store = []
+datas = []
 try:
-    data_store = pickle.load(open("datastore.p", "rb"))
+    datas = pickle.load(open("datastore.p", "rb"))
     storage = data_store.get()
-    storage['users'] = data_store[0]['users']
-    storage['channels'] = data_store[0]['channels']
-    storage['no_users'] = data_store[0]['no_users']
+    storage['users'] = datas['users']
+    storage['channels'] = datas['channels']
+    storage['no_users'] = datas['no_users']
     data_store.set(storage)
 except Exception:
     pass
@@ -49,9 +48,10 @@ except Exception:
 #persistence
 def save():
     storage = data_store.get()
-    data = {storage['users'], storage['channels'], storage['no_users']}
-    with open('datastore.p', 'wb') as FILE:
+    data = {'users': storage['users'], 'channels': storage['channels'], 'no_users': storage['no_users']}
+    with open('datastore.p', 'wb+') as FILE:
         pickle.dump(data, FILE)
+        
 
 
 # Example
@@ -63,6 +63,7 @@ def echo():
     return dumps({
         'data': data
     })
+
 
 @APP.route("/auth/login/v2", methods=['POST'])
 def login():
@@ -77,6 +78,7 @@ def login():
 @APP.route("/auth/register/v2", methods=['POST'])
 def register():
     data = request.get_json()
+    
     details = auth_register_v1(data['email'], data['password'], data['name_first'], data['name_last'])
     save()
     return dumps({
