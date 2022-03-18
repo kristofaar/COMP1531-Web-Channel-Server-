@@ -15,21 +15,7 @@ def made_one_user():
     return {'token': token}
 
 #Error tests
-def test_channel_create_empty_id(made_one_user):
-    with pytest.raises(InputError):
-        channels_create_v1(None,"name",True)
 
-def test_channel_create_none_name(made_one_user):
-    with pytest.raises(InputError):
-        channels_create_v1(made_one_user['token'],None,True)
-
-def test_channel_create_empty_is_public(made_one_user):
-    with pytest.raises(InputError):
-        channels_create_v1(made_one_user['token'],'name',None) 
-
-def test_channel_create_empty_all(made_one_user):
-    with pytest.raises(InputError):
-        channels_create_v1(None,None,None)
 '''
 def test_channel_create_invalid_user_id(made_one_user):
     with pytest.raises(AccessError):
