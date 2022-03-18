@@ -90,3 +90,12 @@ def test_mutliple_users_listall(made_one_user):
 def test_listall(made_one_user):
     channel_list = channels_listall_v1(made_one_user['token'])
     assert channel_list['channels'] == []
+
+def test_clear_v1_channels(made_one_user):
+    channel_return = channels_create_v1(made_one_user['token'], 'coolname', True)['channel_id']
+    channel_list = channels_list_v1(made_one_user['token'])['channels']
+
+    clear_v1()
+    channel_return = channels_create_v1(made_one_user['token'], 'coolname', True)['channel_id']
+    channel_list = channels_list_v1(made_one_user['token'])['channels']
+    assert channel_return == channel_list[0]['channel_id']
