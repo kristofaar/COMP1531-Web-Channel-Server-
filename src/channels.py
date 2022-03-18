@@ -96,8 +96,10 @@ def channels_create_v1(token, name, is_public):
     #if the given id is not found in users then spit out error message
     if curr_user == None:
         raise AccessError("Invalid User Id ")
-    if 1 > len(name) > 20:
-        raise InputError("Channel Name Is Invalid")
+    if 1 > len(name):
+        raise InputError("Channel Name Is Too Short")
+    if len(name) > 20:
+        raise InputError("Channel Name Is Too Long")
     
     #id creation is based off the last channel's id
     ch_id = 1

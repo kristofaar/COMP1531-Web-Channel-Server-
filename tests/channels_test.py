@@ -29,25 +29,7 @@ def test_channel_create_channel_name_too_short(made_one_user):
     with pytest.raises(InputError):
         channels_create_v1(made_one_user['token'], "", True)
 
-def test_channel_list_invalid_user():
-    clear_v1()
-    with pytest.raises(AccessError):
-        channels_list_v1('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c')
 
-def test_chanel_list_empty_id():
-    clear_v1()
-    with pytest.raises(InputError):
-        channels_list_v1(None)
-
-def test_channel_listall_invalid_user():
-    clear_v1()
-    with pytest.raises(AccessError):
-        channels_listall_v1('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c')
-
-def test_chanel_listall_empty_id():
-    clear_v1()
-    with pytest.raises(InputError):
-        channels_listall_v1(None)
 #Working tests
 def test_register_and_create_channel(made_one_user):
     channel_return = channels_create_v1(made_one_user['token'], 'coolname', True)['channel_id']
@@ -108,12 +90,3 @@ def test_mutliple_users_listall(made_one_user):
 def test_listall(made_one_user):
     channel_list = channels_listall_v1(made_one_user['token'])
     assert channel_list['channels'] == []
-
-def test_clear_v1_channels(made_one_user):
-    channel_return = channels_create_v1(made_one_user['token'], 'coolname', True)['channel_id']
-    channel_list = channels_list_v1(made_one_user['token'])['channels']
-
-    clear_v1()
-    channel_return = channels_create_v1(made_one_user['token'], 'coolname', True)['channel_id']
-    channel_list = channels_list_v1(made_one_user['token'])['channels']
-    assert channel_return == channel_list[0]['channel_id']
