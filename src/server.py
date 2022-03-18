@@ -7,6 +7,8 @@ from src.error import InputError
 from src import config
 from src.auth import auth_login_v1, auth_register_v1
 from src.data_store import data_store
+from src.channel import channel_messages_v1
+from src.other import clear_v1
 import pickle
 
 def quit_gracefully(*args):
@@ -56,7 +58,7 @@ def save():
 def echo():
     data = request.args.get('data')
     if data == 'echo':
-   	    raise InputError(description='Cannot echo "echo"')
+        raise InputError(description='Cannot echo "echo"')
     return dumps({
         'data': data
     })
@@ -85,9 +87,11 @@ def register():
 def messages():
     return dumps(channel_messages_v1(request.args.get('token'), request.args.get('channel_id'), request.args.get('start')))
     
-@APP.route("clear/v1", methods=['DELETE'])
+@APP.route("/clear/v1", methods=['DELETE'])
 def clear():
-    return dumps(clear_v1())
+    clear_v1()
+    save()
+    return dumps({})
     
 
 #### NO NEED TO MODIFY BELOW THIS POINT

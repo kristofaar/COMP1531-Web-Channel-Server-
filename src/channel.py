@@ -1,6 +1,9 @@
 from src.data_store import data_store
 from src.error import InputError
 from src.error import AccessError
+import hashlib, jwt
+
+SECRET = 'heheHAHA111'
 
 
 def channel_invite_v1(auth_user_id, channel_id, u_id):
@@ -114,7 +117,7 @@ Return Value:
             'all_members': all_members}
 
 
-def channel_messages_v1(auth_user_id, channel_id, start):
+def channel_messages_v1(token, channel_id, start):
 
     '''
 Returns information on up to 50 messages within the channel
@@ -137,12 +140,15 @@ Return Value:
 '''
 
     storage = data_store.get()
+    handle = jwt.decode(token, SECRET, algorithms=["HS256"])['handle']
 
     #errors
     id_exists = False
+    auth_user_id = -1
     for user in storage['users']:
-        if user['id'] == int(auth_user_id):
+        if user['handle'] == handle:
             id_exists = True
+            auth_user_id = user['id']
     
     if not id_exists:
         raise AccessError("ID does not exist")
