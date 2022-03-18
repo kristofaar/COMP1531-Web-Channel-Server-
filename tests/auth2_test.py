@@ -34,12 +34,12 @@ def test_login_working(reg_two_users):
     assert resp1.status_code == OK
     resp2 = requests.post(config.url + 'auth/login/v2', json={'email': 'lol@lol.lol', 'password': '123abc123abc'})
     assert resp2.status_code == OK
-'''
+
 def test_login_multiple_sessions(reg_two_users):
     resp = requests.post(config.url + 'auth/login/v2', json={'email': 'lol@lol.lol', 'password': '123abc123abc'})
     resp_data = resp.json()
     assert resp_data['token'] != reg_two_users['token2']
-'''
+
 #register errors
 def test_email_invalid(reg_two_users):
     resp = requests.post(config.url + 'auth/register/v2', json={'email': 'teast', 'password': 'testtesttest', 'name_first': 'test', 'name_last': 'test'})
