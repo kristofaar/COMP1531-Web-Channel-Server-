@@ -96,6 +96,9 @@ def test_clear_v1_channels(made_one_user):
     channel_list = channels_list_v1(made_one_user['token'])['channels']
 
     clear_v1()
-    channel_return = channels_create_v1(made_one_user['token'], 'coolname', True)['channel_id']
-    channel_list = channels_list_v1(made_one_user['token'])['channels']
+    
+    token = auth_register_v1('anemail@email.com', 'verycoolpassword', 'Name', 'Name')['token']
+
+    channel_return = channels_create_v1(token, 'coolname', True)['channel_id']
+    channel_list = channels_list_v1(token)['channels']
     assert channel_return == channel_list[0]['channel_id']
