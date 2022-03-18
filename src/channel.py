@@ -1,12 +1,13 @@
 from src.data_store import data_store
 from src.error import InputError
 from src.error import AccessError
+from src.other import create_token, read_token
 import hashlib, jwt
 
 SECRET = 'heheHAHA111'
 
 
-def channel_invite_v1(auth_user_id, channel_id, u_id):
+def channel_invite_v1(token, channel_id, u_id):
 
     '''
 channel_invite_v1 invites a user with ID u_id to join a channel with ID channel_id. Once invited, the user is 
@@ -26,6 +27,8 @@ Exceptions:
 
     #staging variables
     storage = data_store.get()
+    auth_user_id = read_token(token)
+
     channels = storage['channels']
     users = storage['users']
 
@@ -62,7 +65,7 @@ Exceptions:
     }
 
 
-def channel_details_v1(auth_user_id, channel_id):
+def channel_details_v1(token, channel_id):
 
     '''
 channel_details_v1 provides basic details about the channel given a channel with ID channel_id that the 
@@ -83,6 +86,8 @@ Return Value:
 
     #staging variables
     storage = data_store.get()
+    auth_user_id = read_token(token)
+
     channels = storage['channels']
     users = storage['users']
 
