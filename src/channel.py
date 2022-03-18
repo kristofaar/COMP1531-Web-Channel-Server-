@@ -140,13 +140,13 @@ Return Value:
 '''
 
     storage = data_store.get()
-    handle = jwt.decode(token, SECRET, algorithms=["HS256"])['handle']
+    u_id = jwt.decode(token, SECRET, algorithms=["HS256"])['id']
 
     #errors
     id_exists = False
     auth_user_id = -1
     for user in storage['users']:
-        if user['handle'] == handle:
+        if user['id'] == u_id:
             id_exists = True
             auth_user_id = user['id']
     
