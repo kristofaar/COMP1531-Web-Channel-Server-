@@ -25,13 +25,11 @@ def auth_login_v1(email, password):
     #sentinel variable 
     login_error = False
     u_id = 0
-    handle = ''
     for user in storage['users']:
         if user['email'] == email and user['password'] == hashlib.sha256(password.encode()).hexdigest():
             login_error = True
             u_id = user['id']
             user['logged_in'] = True
-            handle = user['handle']
     
     #errors
     if not login_error:
