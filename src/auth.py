@@ -25,20 +25,18 @@ def auth_login_v1(email, password):
     #sentinel variable 
     login_error = False
     u_id = 0
-    handle = ''
     for user in storage['users']:
         if user['email'] == email and user['password'] == hashlib.sha256(password.encode()).hexdigest():
             login_error = True
             u_id = user['id']
             user['logged_in'] = True
-            handle = user['handle']
     
     #errors
     if not login_error:
         raise InputError("Email/Password Does Not Exist")
 
     return {
-        'token': jwt.encode({'handle': handle}, SECRET, algorithm='HS256'),
+        'token': jwt.encode({'id': u_id}, SECRET, algorithm='HS256'),
         'auth_user_id': u_id,
     }
 
@@ -123,6 +121,6 @@ def auth_register_v1(email, password, name_first, name_last):
     
     data_store.set(storage)
     return {
-        'token': jwt.encode({'handle': handle}, SECRET, algorithm='HS256'),
+        'token': jwt.encode({'id': new_id}, SECRET, algorithm='HS256'),
         'auth_user_id': new_id,
     }
