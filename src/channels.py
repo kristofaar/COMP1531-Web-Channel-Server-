@@ -73,7 +73,7 @@ def channels_create_v1(token, name, is_public):
     Creates a new channel with the given name and public status
 
     Arguments:
-        token           (string)\   - passes in the unique user token of whoever ran the funtion
+        token           (string)   - passes in the unique user token of whoever ran the funtion
         name            (string)    - Gives a name to the channel that is to be created
         is_public       (boolean)   - Sets who can and cant see the new channel 
         ...
