@@ -46,6 +46,7 @@ try:
 except Exception:
     pass
 
+#persistence
 def save():
     storage = data_store.get()
     data = {storage['users'], storage['channels'], storage['no_users']}
@@ -86,7 +87,8 @@ def register():
 @APP.route("/channel/messages/v2", methods=['GET'])
 def messages():
     return dumps(channel_messages_v1(request.args.get('token'), request.args.get('channel_id'), request.args.get('start')))
-    
+
+
 @APP.route("/clear/v1", methods=['DELETE'])
 def clear():
     clear_v1()
