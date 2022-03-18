@@ -4,7 +4,7 @@ from src.error import InputError
 from src.error import AccessError
 from src.other import create_token, read_token
 
-def channels_list_v1(auth_user_id):
+def channels_list_v1(token):
     '''
     Provides a list of all the channels that the user is a part of
 
@@ -18,14 +18,13 @@ def channels_list_v1(auth_user_id):
         Returns a dictionary of channel ids and channel names when successful
     '''
     storage = data_store.get()
+    user_id = read_token(token)
     users = storage['users']
     
 
-    if auth_user_id == None:
-        raise InputError("User Id Entered Is Null")
-        
+            
     #iterate through users until a user with the corresponding id is found
-    curr_user = next((user for user in users if auth_user_id == user['id']), None)
+    curr_user = next((user for user in users if user_id == user['id']), None)
     #if no user has the given id raise an error
     if curr_user == None:
         raise AccessError("Invalid User Id ")
@@ -35,7 +34,7 @@ def channels_list_v1(auth_user_id):
     }
 
 
-def channels_listall_v1(auth_user_id):
+def channels_listall_v1(token):
     '''
     Provides a list of all channels, including private channels
 
@@ -50,14 +49,13 @@ def channels_listall_v1(auth_user_id):
     '''
     channel_list = []
     storage = data_store.get()
+    user_id = read_token(token)
     users = storage['users']
     
 
-    if auth_user_id == None:
-        raise InputError("User Id Entered Is Null")
-
+    
     #iterate through users until a user with the corresponding id is found
-    curr_user = next((user for user in users if auth_user_id == user['id']), None)
+    curr_user = next((user for user in users if user_id == user['id']), None)
 
     #if no user has the given id raise an error
     if curr_user == None:
