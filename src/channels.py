@@ -108,7 +108,7 @@ def channels_create_v1(token, name, is_public):
 
     #updating the data store
     channels.append({'channel_id_and_name' :{'channel_id' : ch_id, 'name' : name}, 'is_public' : is_public, 
-    'owner' : [auth_user_id], 'members' : [auth_user_id], 'messages' : []})
+    'owner' : [user_id], 'members' : [user_id], 'messages' : []})
 
     #updating user
     curr_user['channels'].append({'channel_id' : ch_id, 'name' : name})
