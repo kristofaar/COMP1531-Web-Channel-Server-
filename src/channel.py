@@ -1,9 +1,13 @@
 from src.data_store import data_store
 from src.error import InputError
 from src.error import AccessError
+from src.other import create_token, read_token
+import hashlib, jwt
+
+SECRET = 'heheHAHA111'
 
 
-def channel_invite_v1(auth_user_id, channel_id, u_id):
+def channel_invite_v1(token, channel_id, u_id):
 
     '''
 channel_invite_v1 invites a user with ID u_id to join a channel with ID channel_id. Once invited, the user is 
@@ -23,6 +27,8 @@ Exceptions:
 
     #staging variables
     storage = data_store.get()
+    auth_user_id = read_token(token)
+
     channels = storage['channels']
     users = storage['users']
 
@@ -59,7 +65,7 @@ Exceptions:
     }
 
 
-def channel_details_v1(auth_user_id, channel_id):
+def channel_details_v1(token, channel_id):
 
     '''
 channel_details_v1 provides basic details about the channel given a channel with ID channel_id that the 
@@ -80,6 +86,8 @@ Return Value:
 
     #staging variables
     storage = data_store.get()
+    auth_user_id = read_token(token)
+
     channels = storage['channels']
     users = storage['users']
 
@@ -114,7 +122,7 @@ Return Value:
             'all_members': all_members}
 
 
-def channel_messages_v1(auth_user_id, channel_id, start):
+def channel_messages_v1(token, channel_id, start):
 
     '''
 Returns information on up to 50 messages within the channel
@@ -137,12 +145,15 @@ Return Value:
 '''
 
     storage = data_store.get()
+    u_id = jwt.decode(token, SECRET, algorithms=["HS256"])['id']
 
     #errors
     id_exists = False
+    auth_user_id = -1
     for user in storage['users']:
-        if user['id'] == int(auth_user_id):
+        if user['id'] == u_id:
             id_exists = True
+            auth_user_id = user['id']
     
     if not id_exists:
         raise AccessError("ID does not exist")
@@ -183,7 +194,7 @@ Return Value:
 
 
 
-def channel_join_v1(auth_user_id, channel_id):
+def channel_join_v1(token, channel_id):
 
     '''User with id auth_user_id is added into channel with id channel_id if public
 
@@ -206,6 +217,8 @@ Return Value:
 
     #staging variables
     storage = data_store.get()
+    auth_user_id = jwt.decode(token, SECRET, algorithms=["HS256"])['id']
+
     channels = storage['channels']
     users = storage['users']
     

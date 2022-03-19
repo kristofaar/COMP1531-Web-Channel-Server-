@@ -28,10 +28,9 @@ Example usage:
 initial_object = {
     #users will contain a list of dictionaries containing in order: id, email, name_first, name_last, handle
     'users': [],
-    #passwords contain a list of dictionaries containing in order: id, password
-    'passwords': [],
     'channels': [],
     'no_users': True,
+    'session_id': 0,
 }
 ## YOU SHOULD MODIFY THIS OBJECT ABOVE
 
