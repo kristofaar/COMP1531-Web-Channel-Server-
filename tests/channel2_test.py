@@ -24,7 +24,7 @@ def reg_two_users_and_create_two_channels():
     assert resp4.status_code == OK
     resp3_data = resp3.json()
     resp4_data = resp4.json()
-    return {'token1': resp1_data['token'], 'token2': resp2_data['token'], 'u_id1': resp1_data['auth_user_id'], 'u_id2': resp2_data['auth_user_id'], 'ch_id1': resp3_data['channel_id'], 'ch_id2': resp4_data['channel_id'],}
+    return {'token1': resp1_data['token'], 'token2': resp2_data['token'], 'u_id1': resp1_data['auth_user_id'], 'u_id2': resp2_data['auth_user_id'], 'ch_id1': resp3_data['channel_id'], 'ch_id2': resp4_data['channel_id']}
 
 #details errors
 def test_channel_details_invalid_token(reg_two_users_and_create_two_channels):
