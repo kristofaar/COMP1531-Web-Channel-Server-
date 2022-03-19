@@ -31,21 +31,22 @@ def test_channel_details_invalid_token(reg_two_users_and_create_two_channels):
     assert resp.status_code == A_ERR
 
 def test_channel_details_expired_token(reg_two_users_and_create_two_channels):
-    resp1 = requests.post(config.url + 'auth/logout/v1', json={'token': reg_two_users_and_create_two_channels['token1']})
+    resp1 = requests.get(config.url + 'auth/logout/v1', json={'token': reg_two_users_and_create_two_channels['token1']})
     assert resp1.status_code == OK
-    resp2 = requests.post(config.url + 'channel/details/v2', json={'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1']})
+    resp2 = requests.get(config.url + 'channel/details/v2', json={'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1']})
     assert resp2.status_code == A_ERR
 
 def test_channel_details_unauthorised(reg_two_users_and_create_two_channels):
-    resp = requests.post(config.url + 'channel/details/v2', json={'token': reg_two_users_and_create_two_channels['token2'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1']})
+    resp = requests.get(config.url + 'channel/details/v2', json={'token': reg_two_users_and_create_two_channels['token2'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1']})
     assert resp.status_code == A_ERR
 
 def test_channel_details_invalid_channel(reg_two_users_and_create_two_channels):
-    resp = requests.post(config.url + 'channel/details/v2', json={'token': reg_two_users_and_create_two_channels['token2'], 'channel_id': 123789})
+    resp = requests.get(config.url + 'channel/details/v2', json={'token': reg_two_users_and_create_two_channels['token2'], 'channel_id': 123789})
     assert resp.status_code == I_ERR
 
 #details working
-    resp = requests.post(config.url + 'channel/details/v2', json={'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1']})
+def test_channel_details(reg_two_users_and_create_two_channels):
+    resp = requests.get(config.url + 'channel/details/v2', json={'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1']})
     assert resp.status_code == OK
     resp_data = resp.json()
     assert resp_data['name'] == 'CoolChannelName'
@@ -53,3 +54,48 @@ def test_channel_details_invalid_channel(reg_two_users_and_create_two_channels):
     assert resp_data['owner_members'][0]['u_id'] == reg_two_users_and_create_two_channels['u_id1']
     assert resp_data['all_members'][0]['u_id'] == reg_two_users_and_create_two_channels['u_id1']
 
+#join errors
+def test_channel_join_invalid_token(reg_two_users_and_create_two_channels):
+    resp = requests.post(config.url + 'channel/post/v2', json={'token': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c', 'channel_id': reg_two_users_and_create_two_channels['ch_id1']})
+    assert resp.status_code == A_ERR
+
+def test_channel_join_expired_token(reg_two_users_and_create_two_channels):
+    resp1 = requests.post(config.url + 'auth/logout/v1', json={'token': reg_two_users_and_create_two_channels['token1']})
+    assert resp1.status_code == OK
+    resp2 = requests.post(config.url + 'channel/join/v2', json={'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1']})
+    assert resp2.status_code == A_ERR
+
+def test_channel_join_unauthorised(reg_two_users_and_create_two_channels):
+    resp1 = requests.post(config.url + 'channels/create/v2', json={'token': reg_two_users_and_create_two_channels['token1'], 'name': 'CoolChannelName', 'is_public': False})
+    assert resp1.status_code == OK
+    resp1_data = resp1.json()
+    resp2 = requests.post(config.url + 'channel/join/v2', json={'token': reg_two_users_and_create_two_channels['token2'], 'channel_id': resp1_data['channel_id']})
+    assert resp2.status_code == A_ERR
+
+def test_channel_join_invalid(reg_two_users_and_create_two_channels):
+    resp = requests.post(config.url + 'channel/join/v2', json={'token': reg_two_users_and_create_two_channels['token2'], 'channel_id': 123789})
+    assert resp.status_code == I_ERR
+
+def test_channel_join_already_member(reg_two_users_and_create_two_channels):
+    resp = requests.post(config.url + 'channel/join/v2', json={'token':reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1']})
+    assert resp.status_code == I_ERR
+
+#join working
+def test_channel_join_global_owner(reg_two_users_and_create_two_channels):
+    resp1 = requests.post(config.url + 'channel/join/v2', json={'token':reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id2']})
+    assert resp1.status_code == OK
+    resp2 = requests.get(config.url + 'channel/details/v2', json={'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id2']})
+    assert resp2.status_code == OK
+    resp_data = resp2.json()
+    assert resp_data['all_members'][1]['u_id'] == reg_two_users_and_create_two_channels['u_id1']
+
+def test_channel_join_normal(reg_two_users_and_create_two_channels):
+    resp1 = requests.post(config.url + 'channels/create/v2', json={'token': reg_two_users_and_create_two_channels['token1'], 'name': 'NiceChannel222', 'is_public': True})
+    assert resp1.status_code == OK
+    resp1_data = resp1.json()
+    resp2 = requests.post(config.url + 'channel/join/v2', json={'token':reg_two_users_and_create_two_channels['token2'], 'channel_id': resp1_data['channel_id']})
+    assert resp2.status_code == OK
+    resp3 = requests.get(config.url + 'channel/details/v2', json={'token': reg_two_users_and_create_two_channels['token2'], 'channel_id': resp1_data['channel_id']})
+    assert resp3.status_code == OK
+    resp3_data = resp3.json()
+    assert resp3_data['all_members'][1]['u_id'] == reg_two_users_and_create_two_channels['u_id2']
