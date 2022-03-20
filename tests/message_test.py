@@ -6,7 +6,7 @@ from src import config
 A_ERR = 403
 I_ERR = 400
 OK = 200
-
+'''
 @pytest.fixture
 def reg_two_users_and_create_two_channels():
     clear_resp = requests.delete(config.url + 'clear/v1')
@@ -226,3 +226,4 @@ def test_message_remove_global_owner(reg_two_users_and_create_two_channels):
     assert resp3.status_code == OK
     resp_data = resp3.json()
     assert len(resp_data['messages']) == 0
+    '''
