@@ -5,7 +5,7 @@ from flask import Flask, request
 from flask_cors import CORS
 from src.error import InputError
 from src import config
-from src.auth import auth_login_v1, auth_register_v1
+from src.auth import auth_login_v1, auth_register_v1, auth_logout_v1
 from src.data_store import data_store
 from src.channel import channel_messages_v1
 from src.other import clear_v1
@@ -85,6 +85,13 @@ def register():
         'token': details['token'],
         'auth_user_id': details['auth_user_id']
     })
+
+@APP.route("auth/logout/v1", methods=['POST'])
+def logout():
+    data = request.get_json()
+    details = auth_logout_v1(data['token'])
+    save()
+    return dumps({})
 
 @APP.route("/channel/messages/v2", methods=['GET'])
 def messages():
