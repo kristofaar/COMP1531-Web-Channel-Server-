@@ -86,7 +86,7 @@ def register():
         'auth_user_id': details['auth_user_id']
     })
 
-@APP.route("/auth/logout/v1", methods=['POST'])
+@APP.route('/auth/logout/v1', methods=['POST'])
 def logout():
     data = request.get_json()
     auth_logout_v1(data['token'])

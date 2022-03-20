@@ -131,10 +131,22 @@ def auth_register_v1(email, password, name_first, name_last):
     }
 
 def auth_logout_v1(token):
+    '''Invalidates a token.
+
+    Arguments:
+        token (String)         - A user's session token. 
+
+    Exceptions:
+        AccessError  - Occurs when: 
+            -Token is invalid
+
+    Return Value:
+        Nothing.
+    '''
     storage = data_store.get()
     if not check_if_valid(token):
         raise AccessError("Invalid Token")
-    details = read_token(token)
+    details = jwt.decode(token, SECRET, algorithms=["HS256"])
     for user in storage['users']:
         if (details['session_id'] in user['session_list']):
             user['session_list'].remove(details['session_id'])
