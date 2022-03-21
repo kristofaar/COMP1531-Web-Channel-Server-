@@ -475,4 +475,6 @@ def channel_removeowner_v1(token, channel_id, u_id):
     channel['owner'].remove(u_id)
     channel['members'].append(u_id)
 
+    # unnecessary comment
+
     return {}
