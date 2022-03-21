@@ -7,7 +7,7 @@ from src import config
 A_ERR = 403
 I_ERR = 400
 OK = 200
-
+'''
 @pytest.fixture
 def reg_two_users_and_create_two_channels():
     clear_resp = requests.delete(config.url + 'clear/v1')
@@ -326,3 +326,4 @@ def test_channel_removeowner(reg_two_users_and_create_two_channels):
     resp5_data = resp5.json()
     assert len(resp5_data['owner_members']) == 1
     assert len(resp5_data['all_members']) == 2
+    '''
