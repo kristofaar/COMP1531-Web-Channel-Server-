@@ -107,7 +107,7 @@ def messages():
 
 @APP.route("/channel/details/v2", method=['GET'])
 def channel_details():
-    return dumps(channel_details_v1(request.args.get('token'), request.args.get('channel_id')))
+    return dumps(channel_details_v1(request.args.get('token'), int(request.args.get('channel_id'))))
 
 
 @APP.route("/channel/join/v2", method=['POST'])
@@ -125,6 +125,19 @@ def channel_invite_v2():
     save()
     return dumps({})
 
+@APP.route("/channel/addowner/v1", method=['POST'])
+def channel_addowner_v1():
+    data = request.get_json(data['token'], data['channel_id'], data['u_id'])
+    channel_addowner_v1(data['token'], data['channel_id'], data['u_id'])
+    save()
+    return dumps({})
+
+@APP.route("/channel/removeowner/v1", method=['POST'])
+def channel_addowner_v1():
+    data = request.get_json(data['token'], data['channel_id'], data['u_id'])
+    channel_addowner_v1(data['token'], data['channel_id'], data['u_id'])
+    save()
+    return dumps({})
 
 @APP.route("/clear/v1", methods=['DELETE'])
 def clear():
