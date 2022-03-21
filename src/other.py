@@ -19,7 +19,7 @@ def generate_new_session_id():
     data_store.set(store)
     return store['session_id']
 
-#checks if the session id is valid, assumes that u_id exists
+#checks if the session id and u_id is valid  
 def check_if_valid(token):
     store = data_store.get()
     try:
