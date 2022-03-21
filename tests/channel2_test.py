@@ -10,6 +10,8 @@ OK = 200
 
 
 @pytest.fixture
+# first user makes first channel (public), second user makes second channel (private)
+# token1 for first user's first session and token2 for second user's first session
 def reg_two_users_and_create_two_channels():
     clear_resp = requests.delete(config.url + 'clear/v1')
     assert clear_resp.status_code == OK
@@ -379,16 +381,20 @@ def test_channel_addowner_not_a_member(reg_two_users_and_create_two_channels):
 
 
 def test_channel_addowner(reg_two_users_and_create_two_channels):
+    # second user joins 1st channel (made by first user)
     resp1 = requests.post(config.url + 'channel/join/v2', json={
                           'token': reg_two_users_and_create_two_channels['token2'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1']})
     assert resp1.status_code == OK
+    # first user adds second user to owner of 1st channel
     resp2 = requests.post(config.url + 'channel/addowner/v1', json={
                           'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'u_id': reg_two_users_and_create_two_channels['u_id2']})
     assert resp2.status_code == OK
+    # get details for 1st channel
     resp3 = requests.get(config.url + 'channel/details/v2', json={
                          'token': reg_two_users_and_create_two_channels['token2'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1']})
     assert resp3.status_code == OK
     resp_data = resp3.json()
+    # Don't have to loop through members list and assume 2nd user at [1] index?
     assert resp_data['owner_members'][1]['u_id'] == reg_two_users_and_create_two_channels['u_id2']
 
 # removeowner errors
@@ -444,7 +450,7 @@ def test_channel_removeowner_only_owner(reg_two_users_and_create_two_channels):
                          'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'u_id': reg_two_users_and_create_two_channels['u_id1']})
     assert resp.status_code == I_ERR
 
-# addowner working
+# removeowner working
 
 
 def test_channel_removeowner(reg_two_users_and_create_two_channels):
