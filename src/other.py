@@ -29,6 +29,8 @@ def check_if_valid(token):
     if not ("id" in details.keys() and "session_id" in details.keys() and len(details.keys()) == 2):
         return False
     user = next((user for user in store['users'] if details['id'] == user['id']), None)
+    if user == None:
+        return False
     id = next ((id for id in user['session_list'] if id == details['session_id']), None)
     if id != None:
         return True
