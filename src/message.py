@@ -39,7 +39,6 @@ def message_send_v1(token, channel_id, message):
     auth_user_id = read_token(token)
 
     channels = storage['channels']
-    users = storage['users']
     
     #search through channels by id until id is matched
     ch = next((channel for channel in channels if channel_id == channel['channel_id_and_name']['channel_id']), None)
