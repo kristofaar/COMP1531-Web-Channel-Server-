@@ -46,7 +46,7 @@ def test_channels_create_invalid_length(reg_two_users_and_create_two_channels):
 def test_channels_create(reg_two_users_and_create_two_channels):
     resp1 = requests.post(config.url + 'channels/create/v2', json={'token': reg_two_users_and_create_two_channels['token1'], 'name': 'AnodaCoolChannel', 'is_public': True})
     assert resp1.status_code == OK
-    resp2 = requests.get(config.url + 'channels/list/v2', json={'token': reg_two_users_and_create_two_channels['token1']})
+    resp2 = requests.get(config.url + 'channels/list/v2', params={'token': reg_two_users_and_create_two_channels['token1']})
     assert resp2.status_code == OK
     resp1_data = resp1.json()
     resp2_data = resp2.json()
@@ -55,7 +55,7 @@ def test_channels_create(reg_two_users_and_create_two_channels):
 
 #list errors
 def test_channels_list_invalid_token(reg_two_users_and_create_two_channels):
-    resp = requests.get(config.url + 'channels/list/v2', json={'token': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c'})
+    resp = requests.get(config.url + 'channels/list/v2', params={'token': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c'})
     assert resp.status_code == A_ERR
 
 def test_channels_list_expired_token(reg_two_users_and_create_two_channels):
@@ -68,7 +68,7 @@ def test_channels_list_expired_token(reg_two_users_and_create_two_channels):
 def test_channels_list(reg_two_users_and_create_two_channels):
     resp1 = requests.post(config.url + 'channels/create/v2', json={'token': reg_two_users_and_create_two_channels['token1'], 'name': 'AnodaCoolChannel', 'is_public': True})
     assert resp1.status_code == OK
-    resp2 = requests.get(config.url + 'channels/list/v2', json={'token': reg_two_users_and_create_two_channels['token1']})
+    resp2 = requests.get(config.url + 'channels/list/v2', params={'token': reg_two_users_and_create_two_channels['token1']})
     assert resp2.status_code == OK
     resp1_data = resp1.json()
     resp2_data = resp2.json()
@@ -79,7 +79,7 @@ def test_channels_list(reg_two_users_and_create_two_channels):
 
 #listall errors
 def test_channels_listall_invalid_token(reg_two_users_and_create_two_channels):
-    resp = requests.get(config.url + 'channels/listall/v2', json={'token': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c'})
+    resp = requests.get(config.url + 'channels/listall/v2', params={'token': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c'})
     assert resp.status_code == A_ERR
 
 def test_channels_listall_expired_token(reg_two_users_and_create_two_channels):
@@ -90,7 +90,7 @@ def test_channels_listall_expired_token(reg_two_users_and_create_two_channels):
 
 #listall working
 def test_channels_listall(reg_two_users_and_create_two_channels):
-    resp1 = requests.get(config.url + 'channels/list/v2', json={'token': reg_two_users_and_create_two_channels['token1']})
+    resp1 = requests.get(config.url + 'channels/list/v2', params={'token': reg_two_users_and_create_two_channels['token1']})
     assert resp1.status_code == OK
     resp1_data = resp1.json()
     assert resp1_data['channels'][0]['channel_id'] == reg_two_users_and_create_two_channels['ch_id1']
