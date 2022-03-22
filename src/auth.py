@@ -1,7 +1,7 @@
 from multiprocessing import dummy
 from src.data_store import data_store
-from src.other import generate_new_session_id
-from src.error import InputError
+from src.other import generate_new_session_id, check_if_valid, read_token
+from src.error import InputError, AccessError
 import re, hashlib, jwt
 
 SECRET = 'heheHAHA111'
@@ -129,3 +129,26 @@ def auth_register_v1(email, password, name_first, name_last):
         'token': jwt.encode({'id': new_id, 'session_id': session_id}, SECRET, algorithm='HS256'),
         'auth_user_id': new_id,
     }
+
+def auth_logout_v1(token):
+    '''Invalidates a token.
+
+    Arguments:
+        token (String)         - A user's session token. 
+
+    Exceptions:
+        AccessError  - Occurs when: 
+            -Token is invalid
+
+    Return Value:
+        Nothing.
+    '''
+    storage = data_store.get()
+    if not check_if_valid(token):
+        raise AccessError("Invalid Token")
+    details = jwt.decode(token, SECRET, algorithms=["HS256"])
+    for user in storage['users']:
+        if (details['session_id'] in user['session_list']):
+            user['session_list'].remove(details['session_id'])
+    data_store.set(storage)
+    return {}

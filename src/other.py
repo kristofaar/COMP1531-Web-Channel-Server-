@@ -22,10 +22,15 @@ def generate_new_session_id():
 #checks if the session id is valid, assumes that u_id exists
 def check_if_valid(token):
     store = data_store.get()
-    details = jwt.decode(token, SECRET, algorithms=["HS256"])
+    try:
+        details = jwt.decode(token, SECRET, algorithms=["HS256"])
+    except:
+        return False
     if not ("id" in details.keys() and "session_id" in details.keys() and len(details.keys()) == 2):
         return False
-    user = next((user for user in store['user'] if details['id'] == user['id']), None)
+    user = next((user for user in store['users'] if details['id'] == user['id']), None)
+    if user == None:
+        return False
     id = next ((id for id in user['session_list'] if id == details['session_id']), None)
     if id != None:
         return True
