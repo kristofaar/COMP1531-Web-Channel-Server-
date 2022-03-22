@@ -310,6 +310,9 @@ def channel_leave_v1(token, channel_id):
     member_list = channel['members']
     member_list.remove(auth_user_id)
 
+    # remove user from channel owners if they are one
+    if auth_user_id in channel['owner']:
+        channel['owner'].remove(auth_user_id)
     # remove channel_id from user
     for u_channel in user['channels']:
         if u_channel['channel_id_and_name']['channel_id'] == channel_id:
@@ -393,9 +396,8 @@ def channel_addowner_v1(token, channel_id, u_id):
         raise InputError(
             description='User getting added is not a member of channel')
 
-    # adds u_id to channel owner list now and remove u_id from members list
+    # adds u_id to channel owner list now 
     channel['owner'].append(u_id)
-    channel['members'].remove(u_id)
     return {}
 
 
@@ -471,10 +473,8 @@ def channel_removeowner_v1(token, channel_id, u_id):
         raise InputError(
             description='User getting removed is the only owner of channel')
 
-    # removing u_id from channel owners list and adding them back to members list
+    # removing u_id from channel owners and members list 
     channel['owner'].remove(u_id)
-    channel['members'].append(u_id)
-
-    # unnecessary comment
+    channel['members'].remove(u_id)
 
     return {}
