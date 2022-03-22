@@ -5,8 +5,10 @@ from flask import Flask, request
 from flask_cors import CORS
 from src.error import InputError
 from src import config
-from src.auth import auth_login_v1, auth_register_v1
+from src.auth import auth_login_v1, auth_register_v1, auth_logout_v1
 from src.data_store import data_store
+from src.channel import channel_messages_v1
+from src.other import clear_v1
 import pickle
 
 def quit_gracefully(*args):
@@ -32,23 +34,24 @@ APP.register_error_handler(Exception, defaultHandler)
 
 #### NO NEED TO MODIFY ABOVE THIS POINT, EXCEPT IMPORTS
 
-#data store
-data_store = []
+datas = []
 try:
-    data_store = pickle.load(open("datastore.p", "rb"))
+    datas = pickle.load(open("datastore.p", "rb"))
     storage = data_store.get()
-    storage['users'] = data_store[0]['users']
-    storage['channels'] = data_store[0]['channels']
-    storage['no_users'] = data_store[0]['no_users']
+    storage['users'] = datas['users']
+    storage['channels'] = datas['channels']
+    storage['no_users'] = datas['no_users']
     data_store.set(storage)
 except Exception:
     pass
 
+#persistence
 def save():
     storage = data_store.get()
-    data = {storage['users'], storage['channels'], storage['no_users']}
-    with open('datastore.p', 'wb') as FILE:
+    data = {'users': storage['users'], 'channels': storage['channels'], 'no_users': storage['no_users']}
+    with open('datastore.p', 'wb+') as FILE:
         pickle.dump(data, FILE)
+        
 
 
 # Example
@@ -56,10 +59,11 @@ def save():
 def echo():
     data = request.args.get('data')
     if data == 'echo':
-   	    raise InputError(description='Cannot echo "echo"')
+        raise InputError(description='Cannot echo "echo"')
     return dumps({
         'data': data
     })
+
 
 @APP.route("/auth/login/v2", methods=['POST'])
 def login():
@@ -74,6 +78,7 @@ def login():
 @APP.route("/auth/register/v2", methods=['POST'])
 def register():
     data = request.get_json()
+    
     details = auth_register_v1(data['email'], data['password'], data['name_first'], data['name_last'])
     save()
     return dumps({
@@ -81,13 +86,23 @@ def register():
         'auth_user_id': details['auth_user_id']
     })
 
+@APP.route('/auth/logout/v1', methods=['POST'])
+def logout():
+    data = request.get_json()
+    auth_logout_v1(data['token'])
+    save()
+    return dumps({})
+
 @APP.route("/channel/messages/v2", methods=['GET'])
 def messages():
     return dumps(channel_messages_v1(request.args.get('token'), request.args.get('channel_id'), request.args.get('start')))
-    
-@APP.route("clear/v1", methods=['DELETE'])
+
+
+@APP.route("/clear/v1", methods=['DELETE'])
 def clear():
-    return dumps(clear_v1())
+    clear_v1()
+    save()
+    return dumps({})
     
 
 #### NO NEED TO MODIFY BELOW THIS POINT

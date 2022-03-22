@@ -1,6 +1,7 @@
 from multiprocessing import dummy
 from src.data_store import data_store
-from src.error import InputError
+from src.other import generate_new_session_id, check_if_valid, read_token
+from src.error import InputError, AccessError
 import re, hashlib, jwt
 
 SECRET = 'heheHAHA111'
@@ -25,20 +26,20 @@ def auth_login_v1(email, password):
     #sentinel variable 
     login_error = False
     u_id = 0
-    handle = ''
     for user in storage['users']:
         if user['email'] == email and user['password'] == hashlib.sha256(password.encode()).hexdigest():
             login_error = True
             u_id = user['id']
-            user['logged_in'] = True
-            handle = user['handle']
+            session_id = generate_new_session_id()
+            user['session_list'].append(session_id)
+            print(session_id)
     
     #errors
     if not login_error:
         raise InputError("Email/Password Does Not Exist")
-
+    
     return {
-        'token': jwt.encode({'handle': handle}, SECRET, algorithm='HS256'),
+        'token': jwt.encode({'id': u_id, 'session_id': session_id}, SECRET, algorithm='HS256'),
         'auth_user_id': u_id,
     }
 
@@ -117,12 +118,37 @@ def auth_register_v1(email, password, name_first, name_last):
     if storage['no_users']:
         storage['no_users'] = False
         is_first = True
+    
+    session_id = generate_new_session_id()
 
     storage['users'].append({'id': new_id, 'email': email, 'name_first': name_first, 'name_last': name_last, 'handle': handle, 
-                            'channels' : [], 'global_owner': is_first, 'password': hashlib.sha256(password.encode()).hexdigest(), 'logged_in': True})
+                            'channels' : [], 'global_owner': is_first, 'password': hashlib.sha256(password.encode()).hexdigest(), 'session_list': [session_id]})
     
     data_store.set(storage)
     return {
-        'token': jwt.encode({'handle': handle}, SECRET, algorithm='HS256'),
+        'token': jwt.encode({'id': new_id, 'session_id': session_id}, SECRET, algorithm='HS256'),
         'auth_user_id': new_id,
     }
+
+def auth_logout_v1(token):
+    '''Invalidates a token.
+
+    Arguments:
+        token (String)         - A user's session token. 
+
+    Exceptions:
+        AccessError  - Occurs when: 
+            -Token is invalid
+
+    Return Value:
+        Nothing.
+    '''
+    storage = data_store.get()
+    if not check_if_valid(token):
+        raise AccessError("Invalid Token")
+    details = jwt.decode(token, SECRET, algorithms=["HS256"])
+    for user in storage['users']:
+        if (details['session_id'] in user['session_list']):
+            user['session_list'].remove(details['session_id'])
+    data_store.set(storage)
+    return {}
