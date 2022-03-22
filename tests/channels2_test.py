@@ -6,7 +6,7 @@ from src import config
 A_ERR = 403
 I_ERR = 400
 OK = 200
-'''
+
 @pytest.fixture
 def reg_two_users_and_create_two_channels():
     clear_resp = requests.delete(config.url + 'clear/v1')
@@ -97,4 +97,3 @@ def test_channels_listall(reg_two_users_and_create_two_channels):
     assert resp1_data['channels'][0]['name'] == 'CoolChannelName'
     assert resp1_data['channels'][1]['channel_id'] == reg_two_users_and_create_two_channels['ch_id2']
     assert resp1_data['channels'][1]['name'] == 'NiceChannel'
-    '''
