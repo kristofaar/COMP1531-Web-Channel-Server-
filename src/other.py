@@ -20,6 +20,7 @@ def generate_new_session_id():
     return store['session_id']
 
 #checks if the session id is valid, assumes that u_id exists
+#needs to be added to all iter_1 functions
 def check_if_valid(token):
     store = data_store.get()
     try:
@@ -38,7 +39,7 @@ def check_if_valid(token):
         return False
 
 """ Token functions """
-
+# add a try except as if the token is invalid it might break the whole code
 def create_token(auth_user_id):
     '''Create a unique token for a user'''
     token = jwt.encode({'id': auth_user_id}, SECRET, algorithm='HS256')
