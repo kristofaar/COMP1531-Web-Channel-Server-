@@ -32,12 +32,16 @@ def dm_create_v1(token, u_ids):
     if curr_user == None:
         raise AccessError("Invalid User Id ")
     
+
+
     u_ids.append(user_id)
     u_ids.sort()
 
     name = ''
+
+
     for ids in u_ids:
-        name += users[ids-1]['handle']
+        name += users[ids-1]['handle'] + ', '
     #id creation is based off the last dm id
     dm_id = 1
     if len(dm):
