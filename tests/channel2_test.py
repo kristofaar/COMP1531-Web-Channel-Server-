@@ -7,7 +7,7 @@ from src import config
 A_ERR = 403
 I_ERR = 400
 OK = 200
-'''
+
 @pytest.fixture
 def reg_two_users_and_create_two_channels():
     clear_resp = requests.delete(config.url + 'clear/v1')
@@ -32,7 +32,7 @@ def test_channel_details_invalid_token(reg_two_users_and_create_two_channels):
     assert resp.status_code == A_ERR
 
 def test_channel_details_expired_token(reg_two_users_and_create_two_channels):
-    resp1 = requests.get(config.url + 'auth/logout/v1', params={'token': reg_two_users_and_create_two_channels['token1']})
+    resp1 = requests.post(config.url + 'auth/logout/v1', json={'token': reg_two_users_and_create_two_channels['token1']})
     assert resp1.status_code == OK
     resp2 = requests.get(config.url + 'channel/details/v2', params={'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1']})
     assert resp2.status_code == A_ERR
@@ -57,7 +57,7 @@ def test_channel_details(reg_two_users_and_create_two_channels):
 
 #join errors
 def test_channel_join_invalid_token(reg_two_users_and_create_two_channels):
-    resp = requests.post(config.url + 'channel/post/v2', json={'token': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c', 'channel_id': reg_two_users_and_create_two_channels['ch_id1']})
+    resp = requests.post(config.url + 'channel/join/v2', json={'token': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c', 'channel_id': reg_two_users_and_create_two_channels['ch_id1']})
     assert resp.status_code == A_ERR
 
 def test_channel_join_expired_token(reg_two_users_and_create_two_channels):
@@ -168,7 +168,7 @@ def test_channel_messages_empty(reg_two_users_and_create_two_channels):
     assert resp_data['start'] == 0
     assert resp_data['end'] == -1
     assert resp_data['messages'] == []
-
+'''
 def test_channel_small_messages(reg_two_users_and_create_two_channels):
     for i in range(2):
         resp = requests.post(config.url + 'message/send/v1', json={'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'message': str(i)})
@@ -211,12 +211,12 @@ def test_channel_leave_expired_token(reg_two_users_and_create_two_channels):
     resp2 = requests.post(config.url + 'channel/leave/v1', json={'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1']})
     assert resp2.status_code == A_ERR
 
-def test_channel_messages_unauthorised(reg_two_users_and_create_two_channels):
+def test_channel_leave_unauthorised(reg_two_users_and_create_two_channels):
     resp = requests.post(config.url + 'channel/leave/v1', json={'token': reg_two_users_and_create_two_channels['token2'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1']})
     assert resp.status_code == A_ERR
 
-def test_channel_messages_invalid_channel(reg_two_users_and_create_two_channels):
-    resp = requests.post(config.url + 'channel/messages/v2', json={'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': 6213732198})
+def test_channel_leave_invalid_channel(reg_two_users_and_create_two_channels):
+    resp = requests.post(config.url + 'channel/leave/v2', json={'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': 6213732198})
     assert resp.status_code == I_ERR
 
 #leave working
@@ -326,4 +326,4 @@ def test_channel_removeowner(reg_two_users_and_create_two_channels):
     resp5_data = resp5.json()
     assert len(resp5_data['owner_members']) == 1
     assert len(resp5_data['all_members']) == 2
-    '''
+'''
