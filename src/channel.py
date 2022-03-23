@@ -24,6 +24,10 @@ Exceptions:
                 - Occurs when u_id refers to a user who is already a member of the channel
     AccessError - Occurs when channel_id is valid and the authorised user is not a member of the channel
 '''
+    # check token 
+    if not check_if_valid(token):
+        raise AccessError("Invalid Token")
+        
     # staging variables
     check_if_valid(token)
     storage = data_store.get()
@@ -85,6 +89,9 @@ Return Value:
     Returns channel_id, channel name, whether or not the channel is 
     public, the owner members, and all members of the channel.
 '''
+    # check token 
+    if not check_if_valid(token):
+        raise AccessError("Invalid Token")
 
     # staging variables
     check_if_valid(token)
@@ -151,6 +158,10 @@ Exceptions:
 Return Value:
     Returns {messages, start, end} always, where end is the index of the final message, -1 if up to date.
 '''
+    # check token 
+    if not check_if_valid(token):
+        raise AccessError("Invalid Token")
+
     # Staging variables
     check_if_valid(token)
     storage = data_store.get()
@@ -221,6 +232,9 @@ Exceptions:
 Return Value:
     Returns {} always
 '''
+    # check token 
+    if not check_if_valid(token):
+        raise AccessError("Invalid Token")
 
     # staging variables
     check_if_valid(token)
@@ -281,6 +295,10 @@ def channel_leave_v1(token, channel_id):
     Return Value:
         Returns {} always
     '''
+    # check token 
+    if not check_if_valid(token):
+        raise AccessError("Invalid Token")
+
     # staging variables
     check_if_valid(token)
     storage = data_store.get()
@@ -344,6 +362,10 @@ def channel_addowner_v1(token, channel_id, u_id):
     Return Value:
         Returns {} always
     '''
+    # check token 
+    if not check_if_valid(token):
+        raise AccessError("Invalid Token")
+
     # staging variables
     check_if_valid(token)
     storage = data_store.get()
@@ -423,6 +445,10 @@ def channel_removeowner_v1(token, channel_id, u_id):
     Return Value:
         Returns {} always
     '''
+    # check token 
+    if not check_if_valid(token):
+        raise AccessError("Invalid Token")
+        
     # staging variables
     check_if_valid(token)
     storage = data_store.get()
