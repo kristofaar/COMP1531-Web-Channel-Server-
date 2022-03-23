@@ -7,7 +7,7 @@ from src.error import InputError
 from src import config
 from src.auth import auth_login_v1, auth_register_v1, auth_logout_v1
 from src.data_store import data_store
-from src.channel import channel_join_v1, channel_messages_v1, channel_invite_v1, channel_details_v1
+from src.channel import channel_join_v1, channel_messages_v1, channel_invite_v1, channel_details_v1, channel_leave_v1, channel_removeowner_v1, channel_addowner_v1
 from src.other import clear_v1
 import pickle
 
@@ -93,12 +93,14 @@ def register():
         'auth_user_id': details['auth_user_id']
     })
 
+
 @APP.route('/auth/logout/v1', methods=['POST'])
 def logout():
     data = request.get_json()
     auth_logout_v1(data['token'])
     save()
     return dumps({})
+
 
 @APP.route("/channel/messages/v2", methods=['GET'])
 def messages():
@@ -125,19 +127,29 @@ def channel_invite_v2():
     save()
     return dumps({})
 
+
+@APP.route("channel/leave/v1", method=['POST'])
+def channel_leave():
+    data = request.get_json()
+    channel_leave_v1(data['token'], data['channel_id'])
+    return dumps({})
+
+
 @APP.route("/channel/addowner/v1", method=['POST'])
-def channel_addowner_v1():
+def channel_addowner():
     data = request.get_json(data['token'], data['channel_id'], data['u_id'])
     channel_addowner_v1(data['token'], data['channel_id'], data['u_id'])
     save()
     return dumps({})
 
+
 @APP.route("/channel/removeowner/v1", method=['POST'])
-def channel_addowner_v1():
+def channel_removeowner():
     data = request.get_json(data['token'], data['channel_id'], data['u_id'])
-    channel_addowner_v1(data['token'], data['channel_id'], data['u_id'])
+    channel_removeowner_v1(data['token'], data['channel_id'], data['u_id'])
     save()
     return dumps({})
+
 
 @APP.route("/clear/v1", methods=['DELETE'])
 def clear():
