@@ -156,7 +156,7 @@ def dm_details():
 @APP.route('/dm/leave/v1', methods=['POST'])
 def dm_leave():
     data = request.get_json()
-    details = dm_create_v1(data['token'], data['dm_id'])
+    details = dm_leave_v1(data['token'], data['dm_id'])
     save()
     return dumps({})
 
