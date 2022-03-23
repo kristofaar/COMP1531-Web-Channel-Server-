@@ -6,7 +6,7 @@ from src import config
 A_ERR = 403
 I_ERR = 400
 OK = 200
-'''
+
 @pytest.fixture
 def reg_two_users_and_create_two_channels():
     clear_resp = requests.delete(config.url + 'clear/v1')
@@ -85,7 +85,7 @@ def test_two_users_one_message(reg_two_users_and_create_two_channels):
     resp3_data = resp3.json()
     resp4 = requests.get(config.url + 'channel/messages/v2', params={'token': reg_two_users_and_create_two_channels['token2'], 'channel_id': reg_two_users_and_create_two_channels['ch_id2'], 'start': 0})
     assert resp4.status_code == OK
-    resp4_data = resp3.json()
+    resp4_data = resp4.json()
     assert resp3_data['start'] == 0
     assert resp3_data['end'] == -1
     assert resp4_data['start'] == 0
@@ -112,12 +112,21 @@ def test_message_edit_unauthorised(reg_two_users_and_create_two_channels):
     resp1 = requests.post(config.url + 'message/send/v1', json={'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'message': 'hi'})
     assert resp1.status_code == OK
     resp1_data = resp1.json()
-    resp2 = requests.put(config.url + 'message/edit/v1', json={'token': reg_two_users_and_create_two_channels['token2'], 'message_id': resp1_data['message_id'], 'message': 'hi1'})
-    assert resp2.status_code == A_ERR
+    resp2 = requests.post(config.url + 'channel/join/v2', json={'token':reg_two_users_and_create_two_channels['token2'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1']})
+    assert resp2.status_code == OK
+    resp3 = requests.put(config.url + 'message/edit/v1', json={'token': reg_two_users_and_create_two_channels['token2'], 'message_id': resp1_data['message_id'], 'message': 'hi1'})
+    assert resp3.status_code == A_ERR
 
 def test_message_edit_invalid_id(reg_two_users_and_create_two_channels):
     resp = requests.put(config.url + 'message/edit/v1', json={'token': reg_two_users_and_create_two_channels['token1'], 'message_id': 123312321345, 'message': 'hi'})
     assert resp.status_code == I_ERR
+
+def test_message_edit_not_in_channel(reg_two_users_and_create_two_channels):
+    resp1 = requests.post(config.url + 'message/send/v1', json={'token': reg_two_users_and_create_two_channels['token2'], 'channel_id': reg_two_users_and_create_two_channels['ch_id2'], 'message': 'hi'})
+    assert resp1.status_code == OK
+    resp1_data = resp1.json()
+    resp2 = requests.put(config.url + 'message/edit/v1', json={'token': reg_two_users_and_create_two_channels['token1'], 'message_id': resp1_data['message_id'], 'message': 'hi1'})
+    assert resp2.status_code == I_ERR
 
 def test_message_edit_bad_length(reg_two_users_and_create_two_channels):
     resp1 = requests.post(config.url + 'message/send/v1', json={'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'message': 'hi'})
@@ -179,11 +188,20 @@ def test_message_remove_expired_token(reg_two_users_and_create_two_channels):
     assert resp.status_code == A_ERR
 
 def test_message_remove_unauthorised(reg_two_users_and_create_two_channels):
-    resp1 = requests.post(config.url + 'message/send/v1', json={'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1']})
+    resp1 = requests.post(config.url + 'message/send/v1', json={'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'message': 'hello'})
     assert resp1.status_code == OK
     resp1_data = resp1.json()
-    resp2 = requests.delete(config.url + 'message/remove/v1', json={'token': reg_two_users_and_create_two_channels['token2'], 'message_id': resp1_data['message_id']})
-    assert resp2.status_code == A_ERR
+    resp2 = requests.post(config.url + 'channel/join/v2', json={'token':reg_two_users_and_create_two_channels['token2'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1']})
+    assert resp2.status_code == OK
+    resp3 = requests.delete(config.url + 'message/remove/v1', json={'token': reg_two_users_and_create_two_channels['token2'], 'message_id': resp1_data['message_id']})
+    assert resp3.status_code == A_ERR
+
+def test_message_remove_not_in_channel(reg_two_users_and_create_two_channels):
+    resp1 = requests.post(config.url + 'message/send/v1', json={'token': reg_two_users_and_create_two_channels['token2'], 'channel_id': reg_two_users_and_create_two_channels['ch_id2'], 'message': 'hi'})
+    assert resp1.status_code == OK
+    resp1_data = resp1.json()
+    resp2 = requests.delete(config.url + 'message/remove/v1', json={'token': reg_two_users_and_create_two_channels['token1'], 'message_id': resp1_data['message_id']})
+    assert resp2.status_code == I_ERR
 
 def test_message_remove_invalid_id(reg_two_users_and_create_two_channels):
     resp = requests.delete(config.url + 'message/remove/v1', json={'token': reg_two_users_and_create_two_channels['token1'], 'message_id': 123312321345})
@@ -226,4 +244,4 @@ def test_message_remove_global_owner(reg_two_users_and_create_two_channels):
     assert resp3.status_code == OK
     resp_data = resp3.json()
     assert len(resp_data['messages']) == 0
-    '''
+    

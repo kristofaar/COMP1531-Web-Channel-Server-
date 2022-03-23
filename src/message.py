@@ -41,7 +41,7 @@ def message_send_v1(token, channel_id, message):
     channels = storage['channels']
     
     #search through channels by id until id is matched
-    ch = next((channel for channel in channels if channel_id == channel['channel_id_and_name']['channel_id']), None)
+    ch = next((channel for channel in channels if int(channel_id) == channel['channel_id_and_name']['channel_id']), None)
     if ch == None:
         raise InputError("Invalid Channel Id")
 
@@ -108,13 +108,14 @@ def message_edit_v1(token, message_id, message):
 
     users = storage['users']
     channels = storage['channels']
-    
+    user = next((user for user in users if auth_user_id == user['id']), None)
+
     #search through channels by id until id is matched
     msg = None
     ch = None
-    for user_channel in users['channels']:
+    for user_channel in user['channels']:
         ch = next((channel for channel in channels if user_channel['channel_id'] == channel['channel_id_and_name']['channel_id']), None)
-        msg = next((mssg for mssg in ch['messages'] if message_id == mssg['message_id']), None)
+        msg = next((msg for msg in ch['messages'] if int(message_id) == msg['message_id']), None)
         if msg != None:
             break
     
@@ -168,13 +169,14 @@ def message_remove_v1(token, message_id):
 
     users = storage['users']
     channels = storage['channels']
-    
+    user = next((user for user in users if auth_user_id == user['id']), None)
+
     #search through channels by id until id is matched
     msg = None
     ch = None
-    for user_channel in users['channels']:
+    for user_channel in user['channels']:
         ch = next((channel for channel in channels if user_channel['channel_id'] == channel['channel_id_and_name']['channel_id']), None)
-        msg = next((mssg for mssg in ch['messages'] if message_id == mssg['message_id']), None)
+        msg = next((msg for msg in ch['messages'] if int(message_id) == msg['message_id']), None)
         if msg != None:
             break
     
