@@ -10,6 +10,7 @@ from src.data_store import data_store
 from src.channels import channels_create_v1,channels_listall_v1,channels_list_v1
 from src.channel import channel_details_v1, channel_invite_v1, channel_join_v1, channel_messages_v1
 from src.other import clear_v1
+from src.message import message_send_v1, message_edit_v1, message_remove_v1
 import pickle
 
 def quit_gracefully(*args):
@@ -133,6 +134,28 @@ def invite():
 def messages():
     return dumps(channel_messages_v1(request.args.get('token'), request.args.get('channel_id'), request.args.get('start')))
 
+@APP.route("/message/send/v1", methods=['POST'])
+def send_message():
+    data = request.get_json()
+    details = message_send_v1(data['token'], data['channel_id'], data['message'])
+    save()
+    return dumps({
+        'message_id': details['message_id']
+    })
+
+@APP.route("/message/edit/v1", methods=['PUT'])
+def edit_message():
+    data = request.get_json()
+    message_edit_v1(data['token'], data['message_id'], data['message'])
+    save()
+    return dumps({})
+
+@APP.route("/message/remove/v1", methods=['DELETE'])
+def remove_message():
+    data = request.get_json()
+    message_remove_v1(data['token'], data['message_id'])
+    save()
+    return dumps({})
 
 
 @APP.route("/clear/v1", methods=['DELETE'])
