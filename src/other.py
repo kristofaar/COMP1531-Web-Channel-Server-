@@ -6,6 +6,7 @@ def clear_v1():
     store = data_store.get()
     store['users'] = []
     store['channels'] = []
+    store['dms'] = []
     store['no_users'] = True
     store['session_id'] = 0
     data_store.set(store)
