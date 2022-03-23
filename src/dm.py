@@ -46,6 +46,7 @@ def dm_create_v1(token, u_ids):
         handles.append(users[id-1]['handle'])
 
     #creates dm name by concatenating handles
+    handles.sort()
     name = ', '.join(handles) 
     
     #id creation is based off the last dm id
