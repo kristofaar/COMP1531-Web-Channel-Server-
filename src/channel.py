@@ -24,10 +24,10 @@ Exceptions:
                 - Occurs when u_id refers to a user who is already a member of the channel
     AccessError - Occurs when channel_id is valid and the authorised user is not a member of the channel
 '''
-    # check token 
+    # check token
     if not check_if_valid(token):
         raise AccessError("Invalid Token")
-        
+
     # staging variables
     check_if_valid(token)
     storage = data_store.get()
@@ -89,7 +89,7 @@ Return Value:
     Returns channel_id, channel name, whether or not the channel is 
     public, the owner members, and all members of the channel.
 '''
-    # check token 
+    # check token
     if not check_if_valid(token):
         raise AccessError("Invalid Token")
 
@@ -158,7 +158,7 @@ Exceptions:
 Return Value:
     Returns {messages, start, end} always, where end is the index of the final message, -1 if up to date.
 '''
-    # check token 
+    # check token
     if not check_if_valid(token):
         raise AccessError("Invalid Token")
 
@@ -232,7 +232,7 @@ Exceptions:
 Return Value:
     Returns {} always
 '''
-    # check token 
+    # check token
     if not check_if_valid(token):
         raise AccessError("Invalid Token")
 
@@ -295,7 +295,7 @@ def channel_leave_v1(token, channel_id):
     Return Value:
         Returns {} always
     '''
-    # check token 
+    # check token
     if not check_if_valid(token):
         raise AccessError("Invalid Token")
 
@@ -336,6 +336,8 @@ def channel_leave_v1(token, channel_id):
         if u_channel['channel_id_and_name']['channel_id'] == channel_id:
             user['channels'].remove(u_channel)
 
+    data_store.set(storage)
+
     return {
     }
 
@@ -362,7 +364,7 @@ def channel_addowner_v1(token, channel_id, u_id):
     Return Value:
         Returns {} always
     '''
-    # check token 
+    # check token
     if not check_if_valid(token):
         raise AccessError("Invalid Token")
 
@@ -418,8 +420,11 @@ def channel_addowner_v1(token, channel_id, u_id):
         raise InputError(
             description='User getting added is not a member of channel')
 
-    # adds u_id to channel owner list now 
+    # adds u_id to channel owner list now
     channel['owner'].append(u_id)
+
+    data_store.set(storage)
+
     return {}
 
 
@@ -445,10 +450,10 @@ def channel_removeowner_v1(token, channel_id, u_id):
     Return Value:
         Returns {} always
     '''
-    # check token 
+    # check token
     if not check_if_valid(token):
         raise AccessError("Invalid Token")
-        
+
     # staging variables
     check_if_valid(token)
     storage = data_store.get()
@@ -499,8 +504,10 @@ def channel_removeowner_v1(token, channel_id, u_id):
         raise InputError(
             description='User getting removed is the only owner of channel')
 
-    # removing u_id from channel owners and members list 
+    # removing u_id from channel owners and members list
     channel['owner'].remove(u_id)
     channel['members'].remove(u_id)
+
+    data_store.set(storage)
 
     return {}
