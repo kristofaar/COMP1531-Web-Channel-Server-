@@ -12,6 +12,22 @@ def clear_v1():
     return {
     }
 
+"""Owner perms checker"""
+def owner_perms(u_id, ch_id):
+    store = data_store.get()
+    ch = next((channel for channel in store['channels'] if ch_id == channel['channel_id_and_name']['channel_id']), None)
+    if not ch:
+        return False
+    user = next((user for user in store['users'] if user['id'] == u_id), None)
+    if not user:
+        return False
+    is_owner = next((owner for owner in ch['owner'] if owner == u_id), None)
+    if is_owner != None or user['global_owner']:
+        return True
+    else:
+        return False
+    
+
 """Session Id functions"""
 def generate_new_session_id():
     store = data_store.get()
@@ -20,6 +36,7 @@ def generate_new_session_id():
     return store['session_id']
 
 #checks if the session id is valid, assumes that u_id exists
+#needs to be added to all iter_1 functions
 def check_if_valid(token):
     store = data_store.get()
     try:
@@ -38,7 +55,7 @@ def check_if_valid(token):
         return False
 
 """ Token functions """
-
+# add a try except as if the token is invalid it might break the whole code
 def create_token(auth_user_id):
     '''Create a unique token for a user'''
     token = jwt.encode({'id': auth_user_id}, SECRET, algorithm='HS256')
@@ -46,3 +63,4 @@ def create_token(auth_user_id):
 
 def read_token(token):
     return jwt.decode(token, SECRET, algorithms=["HS256"])['id']
+
