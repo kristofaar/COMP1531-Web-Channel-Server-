@@ -180,12 +180,6 @@ def remove_message():
     return dumps({})
 
 
-@APP.route('/dm/leave/v1', methods=['POST'])
-def dm_leave():
-    data = request.get_json()
-    details = dm_leave_v1(data['token'], data['dm_id'])
-    save()
-    return dumps({})
 
 @APP.route("/clear/v1", methods=['DELETE'])
 def clear():
