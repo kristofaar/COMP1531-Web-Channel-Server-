@@ -61,7 +61,7 @@ def test_channels_list_invalid_token(reg_two_users_and_create_two_channels):
 def test_channels_list_expired_token(reg_two_users_and_create_two_channels):
     resp1 = requests.post(config.url + 'auth/logout/v1', json={'token': reg_two_users_and_create_two_channels['token1']})
     assert resp1.status_code == OK
-    resp2 = requests.post(config.url + 'channels/list/v2', json={'token': reg_two_users_and_create_two_channels['token1']})
+    resp2 = requests.get(config.url + 'channels/list/v2', params={'token': reg_two_users_and_create_two_channels['token1']})
     assert resp2.status_code == A_ERR
 
 #list working
@@ -85,12 +85,12 @@ def test_channels_listall_invalid_token(reg_two_users_and_create_two_channels):
 def test_channels_listall_expired_token(reg_two_users_and_create_two_channels):
     resp1 = requests.post(config.url + 'auth/logout/v1', json={'token': reg_two_users_and_create_two_channels['token1']})
     assert resp1.status_code == OK
-    resp2 = requests.post(config.url + 'channels/listall/v2', json={'token': reg_two_users_and_create_two_channels['token1']})
+    resp2 = requests.get(config.url + 'channels/listall/v2', params={'token': reg_two_users_and_create_two_channels['token1']})
     assert resp2.status_code == A_ERR
 
 #listall working
 def test_channels_listall(reg_two_users_and_create_two_channels):
-    resp1 = requests.get(config.url + 'channels/list/v2', params={'token': reg_two_users_and_create_two_channels['token1']})
+    resp1 = requests.get(config.url + 'channels/listall/v2', params={'token': reg_two_users_and_create_two_channels['token1']})
     assert resp1.status_code == OK
     resp1_data = resp1.json()
     assert resp1_data['channels'][0]['channel_id'] == reg_two_users_and_create_two_channels['ch_id1']

@@ -118,14 +118,14 @@ def details():
 @APP.route('/channel/join/v2', methods=['POST'])
 def join():
     data = request.get_json()
-    details = channel_join_v1(data['token'], data['channel_id'])
+    channel_join_v1(data['token'], data['channel_id'])
     save()
     return dumps({})
 
 @APP.route('/channel/invite/v2', methods=['POST'])
 def invite():
     data = request.get_json()
-    details = channel_invite_v1(data['token'], data['channel_id'], data['u_id'])
+    channel_invite_v1(data['token'], data['channel_id'], data['u_id'])
     save()
     return dumps({})
 

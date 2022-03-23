@@ -2,7 +2,7 @@ from multiprocessing import dummy
 from src.data_store import data_store
 from src.error import InputError
 from src.error import AccessError
-from src.other import create_token, read_token
+from src.other import create_token, read_token, check_if_valid
 
 def channels_list_v1(token):
     '''
@@ -18,6 +18,8 @@ def channels_list_v1(token):
         Returns a dictionary of channel ids and channel names when successful
     '''
     storage = data_store.get()
+    if not check_if_valid(token):
+        raise AccessError("Invalid token")
     user_id = read_token(token)
     users = storage['users']
     
@@ -49,6 +51,8 @@ def channels_listall_v1(token):
     '''
     channel_list = []
     storage = data_store.get()
+    if not check_if_valid(token):
+        raise AccessError("Invalid token")
     user_id = read_token(token)
     users = storage['users']
     
@@ -87,6 +91,8 @@ def channels_create_v1(token, name, is_public):
     '''
     #staging variables
     storage = data_store.get()
+    if not check_if_valid(token):
+        raise AccessError("Invalid token")
     user_id = read_token(token)
     users = storage['users']
     channels = storage['channels']
