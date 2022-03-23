@@ -32,16 +32,22 @@ def dm_create_v1(token, u_ids):
     if curr_user == None:
         raise AccessError("Invalid User Id ")
     
-
-
     u_ids.append(user_id)
     u_ids.sort()
 
-    name = ''
+    handles = []
 
+    #checks for duplicate in u_ids
+    if len(u_ids) != len(set(u_ids)):
+        raise InputError("U_ids Contains Duplicate(s)")
 
-    for ids in u_ids:
-        name += users[ids-1]['handle'] + ', '
+    #adds handle to list of handles
+    for id in u_ids:
+        handles.append(users[id-1]['handle'])
+
+    #creates dm name by concatenating handles
+    name = ', '.join(handles) 
+    
     #id creation is based off the last dm id
     dm_id = 1
     if len(dm):
