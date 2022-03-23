@@ -9,7 +9,7 @@ def channels_list_v1(token):
     Provides a list of all the channels that the user is a part of
 
     Arguments:
-        auth_user_id     (int)  - passes in the unique user id of whoever ran the funtion
+        token     (string)  - passes in the unique user token of whoever ran the funtion
     
     Exceptions:
         AccessError - Occurrs when the user id provided is not valid
@@ -41,7 +41,7 @@ def channels_listall_v1(token):
     Provides a list of all channels, including private channels
 
     Arguments:
-        auth_user_id     (int)  - passes in the unique user id of whoever ran the funtion
+        token     (string)  - passes in the unique user token of whoever ran the funtion
         
     Exceptions:
         N/A

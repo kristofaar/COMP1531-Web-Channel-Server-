@@ -29,6 +29,7 @@ initial_object = {
     #users will contain a list of dictionaries containing in order: id, email, name_first, name_last, handle
     'users': [],
     'channels': [],
+    'dms': [],
     'no_users': True,
     'session_id': 0,
 }
