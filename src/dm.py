@@ -32,18 +32,19 @@ def dm_create_v1(token, u_ids):
     if curr_user == None:
         raise AccessError("Invalid User Id ")
     
-    
-    members = u_ids.append(user_id)
+    u_ids.append(user_id)
+    u_ids.sort()
+
     name = ''
     for ids in u_ids:
         name += users[ids-1]['handle']
     #id creation is based off the last dm id
     dm_id = 1
     if len(dm):
-        dm_id = dm[len(dm) - 1]['dm_id'] + 1
+       dm_id = dm[len(dm) - 1]['dm_id'] + 1
 
     #updating the data store
-    dm.append({'dm_id': dm_id, 'name' : name, 'owner': [user_id], 'members': [members], 'messages': []})
+    dm.append({'dm_id': dm_id, 'name' : name, 'owner': [user_id], 'members': u_ids, 'messages': []})
 
     #updating user
     curr_user['dms'].append({'dm_id' : dm_id, 'name' : name})
@@ -102,10 +103,13 @@ Return Value:
 
     #staging variables
     storage = data_store.get()
+    
+    if not check_if_valid(token):
+        raise AccessError("Invalid token")
     auth_user_id = read_token(token)
-
     dms = storage['dms']
     users = storage['users']
+
 
     # Check auth_user_id is registered 
     check_auth_user_id = next((user for user in users if auth_user_id == user['id']), None)
@@ -113,19 +117,24 @@ Return Value:
         raise AccessError("Invalid User")
 
     #search through dms by id until id is matched
-    dm = next((dm for dm in dms if dm_id == dm['dm']['dm_id']), None)
-    if dm == None:
+    curr_dm = next((dm for dm in dms if int(dm_id) == dm['dm_id']), None)
+    if curr_dm == None:
         raise InputError("Invalid dm id")
+    dm_name = curr_dm['name']
 
     #check if auth_user_id is a member of the dm queried
-    if auth_user_id not in dm['members']:
+    if int(auth_user_id) not in curr_dm['members']:
         raise AccessError("Unauthorised User: User is not in dm")
 
     #generate lists of dm members
     dm_members = []
-    for member in dm['member']:
+    for member in curr_dm['members']:
         curr_user = next((user for user in users if member == user['id']), None)
-        dm_members.append(user)
+        dm_members.append({'u_id': curr_user['id'], 
+                           'email': curr_user['email'], 
+                           'name_first': curr_user['name_first'], 
+                           'name_last': curr_user['name_last'], 
+                           'handle_str': curr_user['handle']})
 
     return {"name": dm_name, "members": dm_members}
 

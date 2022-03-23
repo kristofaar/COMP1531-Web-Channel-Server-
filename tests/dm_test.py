@@ -44,7 +44,7 @@ def test_dm_list(reg_two_users_and_create_dm):
     assert resp2_data['dms'][0]['dm_id'] == reg_two_users_and_create_dm['dm_id']
     #assert resp2_data['dm'][0]['name'] == '' 
 
-'''
+
 def test_dm_details(reg_two_users_and_create_dm):
     resp = requests.get(config.url + 'dm/details/v1', params={'token': reg_two_users_and_create_dm['token1'], 'dm_id': reg_two_users_and_create_dm['dm_id']})
     assert resp.status_code == OK
@@ -52,4 +52,3 @@ def test_dm_details(reg_two_users_and_create_dm):
     #assert resp_data['name'] == 
     assert resp_data['members'][0]['u_id'] == reg_two_users_and_create_dm['u_id1']
     assert resp_data['members'][1]['u_id'] == reg_two_users_and_create_dm['u_id2']
-'''
