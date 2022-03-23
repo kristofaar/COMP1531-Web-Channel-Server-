@@ -9,6 +9,7 @@ from src.auth import auth_login_v1, auth_register_v1, auth_logout_v1
 from src.data_store import data_store
 from src.channels import channels_create_v1,channels_listall_v1,channels_list_v1
 from src.channel import channel_details_v1, channel_invite_v1, channel_join_v1, channel_messages_v1
+from src.dm import dm_create_v1, dm_list_v1, dm_remove_v1, dm_details_v1, dm_leave_v1, dm_messages_v1
 from src.other import clear_v1
 import pickle
 
@@ -65,7 +66,7 @@ def echo():
         'data': data
     })
 
-
+#AUTH FUNCTION WRAPPERS
 @APP.route("/auth/login/v2", methods=['POST'])
 def login():
     data = request.get_json()
@@ -94,6 +95,7 @@ def logout():
     save()
     return dumps({})
 
+#CHANNEL FUNCTION WRAPPERS
 @APP.route('/channels/create/v2', methods=['POST'])
 def create():
     data = request.get_json()
@@ -133,7 +135,30 @@ def invite():
 def messages():
     return dumps(channel_messages_v1(request.args.get('token'), request.args.get('channel_id'), request.args.get('start')))
 
+#DM FUNCTION WRAPPERS
+@APP.route('/dm/create/v1', methods=['POST'])
+def dm_create():
+    data = request.get_json()
+    details = dm_create_v1(data['token'], data['u_ids'])
+    save()
+    return dumps({
+        'dm_id': details['dm_id']
+    })
 
+@APP.route('/dm/list/v1', methods=['GET'])
+def dm_list():
+    return dm_list_v1(request.args.get("token"))
+
+@APP.route('/dm/details/v1', methods=['GET'])
+def dm_details():
+    return dm_details_v1(request.args.get("token"), request.args.get("dm_id"))
+
+@APP.route('/dm/leave/v1', methods=['POST'])
+def dm_leave():
+    data = request.get_json()
+    details = dm_create_v1(data['token'], data['dm_id'])
+    save()
+    return dumps({})
 
 @APP.route("/clear/v1", methods=['DELETE'])
 def clear():
