@@ -48,7 +48,7 @@ def test_message_send_bad_length(reg_two_users_and_create_two_channels):
     resp1 = requests.post(config.url + 'message/send/v1', json={'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'message': ''})
     assert resp1.status_code == I_ERR
     msg = 'a'
-    for i in range(1000):
+    for _ in range(1000):
         msg += 'a'
     resp2 = requests.post(config.url + 'message/send/v1', json={'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'message': msg})
     assert resp2.status_code == I_ERR
@@ -133,7 +133,7 @@ def test_message_edit_bad_length(reg_two_users_and_create_two_channels):
     assert resp1.status_code == OK
     resp1_data = resp1.json()
     msg = 'a'
-    for i in range(1000):
+    for _ in range(1000):
         msg += 'a'
     resp2 = requests.put(config.url + 'message/edit/v1', json={'token': reg_two_users_and_create_two_channels['token1'], 'message_id': resp1_data['message_id'], 'message': msg})
     assert resp2.status_code == I_ERR
