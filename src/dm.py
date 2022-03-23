@@ -4,6 +4,7 @@ from src.error import AccessError
 from src.other import create_token, read_token
 import hashlib, jwt
 
+<<<<<<< HEAD
 def dm_create_v1(token, u_ids):
     '''
     Creates a new dm between the current user and the users inputed
@@ -21,6 +22,8 @@ def dm_create_v1(token, u_ids):
     '''
     pass
 
+=======
+>>>>>>> c09ac829fd61b8bf2d67f5d958e8c2cfefbf47d4
 def dm_list_v1():
     pass
 
