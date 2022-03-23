@@ -39,7 +39,7 @@ def test_dm_list(reg_two_users_and_create_dm):
     assert resp1.status_code == OK
     resp2 = requests.get(config.url + 'dm/list/v1', params={'token': reg_two_users_and_create_dm['token1']})
     assert resp2.status_code == OK
-    resp1_data = resp1.json()
+    
     resp2_data = resp2.json()
     assert resp2_data['dms'][0]['dm_id'] == reg_two_users_and_create_dm['dm_id']
     #assert resp2_data['dm'][0]['name'] == '' 
