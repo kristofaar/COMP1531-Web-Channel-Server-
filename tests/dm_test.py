@@ -114,9 +114,8 @@ def test_dm_leave_basic(reg_two_users_and_create_dm):
     leave = requests.post(config.url + 'dm/leave/v1', json={'token': reg_two_users_and_create_dm['token2'], 'dm_id': reg_two_users_and_create_dm['dm_id']})
     assert leave.status_code == OK
 
-    details = requests.get(config.url + 'dm/details/v1', params={'token': reg_two_users_and_create_dm['token1'], 'dm_id': reg_two_users_and_create_dm['dm_id']})
-    assert details.status_code == OK
-    details_data = details.json()
+    dmlist = requests.get(config.url + 'dm/list/v1', params={'token': reg_two_users_and_create_dm['token2']})
+    assert dmlist.status_code == OK
+    dmlist_data = dmlist.json()
    
-    assert details_data['members'][0]['u_id'] == reg_two_users_and_create_dm['u_id1']
-    assert resp_data['members'][1]['u_id'] == []
+    assert len(dmlist_data['dms']) == 0
