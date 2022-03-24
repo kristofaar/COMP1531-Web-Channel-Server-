@@ -213,6 +213,18 @@ def users_all():
 def user_profile():
     return {}
 
+@APP.route("/user/profile/setname/v1", methods=["GET"])
+def user_profile():
+    return {}
+
+@APP.route("/user/profile/setemail/v1", methods=["GET"])
+def user_profile():
+    return {}
+
+@APP.route("/user/profile/sethandle/v1", methods=["GET"])
+def user_profile():
+    return {}
+
 
 #### NO NEED TO MODIFY BELOW THIS POINT
 
