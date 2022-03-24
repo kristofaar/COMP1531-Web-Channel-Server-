@@ -32,3 +32,34 @@ def users_all_v1(token):
                        "name_last": user["name_last"],
                        "handle_str": user["handle"]})
     return {"users": output}
+
+def user_profile_v1(token, u_id):
+    '''
+    For a valid user, returns associated details about the user.
+
+    Arguments:
+        token (str) - The user's session token.
+        u_id (int)  - The user's user ID.
+
+    Exceptions:
+        InputError  - Occurs when u_id does not refer to a valid user.
+
+    Return Value:
+        Returns information about a user's user_id, email, first name, last name, and handle when given a valid user u_id.
+    '''
+
+    storage = data_store.get()
+    users = storage["users"]
+
+    for user in users:
+        if u_id == user["u_id"] and read_token(token) is not None:
+            return {
+                "u_id": user["id"], 
+                "email": user["email"], 
+                "name_first": user["name_first"],
+                "name_last": user["name_last"],
+                "handle_str": user["handle"]})
+            }
+        else:
+            raise InputError("Invalid user ID")
+            return {}
