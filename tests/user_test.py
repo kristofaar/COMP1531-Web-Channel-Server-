@@ -45,3 +45,29 @@ def test_user_profile(reg_user):
     assert resp.json() == [{
         "u_id": reg_user["u_id"]
     }]
+
+# Tests for user/profile/setname/v1
+def test_setname_valid(reg_user):
+    resp = requests.put(config.url + "user/profile/setname/v1", json={"token": reg_user["token"], "new_first", "new_last"})
+    assert resp.status_code == OK
+    assert resp.json() == [{
+        "name_first" == "new_first",
+        "name_last" == "new_last",
+    }]
+def test_invalid_name_first(reg_user):
+    resp = requests.put(config.url + "user/profile/setname/v1", json={"token": reg_user["token"], "A" * 100, "new_last"})
+    assert resp.status_code == I_ERR
+def test_invalid_name_last(reg_user):
+    resp = requests.put(config.url + "user/profile/setname/v1", json={"token": reg_user["token"], "new_first", "A" * 100})
+    assert resp.status_code == I_ERR
+
+# Tests for user/profile/setemail/v1
+def test_setemail_valid(reg_user):
+def test_invalid_email(reg_user):
+def test_duplicate_email(reg_user):
+
+# Tests for user/profile/sethandle/v1
+def test_sethandle_valid(reg_user):
+def test_invalid_handle_len(reg_user):
+def test_non_alnum_handle(reg_user):
+def test_duplicate_handle(reg_user):
