@@ -213,15 +213,15 @@ def users_all():
 def user_profile():
     return {}
 
-@APP.route("/user/profile/setname/v1", methods=["GET"])
+@APP.route("/user/profile/setname/v1", methods=["PUT"])
 def user_profile():
     return {}
 
-@APP.route("/user/profile/setemail/v1", methods=["GET"])
+@APP.route("/user/profile/setemail/v1", methods=["PUT"])
 def user_profile():
     return {}
 
-@APP.route("/user/profile/sethandle/v1", methods=["GET"])
+@APP.route("/user/profile/sethandle/v1", methods=["PUT"])
 def user_profile():
     return {}
 
