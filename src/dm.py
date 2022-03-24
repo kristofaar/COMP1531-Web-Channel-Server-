@@ -137,19 +137,19 @@ def dm_remove_v1(token, dm_id):
 
 def dm_details_v1(token, dm_id):
     '''
-returns name of dm and members of associated dm
+    returns name of dm and members of associated dm
 
-Arguments:
-    token        (str)    - passes in the unique token of whoever ran the funtion
-    dm_id        (int)    - passes in the unique dm id of the dm we are enquiring about
+    Arguments:
+        token        (str)    - passes in the unique token of whoever ran the funtion
+        dm_id        (int)    - passes in the unique dm id of the dm we are enquiring about
 
-Exceptions:
-    InputError  - Occurs when dm_id does not refer to a valid dm
-    AccessError - Occurs when dm_id is valid and the authorised user is not a member of the dm
-
-Return Value:
-    Returns name of the dm, and the members of the dm
-    '''
+    Exceptions:
+        InputError  - Occurs when dm_id does not refer to a valid dm
+        AccessError - Occurs when dm_id is valid and the authorised user is not a member of the dm
+    
+    Return Value:
+        Returns name of the dm, and the members of the dm
+        '''
 
     #staging variables
     storage = data_store.get()
@@ -188,7 +188,8 @@ Return Value:
 
     return {"name": dm_name, "members": dm_members}
 
-
+def dm_leave_v1():
+    pass
 
 def dm_messages_v1():
     pass
