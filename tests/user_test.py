@@ -8,6 +8,18 @@ I_ERR = 400
 OK = 200
 
 @pytest.fixture
+def reg_user():
+    clear_resp = requests.delete(config.url + "clear/v1")
+    assert clear_resp.status_code == OK
+    resp = requests.post(config.url + "auth/register/v2", json={"email": "1@test.test", "password": "1testtest", "name_first": "first_test", "name_last": "first_test"})
+    assert resp.status_code == OK
+    resp_data = resp.json()
+    return {
+        "token": resp_data["token"], 
+        "u_id": resp_data["auth_user_id"]
+    }
+
+@pytest.fixture
 def reg_two_users():
     clear_resp = requests.delete(config.url + 'clear/v1')
     assert clear_resp.status_code == OK
