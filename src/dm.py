@@ -55,7 +55,7 @@ def dm_create_v1(token, u_ids):
        dm_id = dm[len(dm) - 1]['dm_id'] + 1
 
     #updating the data store
-    dm.append({'dm_id': dm_id, 'name' : name, 'owner': [user_id], 'members': u_ids, 'messages': []})
+    dm.append({'dm_id': dm_id, 'name' : name, 'owner': user_id, 'members': u_ids, 'messages': []})
 
     #updating user
     curr_user['dms'].append({'dm_id' : dm_id, 'name' : name})
