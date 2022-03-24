@@ -95,9 +95,10 @@ def test_dm_list_multiple(reg_two_users_and_create_dm, reg_another_two_users_and
     assert dmlist_data['dms'] == [{'dm_id': reg_two_users_and_create_dm['dm_id'], 'name': dmdet1_data['name']},{'dm_id': dmcreate_data['dm_id'], 'name': dmdet2_data['name']}]
 '''
 #test working dm remove
+
 def test_dm_remove_basic(reg_two_users_and_create_dm):
     remove = requests.delete(config.url + 'dm/remove/v1', json={'token': reg_two_users_and_create_dm['token1'], 'dm_id': reg_two_users_and_create_dm['dm_id']})
-    remove.json()
+    remove_data = remove.json()
     dmlist = requests.get(config.url + 'dm/list/v1', params={'token': reg_two_users_and_create_dm['token1']})
     assert dmlist.status_code == OK
     dmlist_data = dmlist.json()

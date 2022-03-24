@@ -89,7 +89,7 @@ def dm_list_v1(token):
     #if no user has the given id raise an error
     if curr_user == None:
         raise AccessError("Invalid User Id ")
-        
+
     return {
         'dms': curr_user['dms']
     }
