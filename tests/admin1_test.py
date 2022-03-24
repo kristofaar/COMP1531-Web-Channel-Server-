@@ -133,9 +133,6 @@ def test_admin_user_remove_v1_first_remove_second_check_channels(reg_two_users_a
                assert msg['message'] is 'Removed user'
     '''
 
-# still working on it
-
-
 def test_admin_user_remove_v1_first_remove_second_check_dm(reg_two_users_and_create_two_channels):
     # second user makes dm msg to first user
     resp = requests.post(config.url + 'dm/create/v1', json={
@@ -176,3 +173,6 @@ def test_admin_user_remove_v1_removing_global_user(reg_two_users_and_create_two_
     resp1 = requests.delete(config.url + 'admin/user/remove/v1', json={
         'token': reg_two_users_and_create_two_channels['token2'], 'u_id': reg_two_users_and_create_two_channels['u_id1']})
     resp1.status_code = OK
+
+# tests for admin/userpermission/change/v1
+

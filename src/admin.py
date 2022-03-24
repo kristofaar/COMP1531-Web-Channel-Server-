@@ -84,3 +84,4 @@ def admin_user_remove_v1(token, u_id):
     data_store.set(storage)
 
     return {}
+
