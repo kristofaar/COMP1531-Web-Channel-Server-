@@ -110,9 +110,7 @@ def auth_register_v1(email, password, name_first, name_last):
         handle += str(num_of_same_handle)
     
     #id creation is based off the last person's id
-    new_id = 1
-    if len(storage['users']):
-        new_id = storage['users'][len(storage['users']) - 1]['id'] + 1
+    new_id = generate_new_session_id()
     
     is_first = False
     if storage['no_users']:

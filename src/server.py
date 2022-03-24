@@ -44,6 +44,8 @@ try:
     storage['users'] = datas['users']
     storage['channels'] = datas['channels']
     storage['no_users'] = datas['no_users']
+    storage['dms'] = datas['dms']
+    storage['session_id'] = datas['session_id']
     data_store.set(storage)
 except Exception:
     pass
@@ -51,7 +53,7 @@ except Exception:
 #persistence
 def save():
     storage = data_store.get()
-    data = {'users': storage['users'], 'channels': storage['channels'], 'no_users': storage['no_users']}
+    data = {'users': storage['users'], 'channels': storage['channels'], 'no_users': storage['no_users'], 'dms': storage['dms'], 'session_id': storage['session_id']}
     with open('datastore.p', 'wb+') as FILE:
         pickle.dump(data, FILE)
         
