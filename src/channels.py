@@ -2,14 +2,14 @@ from multiprocessing import dummy
 from src.data_store import data_store
 from src.error import InputError
 from src.error import AccessError
-from src.other import create_token, read_token
+from src.other import create_token, read_token, check_if_valid
 
 def channels_list_v1(token):
     '''
     Provides a list of all the channels that the user is a part of
 
     Arguments:
-        auth_user_id     (int)  - passes in the unique user id of whoever ran the funtion
+        token     (string)  - passes in the unique user token of whoever ran the funtion
     
     Exceptions:
         AccessError - Occurrs when the user id provided is not valid
@@ -18,6 +18,8 @@ def channels_list_v1(token):
         Returns a dictionary of channel ids and channel names when successful
     '''
     storage = data_store.get()
+    if not check_if_valid(token):
+        raise AccessError("Invalid token")
     user_id = read_token(token)
     users = storage['users']
     
@@ -39,7 +41,7 @@ def channels_listall_v1(token):
     Provides a list of all channels, including private channels
 
     Arguments:
-        auth_user_id     (int)  - passes in the unique user id of whoever ran the funtion
+        token     (string)  - passes in the unique user token of whoever ran the funtion
         
     Exceptions:
         N/A
@@ -49,6 +51,8 @@ def channels_listall_v1(token):
     '''
     channel_list = []
     storage = data_store.get()
+    if not check_if_valid(token):
+        raise AccessError("Invalid token")
     user_id = read_token(token)
     users = storage['users']
     
@@ -87,6 +91,8 @@ def channels_create_v1(token, name, is_public):
     '''
     #staging variables
     storage = data_store.get()
+    if not check_if_valid(token):
+        raise AccessError("Invalid token")
     user_id = read_token(token)
     users = storage['users']
     channels = storage['channels']
