@@ -12,6 +12,7 @@ from src.channel import channel_details_v1, channel_invite_v1, channel_join_v1, 
 from src.dm import dm_create_v1, dm_list_v1, dm_remove_v1, dm_details_v1, dm_leave_v1, dm_messages_v1
 from src.other import clear_v1
 from src.message import message_send_v1, message_edit_v1, message_remove_v1, message_senddm_v1
+from src.user import users_all_v1
 import pickle
 
 def quit_gracefully(*args):
@@ -210,6 +211,11 @@ def clear():
     save()
     return dumps({})
     
+#USER FUNCTION WRAPPERS
+@APP.route('/users/all/v1', methods=['GET'])
+def users_all():
+    return users_all_v1(request.args.get("token"))
+
 
 #### NO NEED TO MODIFY BELOW THIS POINT
 
