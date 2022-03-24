@@ -94,7 +94,6 @@ def test_dm_list_multiple(reg_two_users_and_create_dm, reg_another_two_users_and
     assert dmlist_data['dms'] == [{'dm_id': reg_two_users_and_create_dm['dm_id'], 'name': dmdet1_data['name']},{'dm_id': dmcreate_data['dm_id'], 'name': dmdet2_data['name']}]
 
 #test working dm remove
-
 def test_dm_remove_basic(reg_two_users_and_create_dm):
     remove = requests.delete(config.url + 'dm/remove/v1', json={'token': reg_two_users_and_create_dm['token1'], 'dm_id': reg_two_users_and_create_dm['dm_id']})
     assert remove.status_code == OK
@@ -108,6 +107,16 @@ def test_dm_details_basic(reg_two_users_and_create_dm):
     resp = requests.get(config.url + 'dm/details/v1', params={'token': reg_two_users_and_create_dm['token1'], 'dm_id': reg_two_users_and_create_dm['dm_id']})
     assert resp.status_code == OK
     resp_data = resp.json()
-    #assert resp_data['name'] == 
     assert resp_data['members'][0]['u_id'] == reg_two_users_and_create_dm['u_id1']
     assert resp_data['members'][1]['u_id'] == reg_two_users_and_create_dm['u_id2']
+
+def test_dm_leave_basic(reg_two_users_and_create_dm):
+    leave = requests.post(config.url + 'dm/leave/v1', json={'token': reg_two_users_and_create_dm['token2'], 'dm_id': reg_two_users_and_create_dm['dm_id']})
+    assert leave.status_code == OK
+
+    details = requests.get(config.url + 'dm/details/v1', params={'token': reg_two_users_and_create_dm['token1'], 'dm_id': reg_two_users_and_create_dm['dm_id']})
+    assert details.status_code == OK
+    details_data = details.json()
+   
+    assert details_data['members'][0]['u_id'] == reg_two_users_and_create_dm['u_id1']
+    assert resp_data['members'][1]['u_id'] == []
