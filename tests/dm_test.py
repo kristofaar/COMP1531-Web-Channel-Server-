@@ -26,7 +26,6 @@ def reg_two_users_and_create_dm():
     'dm_id': resp3_data['dm_id']}
 @pytest.fixture
 def reg_another_two_users_and_dm():
-    
     reg1 = requests.post(config.url + 'auth/register/v2', json={'email': '3@test.test', 'password': '3testtest', 'name_first': 'third_name', 'name_last': 'third_last_name'})
     assert reg1.status_code == OK
     reg2 = requests.post(config.url + 'auth/register/v2', json={'email': '4@lol.lol', 'password': '4abcabc', 'name_first': 'Fourth_boi', 'name_last': 'Fourth_last'})
@@ -60,7 +59,7 @@ def test_dm_create_expired_token(reg_two_users_and_create_dm):
 #detail errors
 
 #test working create
-def test_dm_create(reg_two_users_and_create_dm):
+def test_dm_create_basic(reg_two_users_and_create_dm):
     resp2 = requests.get(config.url + 'dm/list/v1', params={'token': reg_two_users_and_create_dm['token1']})
     assert resp2.status_code == OK
     resp2_data = resp2.json()
@@ -69,7 +68,7 @@ def test_dm_create(reg_two_users_and_create_dm):
     #assert resp2_data['dm'][0]['name'] == ''
 
 #test working dm list
-def test_dm_list(reg_another_two_users_and_dm):
+def test_dm_list_basic(reg_another_two_users_and_dm):
     dmlist = requests.get(config.url + 'dm/list/v1', params={'token': reg_another_two_users_and_dm['token1']})
     assert dmlist.status_code == OK
     dmlist_data = dmlist.json()
@@ -93,23 +92,21 @@ def test_dm_list_multiple(reg_two_users_and_create_dm, reg_another_two_users_and
     dmdet2_data = dmdet2.json()
 
     assert dmlist_data['dms'] == [{'dm_id': reg_two_users_and_create_dm['dm_id'], 'name': dmdet1_data['name']},{'dm_id': dmcreate_data['dm_id'], 'name': dmdet2_data['name']}]
-'''
+
 #test working dm remove
 
 def test_dm_remove_basic(reg_two_users_and_create_dm):
     remove = requests.delete(config.url + 'dm/remove/v1', json={'token': reg_two_users_and_create_dm['token1'], 'dm_id': reg_two_users_and_create_dm['dm_id']})
-    remove_data = remove.json()
     dmlist = requests.get(config.url + 'dm/list/v1', params={'token': reg_two_users_and_create_dm['token1']})
     assert dmlist.status_code == OK
     dmlist_data = dmlist.json()
     assert dmlist_data['dms'] == []
-'''
+
 #test working dm details
-def test_dm_details(reg_two_users_and_create_dm):
+def test_dm_details_basic(reg_two_users_and_create_dm):
     resp = requests.get(config.url + 'dm/details/v1', params={'token': reg_two_users_and_create_dm['token1'], 'dm_id': reg_two_users_and_create_dm['dm_id']})
     assert resp.status_code == OK
     resp_data = resp.json()
     #assert resp_data['name'] == 
     assert resp_data['members'][0]['u_id'] == reg_two_users_and_create_dm['u_id1']
     assert resp_data['members'][1]['u_id'] == reg_two_users_and_create_dm['u_id2']
-    

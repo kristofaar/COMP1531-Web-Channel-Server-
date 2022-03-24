@@ -56,7 +56,7 @@ def dm_create_v1(token, u_ids):
        dm_id = dm[len(dm) - 1]['dm_id'] + 1
 
     #updating the data store
-    dm.append({'dm_id': dm_id, 'name' : name, 'owner': user_id, 'members': u_ids, 'messages': []})
+    dm.append({'dm_id': dm_id, 'name' : name, 'owner': [user_id], 'members': u_ids, 'messages': []})
 
     #updating user
     curr_user['dms'].append({'dm_id' : dm_id, 'name' : name})
@@ -94,7 +94,38 @@ def dm_list_v1(token):
         'dms': curr_user['dms']
     }
 
-def dm_remove_v1():
+def dm_remove_v1(token, dm_id):
+    '''
+    Remove an existing DM, so all members are no longer in the DM. This can only be done by the original creator of the DM.
+
+    Arguments:
+        token     (string)  - passes in the unique user token of whoever ran the funtion.
+        dm_id     (int)     - asses in the unique channel id of the dm we are removing.
+    
+    Exceptions:
+        AccessError - Occurrs when the dm_id provided is valid but the user is not the creator.
+        AccessError - Occurrs when the dm_id provided is valid but the user is not in the dm.
+        InputError  - Occurrs when the dm_id provided is not valid.
+
+    Return Value:
+        NULL
+    '''
+    storage = data_store.get()
+    
+    if not check_if_valid(token):
+        raise AccessError("Invalid token")
+    user_id = read_token(token)
+    dms = storage['dms']
+    users = storage['users']
+
+    # Check auth_user_id is registered 
+    check_user_id = next((user for user in users if user_id == user['id']), None)
+    if check_user_id == None:
+        raise AccessError("Invalid User")
+    
+
+    
+
     pass
 
 def dm_details_v1(token, dm_id):
