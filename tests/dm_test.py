@@ -7,7 +7,7 @@ from src import config
 A_ERR = 403
 I_ERR = 400
 OK = 200
-'''
+
 @pytest.fixture
 def reg_two_users_and_create_dm():
     clear_resp = requests.delete(config.url + 'clear/v1')
@@ -93,19 +93,17 @@ def test_dm_list_multiple(reg_two_users_and_create_dm, reg_another_two_users_and
     dmdet2_data = dmdet2.json()
 
     assert dmlist_data['dms'] == [{'dm_id': reg_two_users_and_create_dm['dm_id'], 'name': dmdet1_data['name']},{'dm_id': dmcreate_data['dm_id'], 'name': dmdet2_data['name']}]
-
+'''
 #test working dm remove
 
-def test_dm_remove(reg_two_users_and_create_dm):
-    resp1 = requests.post(config.url + 'dm/create/v1', json={'token': reg_two_users_and_create_dm['token1'], 'u_ids': [reg_two_users_and_create_dm['u_id2']]})
-    assert resp1.status_code == OK
-    resp2 = requests.get(config.url + 'dm/list/v1', params={'token': reg_two_users_and_create_dm['token1']})
-    assert resp2.status_code == OK
-    resp2 = requests.delete(config.url + 'dm/remove/v1', json={'token': reg_two_users_and_create_dm['token1'], 'dm_id': resp1_data['dm_id']})
-    resp1_data = resp1.json()
-    resp2_data = resp2.json()
-    assert resp2_data['dms'][1]['dm_id'] == resp1_data['dm_id']
-
+def test_dm_remove_basic(reg_two_users_and_create_dm):
+    remove = requests.delete(config.url + 'dm/remove/v1', json={'token': reg_two_users_and_create_dm['token1'], 'dm_id': reg_two_users_and_create_dm['dm_id']})
+    remove_data = remove.json()
+    dmlist = requests.get(config.url + 'dm/list/v1', params={'token': reg_two_users_and_create_dm['token1']})
+    assert dmlist.status_code == OK
+    dmlist_data = dmlist.json()
+    assert dmlist_data['dms'] == []
+'''
 #test working dm details
 def test_dm_details(reg_two_users_and_create_dm):
     resp = requests.get(config.url + 'dm/details/v1', params={'token': reg_two_users_and_create_dm['token1'], 'dm_id': reg_two_users_and_create_dm['dm_id']})
@@ -114,4 +112,4 @@ def test_dm_details(reg_two_users_and_create_dm):
     #assert resp_data['name'] == 
     assert resp_data['members'][0]['u_id'] == reg_two_users_and_create_dm['u_id1']
     assert resp_data['members'][1]['u_id'] == reg_two_users_and_create_dm['u_id2']
-    '''
+    
