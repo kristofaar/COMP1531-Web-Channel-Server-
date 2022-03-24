@@ -8,7 +8,10 @@ from src import config
 from src.auth import auth_login_v1, auth_register_v1, auth_logout_v1
 from src.data_store import data_store
 from src.channel import channel_join_v1, channel_messages_v1, channel_invite_v1, channel_details_v1, channel_leave_v1, channel_removeowner_v1, channel_addowner_v1
+from src.channels import channels_create_v1,channels_listall_v1,channels_list_v1
+from src.dm import dm_create_v1, dm_list_v1, dm_remove_v1, dm_details_v1, dm_leave_v1, dm_messages_v1
 from src.other import clear_v1
+from src.message import message_send_v1, message_edit_v1, message_remove_v1, message_senddm_v1
 import pickle
 
 
@@ -44,6 +47,8 @@ try:
     storage['users'] = datas['users']
     storage['channels'] = datas['channels']
     storage['no_users'] = datas['no_users']
+    storage['dms'] = datas['dms']
+    storage['session_id'] = datas['session_id']
     data_store.set(storage)
 except Exception:
     pass
@@ -53,8 +58,7 @@ except Exception:
 
 def save():
     storage = data_store.get()
-    data = {'users': storage['users'],
-            'channels': storage['channels'], 'no_users': storage['no_users']}
+    data = {'users': storage['users'], 'channels': storage['channels'], 'no_users': storage['no_users'], 'dms': storage['dms'], 'session_id': storage['session_id']}
     with open('datastore.p', 'wb+') as FILE:
         pickle.dump(data, FILE)
 
@@ -69,7 +73,7 @@ def echo():
         'data': data
     })
 
-
+#AUTH FUNCTION WRAPPERS
 @APP.route("/auth/login/v2", methods=['POST'])
 def login():
     data = request.get_json()
@@ -101,32 +105,45 @@ def logout():
     save()
     return dumps({})
 
+#CHANNEL FUNCTION WRAPPERS
+@APP.route('/channels/create/v2', methods=['POST'])
+def create():
+    data = request.get_json()
+    details = channels_create_v1(data['token'], data['name'], data['is_public'])
+    save()
+    return dumps({
+        'channel_id': details['channel_id']
+    })
 
-@APP.route("/channel/messages/v2", methods=['GET'])
-def messages():
-    return dumps(channel_messages_v1(request.args.get('token'), request.args.get('channel_id'), request.args.get('start')))
+@APP.route('/channels/list/v2', methods=['GET'])
+def channel_list():
+    return channels_list_v1(request.args.get("token"))
 
+@APP.route('/channels/listall/v2', methods=['GET'])
+def channel_listall():
+    return channels_listall_v1(request.args.get("token"))
+    
+@APP.route('/channel/details/v2', methods=['GET'])
+def details():
+    return channel_details_v1(request.args.get("token"), request.args.get("channel_id"))
 
-@APP.route("/channel/details/v2", method=['GET'])
-def channel_details():
-    return dumps(channel_details_v1(request.args.get('token'), int(request.args.get('channel_id'))))
-
-
-@APP.route("/channel/join/v2", method=['POST'])
-def channel_join_v2():
+@APP.route('/channel/join/v2', methods=['POST'])
+def join():
     data = request.get_json()
     channel_join_v1(data['token'], data['channel_id'])
     save()
     return dumps({})
 
-
-@APP.route("/channel/invite/v2", method=['POST'])
-def channel_invite_v2():
+@APP.route('/channel/invite/v2', methods=['POST'])
+def invite():
     data = request.get_json()
     channel_invite_v1(data['token'], data['channel_id'], data['u_id'])
     save()
     return dumps({})
 
+@APP.route("/channel/messages/v2", methods=['GET'])
+def messages():
+    return dumps(channel_messages_v1(request.args.get('token'), request.args.get('channel_id'), request.args.get('start')))
 
 @APP.route("channel/leave/v1", method=['POST'])
 def channel_leave():
@@ -149,6 +166,58 @@ def channel_removeowner():
     channel_removeowner_v1(data['token'], data['channel_id'], data['u_id'])
     save()
     return dumps({})
+
+
+#DM FUNCTION WRAPPERS
+@APP.route('/dm/create/v1', methods=['POST'])
+def dm_create():
+    data = request.get_json()
+    details = dm_create_v1(data['token'], data['u_ids'])
+    save()
+    return dumps({
+        'dm_id': details['dm_id']
+    })
+
+@APP.route('/dm/list/v1', methods=['GET'])
+def dm_list():
+    return dm_list_v1(request.args.get("token"))
+
+@APP.route('/dm/details/v1', methods=['GET'])
+def dm_details():
+    return dm_details_v1(request.args.get("token"), request.args.get("dm_id"))
+
+#MESSAGES FUNCTION WRAPPERS
+@APP.route("/message/send/v1", methods=['POST'])
+def send_message():
+    data = request.get_json()
+    details = message_send_v1(data['token'], data['channel_id'], data['message'])
+    save()
+    return dumps({
+        'message_id': details['message_id']
+    })  
+
+@APP.route("/message/edit/v1", methods=['PUT'])
+def edit_message():
+    data = request.get_json()
+    message_edit_v1(data['token'], data['message_id'], data['message'])
+    save()
+    return dumps({})
+
+@APP.route("/message/remove/v1", methods=['DELETE'])
+def remove_message():
+    data = request.get_json()
+    message_remove_v1(data['token'], data['message_id'])
+    save()
+    return dumps({})
+
+@APP.route("/message/senddm/v1", methods=['POST'])
+def senddm():
+    data = request.get_json()
+    details = message_senddm_v1(data['token'], data['dm_id'], data['message'])
+    save()
+    return dumps({
+        'message_id': details['message_id']
+    })
 
 
 @APP.route("/clear/v1", methods=['DELETE'])

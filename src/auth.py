@@ -110,9 +110,7 @@ def auth_register_v1(email, password, name_first, name_last):
         handle += str(num_of_same_handle)
     
     #id creation is based off the last person's id
-    new_id = 1
-    if len(storage['users']):
-        new_id = storage['users'][len(storage['users']) - 1]['id'] + 1
+    new_id = generate_new_session_id()
     
     is_first = False
     if storage['no_users']:
@@ -122,7 +120,7 @@ def auth_register_v1(email, password, name_first, name_last):
     session_id = generate_new_session_id()
 
     storage['users'].append({'id': new_id, 'email': email, 'name_first': name_first, 'name_last': name_last, 'handle': handle, 
-                            'channels' : [], 'global_owner': is_first, 'password': hashlib.sha256(password.encode()).hexdigest(), 'session_list': [session_id]})
+                            'channels' : [],'dms':[], 'global_owner': is_first, 'password': hashlib.sha256(password.encode()).hexdigest(), 'session_list': [session_id]})
     
     data_store.set(storage)
     return {
