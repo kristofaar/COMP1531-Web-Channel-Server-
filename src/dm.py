@@ -90,6 +90,7 @@ def dm_list_v1(token):
     if curr_user == None:
         raise AccessError("Invalid User Id ")
 
+    
     return {
         'dms': curr_user['dms']
     }
@@ -119,14 +120,20 @@ def dm_remove_v1(token, dm_id):
     users = storage['users']
 
     # Check auth_user_id is registered 
-    check_user_id = next((user for user in users if user_id == user['id']), None)
-    if check_user_id == None:
+    curr_user = next((user for user in users if user_id == user['id']), None)
+    if curr_user == None:
         raise AccessError("Invalid User")
     
+    #check if the user is the owner
+    curr_dm = next((dm for dm in dms if int(dm_id) == dm['dm_id']), None)
+    if user_id not in curr_dm['owner']:
+        raise AccessError("User Is Not Creator")
 
-    
-
-    pass
+    curr_user['dms'].remove({'dm_id': curr_dm['dm_id'], 'name': curr_dm['name']})
+    dms.remove(curr_dm)
+    print(dms)
+    data_store.set(storage)
+    return{}
 
 def dm_details_v1(token, dm_id):
     '''
@@ -182,8 +189,6 @@ Return Value:
     return {"name": dm_name, "members": dm_members}
 
 
-def dm_leave_v1():
-    pass
 
 def dm_messages_v1():
     pass

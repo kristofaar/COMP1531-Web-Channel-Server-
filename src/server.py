@@ -9,7 +9,7 @@ from src.auth import auth_login_v1, auth_register_v1, auth_logout_v1
 from src.data_store import data_store
 from src.channels import channels_create_v1,channels_listall_v1,channels_list_v1
 from src.channel import channel_details_v1, channel_invite_v1, channel_join_v1, channel_messages_v1
-from src.dm import dm_create_v1, dm_list_v1, dm_remove_v1, dm_details_v1, dm_leave_v1, dm_messages_v1
+from src.dm import dm_create_v1, dm_list_v1, dm_remove_v1, dm_details_v1, dm_messages_v1
 from src.other import clear_v1
 from src.message import message_send_v1, message_edit_v1, message_remove_v1
 import pickle
@@ -152,6 +152,13 @@ def dm_create():
 @APP.route('/dm/list/v1', methods=['GET'])
 def dm_list():
     return dm_list_v1(request.args.get("token"))
+
+@APP.route("/dm/remove/v1", methods=['DELETE'])
+def dm_remove():
+    data = request.get_json()
+    dm_remove_v1(data['token'], data['dm_id'])
+    save()
+    return dumps({})
 
 @APP.route('/dm/details/v1', methods=['GET'])
 def dm_details():
