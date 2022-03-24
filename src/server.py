@@ -209,6 +209,10 @@ def clear():
 def users_all():
     return users_all_v1(request.args.get("token"))
 
+@APP.route("/user/profile/v1", methods=["GET"])
+def user_profile():
+    return {}
+
 
 #### NO NEED TO MODIFY BELOW THIS POINT
 
