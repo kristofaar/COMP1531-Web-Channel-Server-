@@ -168,7 +168,7 @@ def test_channel_messages_empty(reg_two_users_and_create_two_channels):
     assert resp_data['start'] == 0
     assert resp_data['end'] == -1
     assert resp_data['messages'] == []
-'''
+
 def test_channel_small_messages(reg_two_users_and_create_two_channels):
     for i in range(2):
         resp = requests.post(config.url + 'message/send/v1', json={'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'message': str(i)})
@@ -326,4 +326,4 @@ def test_channel_removeowner(reg_two_users_and_create_two_channels):
     resp5_data = resp5.json()
     assert len(resp5_data['owner_members']) == 1
     assert len(resp5_data['all_members']) == 2
-'''
+
