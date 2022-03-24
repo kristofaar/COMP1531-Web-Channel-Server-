@@ -44,7 +44,7 @@ def dm_create_v1(token, u_ids):
     #adds handle to list of handles
     for u_id in u_ids:
         match_user = next((user for user in users if u_id == user['id']), None)
-        handles.append(match_user['id'])
+        handles.append(match_user['handle'])
 
     #creates dm name by concatenating handles
     handles.sort()
