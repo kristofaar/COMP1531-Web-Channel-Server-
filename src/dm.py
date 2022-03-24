@@ -42,8 +42,9 @@ def dm_create_v1(token, u_ids):
         raise InputError("U_ids Contains Duplicate(s)")
 
     #adds handle to list of handles
-    for id in u_ids:
-        handles.append(users[id-1]['handle'])
+    for u_id in u_ids:
+        match_user = next((user for user in users if u_id == user['id']), None)
+        handles.append(match_user['id'])
 
     #creates dm name by concatenating handles
     handles.sort()
