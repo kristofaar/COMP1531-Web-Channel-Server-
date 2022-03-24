@@ -11,7 +11,7 @@ from src.channels import channels_create_v1,channels_listall_v1,channels_list_v1
 from src.channel import channel_details_v1, channel_invite_v1, channel_join_v1, channel_messages_v1
 from src.dm import dm_create_v1, dm_list_v1, dm_remove_v1, dm_details_v1, dm_messages_v1
 from src.other import clear_v1
-from src.message import message_send_v1, message_edit_v1, message_remove_v1
+from src.message import message_send_v1, message_edit_v1, message_remove_v1, message_senddm_v1
 import pickle
 
 def quit_gracefully(*args):
@@ -188,7 +188,14 @@ def remove_message():
     save()
     return dumps({})
 
-
+@APP.route("/message/senddm/v1", methods=['POST'])
+def senddm():
+    data = request.get_json()
+    details = message_senddm_v1(data['token'], data['dm_id'], data['message'])
+    save()
+    return dumps({
+        'message_id': details['message_id']
+    })
 
 @APP.route("/clear/v1", methods=['DELETE'])
 def clear():

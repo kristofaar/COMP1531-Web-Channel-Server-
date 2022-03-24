@@ -190,3 +190,73 @@ def message_remove_v1(token, message_id):
     ch['messages'].remove(msg)
     data_store.set(storage)
     return {}
+
+def message_senddm_v1(token, dm_id, message):
+    '''
+    Send a message from authorised_user to the DM specified by dm_id. 
+    Note: Each message should have it's own unique ID, i.e. no messages should share an 
+    ID with another message, even if that other message is in a different channel or DM.
+    
+
+    Arguments:
+        token (String)        - passes in the unique session token of whoever ran the funtion
+        dm_id   (int)         - passes in the unique dm id of the channel we are enquiring about
+        message (String)      - message being sent
+
+    Exceptions:
+        InputError when any of:
+      
+            dm_id does not refer to a valid DM
+            length of message is less than 1 or over 1000 characters
+      
+        AccessError when:
+      
+            dm_id is valid and the authorised user is not a member of the DM
+
+    Return Value:
+        Returns unique message_id.
+    '''
+
+    if not check_if_valid(token):
+        raise AccessError
+    
+    #staging variables
+    storage = data_store.get()
+    auth_user_id = read_token(token)
+
+    dms = storage['dms']
+    
+    #search through channels by id until id is matched
+    dm = next((dm for dm in dms if int(dm_id) == dm['dm_id']), None)
+    if dm == None:
+        raise InputError("Invalid Channel Id")
+
+    #check if auth_user_id is a member of the channel queried
+    if auth_user_id not in dm['members']:
+        raise AccessError("Unauthorised User: User is not in channel")
+
+    if not 1 <= len(message) <= 1000:
+        raise InputError("Invalid message length")
+
+    # Getting the current date
+    # and time
+    datet = datetime.datetime.now(timezone.utc)
+
+    time = datet.replace(tzinfo=timezone.utc)
+    time_sent = time.timestamp()
+
+    #using session id generator to create unique message id
+    message_id = generate_new_session_id()
+
+    #inserting message
+    message_dict = {
+        'message_id': message_id,
+        'u_id': auth_user_id,
+        'message': message,
+        'time_sent': time_sent,
+    }
+    dm['messages'].insert(0, message_dict)
+    data_store.set(storage)
+    return {
+        'message_id': message_id
+    }
