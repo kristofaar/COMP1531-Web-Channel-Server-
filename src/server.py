@@ -227,7 +227,10 @@ def clear():
 #USER FUNCTION WRAPPERS
 @APP.route('/users/all/v1', methods=['GET'])
 def users_all():
-    return users_all_v1(request.args.get("token"))
+    users = users_all_v1(request.args.get("token"))['users']
+    return dumps({
+        'users': users
+    })
 
 
 
