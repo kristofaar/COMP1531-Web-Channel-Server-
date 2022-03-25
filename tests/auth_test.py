@@ -98,47 +98,48 @@ def test_register_and_login_multiple():
 
 def test_handle_no_alphanumeric():
     clear_v1()
-    u_id = auth_register_v1('anemail@email.com', 'verycoolpassword', 'Name123_!@#', 'Name123!@#')['auth_user_id']
-    ch_id = channels_create_v1(u_id, 'hi', True)['channel_id']
-    assert channel_details_v1(u_id, ch_id)['all_members'][0]['handle_str'] == 'name123name123'
+    token = auth_register_v1('anemail@email.com', 'verycoolpassword', 'Name123_!@#', 'Name123!@#')['token']
+    ch_id = channels_create_v1(token, 'hi', True)['channel_id']
+    assert channel_details_v1(token, ch_id)['all_members'][0]['handle_str'] == 'name123name123'
 
 def test_handle_less_than_20():   # check name over 20 letters
     clear_v1()
-    u_id = auth_register_v1('anemail@email.com', 'verycoolpassword', 'NameIsWayPast', 'TwentyCharacters')['auth_user_id']
-    ch_id = channels_create_v1(u_id, 'hi', True)['channel_id']
-    assert channel_details_v1(u_id, ch_id)['all_members'][0]['handle_str'] == 'nameiswaypasttwentyc'
+    token = auth_register_v1('anemail@email.com', 'verycoolpassword', 'NameIsWayPast', 'TwentyCharacters')['token']
+    ch_id = channels_create_v1(token, 'hi', True)['channel_id']
+    assert channel_details_v1(token, ch_id)['all_members'][0]['handle_str'] == 'nameiswaypasttwentyc'
 
 # todo
 
 def test_handle_less_than_20_duplicate():    # check if both handles less than 20, ignore number append (next one tests it)
     clear_v1()
+    auth_register_v1('blah@email.com', 'verycoolpassword', 'a', 'a')
     auth_register_v1('anemail1@email.com', 'verycoolpassword', 'Name#@', 'nAme!@89')
     auth_register_v1('anemail2@email.com', 'verycoolpassword', 'Name', 'nAme!@89')
-    u_id = auth_register_v1('anemail3@email.com', 'verycoolpassword', '!@&name', 'nAme!@89')['auth_user_id']
-    ch_id = channels_create_v1(u_id, 'hi', True)['channel_id']
-    assert channel_details_v1(u_id, ch_id)['all_members'][0]['handle_str'] == 'namename891'
+    token = auth_register_v1('anemail3@email.com', 'verycoolpassword', '!@&name', 'nAme!@89')['token']
+    ch_id = channels_create_v1(token, 'hi', True)['channel_id']
+    assert channel_details_v1(token, ch_id)['all_members'][0]['handle_str'] == 'namename891'
 
 def test_handle_append_number(): # check if right number is appended to handle for identical names over 20 characters
     clear_v1()
     auth_register_v1('anemail1@email.com', 'verycoolpassword', 'NameIsWayPast', 'TwentyCharacters')
     auth_register_v1('anemail2@email.com', 'verycoolpassword', 'NameIsWayPast', 'TwentyCharacters')
-    u_id = auth_register_v1('anemail3@email.com', 'verycoolpassword', 'NameIsWayPast', 'TwentyCharacters')['auth_user_id']
-    ch_id = channels_create_v1(u_id, 'hi', True)['channel_id']
-    assert channel_details_v1(u_id, ch_id)['all_members'][0]['handle_str'] == 'nameiswaypasttwentyc1'
+    token = auth_register_v1('anemail3@email.com', 'verycoolpassword', 'NameIsWayPast', 'TwentyCharacters')['token']
+    ch_id = channels_create_v1(token, 'hi', True)['channel_id']
+    assert channel_details_v1(token, ch_id)['all_members'][0]['handle_str'] == 'nameiswaypasttwentyc1'
 
 def test_handle_no_alphanumeric_name(): # test for name with no letters/numbers so end up with empty space name? 
     clear_v1()
-    u_id = auth_register_v1('anemail3@email.com', 'verycoolpassword', '$^#^*&', '_!@&)@#')['auth_user_id']
-    ch_id = channels_create_v1(u_id, 'hi', True)['channel_id']
-    assert channel_details_v1(u_id, ch_id)['all_members'][0]['handle_str'] == ''
+    token = auth_register_v1('anemail3@email.com', 'verycoolpassword', '$^#^*&', '_!@&)@#')['token']
+    ch_id = channels_create_v1(token, 'hi', True)['channel_id']
+    assert channel_details_v1(token, ch_id)['all_members'][0]['handle_str'] == ''
 
 def test_handle_no_alphanumeric_name_multiple():
     clear_v1()
     auth_register_v1('anemail1@email.com', 'verycoolpassword', '$^#^*&', '_!@&)@#')
     auth_register_v1('anemail2@email.com', 'verycoolpassword', '$^#^*&', '_!@&)@#')
-    u_id = auth_register_v1('anemail3@email.com', 'verycoolpassword', '$^#^*&', '_!@&)@#')['auth_user_id']
-    ch_id = channels_create_v1(u_id, 'hi', True)['channel_id']
-    assert channel_details_v1(u_id, ch_id)['all_members'][0]['handle_str'] == '1'
+    token = auth_register_v1('anemail3@email.com', 'verycoolpassword', '$^#^*&', '_!@&)@#')['token']
+    ch_id = channels_create_v1(token, 'hi', True)['channel_id']
+    assert channel_details_v1(token, ch_id)['all_members'][0]['handle_str'] == '1'
 
 def test_clear_v1_users():
     clear_v1()

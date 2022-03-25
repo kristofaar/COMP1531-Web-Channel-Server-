@@ -1,9 +1,10 @@
 from multiprocessing import dummy
 from src.data_store import data_store
-from src.error import InputError
-import re
+from src.other import generate_new_session_id, check_if_valid, read_token
+from src.error import InputError, AccessError
+import re, hashlib, jwt
 
-
+SECRET = 'heheHAHA111'
 
 def auth_login_v1(email, password):
     '''Given a correct email and associated password returns the user's id.
@@ -23,23 +24,22 @@ def auth_login_v1(email, password):
     storage = data_store.get()
 
     #sentinel variable 
-    email_exists = False
+    login_error = False
     u_id = 0
-
-    for i, user in enumerate(storage['users']):
-        if user['email'] == email:
-            email_exists = True
+    for user in storage['users']:
+        if user['email'] == email and user['password'] == hashlib.sha256(password.encode()).hexdigest():
+            login_error = True
             u_id = user['id']
+            session_id = generate_new_session_id()
+            user['session_list'].append(session_id)
+            print(session_id)
     
     #errors
-    if not email_exists:
-        raise InputError("Email Does Not Exist")
-  
-    for user in storage['passwords']:
-        if user['id'] == u_id and user['password'] != password:
-            raise InputError('Password does not match')
-
+    if not login_error:
+        raise InputError(description="Email/Password Does Not Exist")
+    
     return {
+        'token': jwt.encode({'id': u_id, 'session_id': session_id}, SECRET, algorithm='HS256'),
         'auth_user_id': u_id,
     }
 
@@ -73,21 +73,21 @@ def auth_register_v1(email, password, name_first, name_last):
     regex_email = '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Z|a-z]{2,}$'
     # \\ is used as \ is an escape character and produces a warning when used on its own
     if not re.fullmatch(regex_email, email):
-        raise InputError("Invalid Email")
+        raise InputError(description="Invalid Email")
 
     #errors
     for user in storage['users']:
         if user['email'] == email:
-            raise InputError("Email Duplicate")
+            raise InputError(description="Email Duplicate")
 
     if len(password) < 6:
-        raise InputError("Invalid Password")
+        raise InputError(description="Invalid Password")
     
     if not (len(name_first) <= 50 and len(name_first) >= 1):
-        raise InputError("Invalid First Name") 
+        raise InputError(description="Invalid First Name") 
 
     if not (len(name_last) <= 50 and len(name_last) >= 1):
-        raise InputError("Invalid Last Name") 
+        raise InputError(description="Invalid Last Name") 
 
     #handle creation
     #regular expression to get rid of all non alphanumeric characters
@@ -97,8 +97,9 @@ def auth_register_v1(email, password, name_first, name_last):
     num_of_same_handle = -1
     while num_of_same_handle + 1 < len(storage['users']):
         same_handle = False
+        temp_handle = handle if num_of_same_handle == -1 else handle + str(num_of_same_handle)
         for user in storage['users']:
-            if user['handle'] == handle or user['handle'] == handle + str(num_of_same_handle):
+            if user['handle'] == temp_handle:
                 same_handle = True
                 num_of_same_handle += 1
         if not same_handle:
@@ -109,15 +110,43 @@ def auth_register_v1(email, password, name_first, name_last):
         handle += str(num_of_same_handle)
     
     #id creation is based off the last person's id
-    new_id = 1
-    if len(storage['users']):
-        new_id = storage['users'][len(storage['users']) - 1]['id'] + 1
-
-    storage['users'].append({'id': new_id, 'email': email, 'name_first': name_first, 'name_last': name_last, 'handle': handle, 'channels' : []})
-    storage['passwords'].append({'id': new_id, 'password': password})
+    new_id = generate_new_session_id()
     
+    is_first = False
+    if storage['no_users']:
+        storage['no_users'] = False
+        is_first = True
+    
+    session_id = generate_new_session_id()
 
+    storage['users'].append({'id': new_id, 'email': email, 'name_first': name_first, 'name_last': name_last, 'handle': handle, 
+                            'channels' : [],'dms':[], 'global_owner': is_first, 'password': hashlib.sha256(password.encode()).hexdigest(), 'session_list': [session_id]})
+    
     data_store.set(storage)
     return {
+        'token': jwt.encode({'id': new_id, 'session_id': session_id}, SECRET, algorithm='HS256'),
         'auth_user_id': new_id,
     }
+
+def auth_logout_v1(token):
+    '''Invalidates a token.
+
+    Arguments:
+        token (String)         - A user's session token. 
+
+    Exceptions:
+        AccessError  - Occurs when: 
+            -Token is invalid
+
+    Return Value:
+        Nothing.
+    '''
+    storage = data_store.get()
+    if not check_if_valid(token):
+        raise AccessError(description="Invalid Token")
+    details = jwt.decode(token, SECRET, algorithms=["HS256"])
+    for user in storage['users']:
+        if (details['session_id'] in user['session_list']):
+            user['session_list'].remove(details['session_id'])
+    data_store.set(storage)
+    return {}

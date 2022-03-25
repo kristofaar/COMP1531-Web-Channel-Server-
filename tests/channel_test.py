@@ -31,12 +31,12 @@ def test_invalid_user_id():
 @pytest.fixture
 def one_user_made_two_channels():   # one public and one private, returns both 
     clear_v1()
-    u_id = auth_register_v1('anemail@email.com', 'verycoolpassword', 'Name', 'Name')['auth_user_id']
-    ch_id1 = channels_create_v1(u_id, 'public', True)['channel_id']
-    ch_id2 = channels_create_v1(u_id, 'private', False)['channel_id']
-    first_channel_details = channel_details_v1(u_id, ch_id1)
-    second_channel_details = channel_details_v1(u_id, ch_id2)
-    return {'first': first_channel_details, 'second': second_channel_details, 'u_id': u_id, 'ch_id1': ch_id1, 'ch_id2': ch_id2}
+    details = auth_register_v1('anemail@email.com', 'verycoolpassword', 'Name', 'Name')
+    ch_id1 = channels_create_v1(details['token'], 'public', True)['channel_id']
+    ch_id2 = channels_create_v1(details['token'], 'private', False)['channel_id']
+    first_channel_details = channel_details_v1(details['token'], ch_id1)
+    second_channel_details = channel_details_v1(details['token'], ch_id2)
+    return {'first': first_channel_details, 'second': second_channel_details, 'token': details['token'], 'u_id': details['auth_user_id'], 'ch_id1': ch_id1, 'ch_id2': ch_id2}
 
 # Testing for channel_details  
  
@@ -61,65 +61,72 @@ def test_channel_details_invalid_channel_id(one_user_made_two_channels):
     for i in range(3):
         if i != one_user_made_two_channels['ch_id1'] and i != one_user_made_two_channels['ch_id2']:
             with pytest.raises(InputError):
-                channel_details_v1(one_user_made_two_channels['u_id'], i)
+                channel_details_v1(one_user_made_two_channels['token'], i)
 
 def test_channel_details_unauthorised_user(one_user_made_two_channels):     # second user tries accessing first user channels
-    u_id2 = auth_register_v1('notanemail@email.com', 'verycoolpassword', 'Second', 'User')['auth_user_id']
-    ch_id3 = channels_create_v1(2, 'third_channel', True)['channel_id']    # second user makes a channel (third one in storage)
+    token2 = auth_register_v1('notanemail@email.com', 'verycoolpassword', 'Second', 'User')['token']
+    ch_id3 = channels_create_v1(token2, 'third_channel', True)['channel_id']    # second user makes a channel (third one in storage)
     with pytest.raises(AccessError):
-        channel_details_v1(u_id2, one_user_made_two_channels['ch_id1'])
+        channel_details_v1(token2, one_user_made_two_channels['ch_id1'])
     with pytest.raises(AccessError):
-        channel_details_v1(one_user_made_two_channels['u_id'], ch_id3)  # first user tries accessing second user channels    
+        channel_details_v1(one_user_made_two_channels['token'], ch_id3)  # first user tries accessing second user channels    
 
 def test_channel_details_multiple_members(one_user_made_two_channels):
-    u_id2 = auth_register_v1('notanemail@email.com', 'verycoolpassword', 'Second', 'User')['auth_user_id']
-    channel_join_v1(u_id2, one_user_made_two_channels['ch_id1']) #second user joins channel 1
-    assert channel_details_v1(one_user_made_two_channels['u_id'], one_user_made_two_channels['ch_id1'])['all_members'] == [{'email': 'anemail@email.com',  'handle_str': 'namename',  'name_first': 'Name',  'name_last': 'Name', 'u_id': one_user_made_two_channels['u_id']}, {'email': 'notanemail@email.com',  'handle_str': 'seconduser',  'name_first': 'Second',  'name_last': 'User',  'u_id': u_id2}]
-
+    details2 = auth_register_v1('notanemail@email.com', 'verycoolpassword', 'Second', 'User')
+    channel_join_v1(details2['token'], one_user_made_two_channels['ch_id1']) #second user joins channel 1
+    assert channel_details_v1(one_user_made_two_channels['token'], one_user_made_two_channels['ch_id1'])['all_members'] == [{'email': 'anemail@email.com',  'handle_str': 'namename',  'name_first': 'Name',  'name_last': 'Name', 'u_id': one_user_made_two_channels['u_id']}, {'email': 'notanemail@email.com',  'handle_str': 'seconduser',  'name_first': 'Second',  'name_last': 'User',  'u_id': details2['auth_user_id']}]
+'''
 def test_channel_details_invalid_user(one_user_made_two_channels):
     with pytest.raises(AccessError):
-        channel_details_v1(one_user_made_two_channels['u_id'] + 1, one_user_made_two_channels['ch_id1'])    # second user doesn't exist
-
+        channel_details_v1(one_user_made_two_channels['token'] + 1, one_user_made_two_channels['ch_id1'])    # second user doesn't exist
+'''
 # testing channel_join_v1
 
 def test_channel_join_new_member_join_valid_channel(one_user_made_two_channels):        
-    u_id2 = auth_register_v1('notanemail@email.com', 'verycoolpassword', 'Second', 'User')['auth_user_id']
-    channel_join_v1(u_id2, one_user_made_two_channels['ch_id1'])   # second user joins channel 1 made by first user
-    first_channel_details = channel_details_v1(one_user_made_two_channels['u_id'], one_user_made_two_channels['ch_id1'])
+    details2 = auth_register_v1('notanemail@email.com', 'verycoolpassword', 'Second', 'User')
+    channel_join_v1(details2['token'], one_user_made_two_channels['ch_id1'])   # second user joins channel 1 made by first user
+    first_channel_details = channel_details_v1(one_user_made_two_channels['token'], one_user_made_two_channels['ch_id1'])
     members = first_channel_details['all_members']
-    assert members[1]['u_id'] == u_id2    # check if second user is member of channel 1 now
-
+    assert members[1]['u_id'] == details2['auth_user_id']  # check if second user is member of channel 1 now
+'''
 def test_channel_join_invalid_user_join_valid_channel(one_user_made_two_channels):
     with pytest.raises(AccessError):
-        channel_join_v1(one_user_made_two_channels['u_id'] + 1, one_user_made_two_channels['ch_id1'])   # second user not registered yet
-
+        channel_join_v1(one_user_made_two_channels['token'] + 1, one_user_made_two_channels['ch_id1'])   # second user not registered yet
+'''
 def test_channel_join_new_member_joins_invalid_channel(one_user_made_two_channels):     
-    u_id2 = auth_register_v1('notanemail@email.com', 'verycoolpassword', 'Second', 'User')['auth_user_id'] 
+    token = auth_register_v1('notanemail@email.com', 'verycoolpassword', 'Second', 'User')['token'] 
     for i in range(3):
         if i != one_user_made_two_channels['ch_id1'] and i != one_user_made_two_channels['ch_id2']:
             with pytest.raises(InputError):
-                channel_join_v1(u_id2, i)       # second user tries joining channel 3 (doesn't exist, only 1 and 2)
+                channel_join_v1(token, i)       # second user tries joining channel 3 (doesn't exist, only 1 and 2)
 
 def test_channel_join_already_a_member(one_user_made_two_channels):
-    u_id2 = auth_register_v1('notanemail@email.com', 'verycoolpassword', 'Second', 'User')['auth_user_id']
-    channel_join_v1(u_id2, one_user_made_two_channels['ch_id1'])   
+    token = auth_register_v1('notanemail@email.com', 'verycoolpassword', 'Second', 'User')['token']
+    channel_join_v1(token, one_user_made_two_channels['ch_id1'])   
     with pytest.raises(InputError):
-        channel_join_v1(u_id2, one_user_made_two_channels['ch_id1'])   # second user tries joining channel 1 again
+        channel_join_v1(token, one_user_made_two_channels['ch_id1'])   # second user tries joining channel 1 again
 
 def test_channel_join_new_member_joins_private_channel(one_user_made_two_channels):    
-    u_id2 = auth_register_v1('notanemail@email.com', 'verycoolpassword', 'Second', 'User')['auth_user_id']
+    token = auth_register_v1('notanemail@email.com', 'verycoolpassword', 'Second', 'User')['token']
     with pytest.raises(AccessError):
-        channel_join_v1(u_id2, one_user_made_two_channels['ch_id2'])   # second user tries joining channel 2, which is private
-    
+        channel_join_v1(token, one_user_made_two_channels['ch_id2'])   # second user tries joining channel 2, which is private
+
+def test_channel_join_global_owner(one_user_made_two_channels):
+    details2 = auth_register_v1('notanemail@email.com', 'verycoolpassword', 'Second', 'User')
+    ch_id3 = channels_create_v1(details2['token'], 'third_channel', True)['channel_id']    # second user makes a channel (third one in storage)
+    channel_join_v1(one_user_made_two_channels['token'], ch_id3)
+    assert channel_details_v1(one_user_made_two_channels['token'], ch_id3)['all_members'] == [{'email': 'notanemail@email.com',  'handle_str': 'seconduser',  'name_first': 'Second', 'name_last': 'User', 'u_id': details2['auth_user_id']},
+    {'email': 'anemail@email.com',  'handle_str': 'namename',  'name_first': 'Name', 'name_last': 'Name',  'u_id': one_user_made_two_channels['u_id']}]
+    assert channel_details_v1(one_user_made_two_channels['token'], ch_id3)['owner_members'] == [{'email': 'notanemail@email.com',  'handle_str': 'seconduser',  'name_first': 'Second', 'name_last': 'User', 'u_id': details2['auth_user_id']}]
 
 # testing channel_invite_v1
 
 
 def test_channel_invite_member(one_user_made_two_channels):
     u_id2 = auth_register_v1('notanemail@email.com', 'verycoolpassword', 'Second', 'User')['auth_user_id']
-    channel_invite_v1(one_user_made_two_channels['u_id'], one_user_made_two_channels['ch_id1'], u_id2) # invite second user to channel 1
+    channel_invite_v1(one_user_made_two_channels['token'], one_user_made_two_channels['ch_id1'], u_id2) # invite second user to channel 1
 
-    assert channel_details_v1(one_user_made_two_channels['u_id'], one_user_made_two_channels['ch_id1'])['all_members'] == [{'email': 'anemail@email.com',  'handle_str': 'namename',  'name_first': 'Name',  'name_last': 'Name',  'u_id': one_user_made_two_channels['u_id']}, {'email': 'notanemail@email.com',  'handle_str': 'seconduser',  'name_first': 'Second',  'name_last': 'User',  'u_id': u_id2}]
+    assert channel_details_v1(one_user_made_two_channels['token'], one_user_made_two_channels['ch_id1'])['all_members'] == [{'email': 'anemail@email.com',  'handle_str': 'namename',  'name_first': 'Name',  'name_last': 'Name',  'u_id': one_user_made_two_channels['u_id']}, {'email': 'notanemail@email.com',  'handle_str': 'seconduser',  'name_first': 'Second',  'name_last': 'User',  'u_id': u_id2}]
 
 # def test_channel_invite_public/private? Check if invited to both public and private or dw about it?
 
@@ -128,27 +135,27 @@ def test_channel_invite_invalid_channel(one_user_made_two_channels):
     for i in range(3):
         if i != one_user_made_two_channels['ch_id1'] and i != one_user_made_two_channels['ch_id2']:
             with pytest.raises(InputError):
-                channel_invite_v1(one_user_made_two_channels['u_id'], i, u_id2)    # one user invites second user to 3rd channel (doesn't exist)
-
+                channel_invite_v1(one_user_made_two_channels['token'], i, u_id2)    # one user invites second user to 3rd channel (doesn't exist)
+'''
 def test_channel_invite_invalid_inviter_id(one_user_made_two_channels):   #invalid auth_user_id (one inviting)
     with pytest.raises(AccessError):
         channel_invite_v1(one_user_made_two_channels['u_id'] + 1, one_user_made_two_channels['ch_id1'], one_user_made_two_channels['u_id'])    # second user (not registered) invites first user 
-        
+'''      
 def test_channel_invite_invalid_invitee_id(one_user_made_two_channels):   #invalid u_id (one getting invited)
     with pytest.raises(InputError):
-        channel_invite_v1(one_user_made_two_channels['u_id'], one_user_made_two_channels['ch_id1'], one_user_made_two_channels['u_id'] + 1)    # first user invites second user (not registered)
+        channel_invite_v1(one_user_made_two_channels['token'], one_user_made_two_channels['ch_id1'], one_user_made_two_channels['u_id'] + 1)    # first user invites second user (not registered)
 
 def test_channel_invite_already_member(one_user_made_two_channels):
-    u_id2 = auth_register_v1('notanemail@email.com', 'verycoolpassword', 'Second', 'User')['auth_user_id']
-    channel_join_v1(u_id2, one_user_made_two_channels['ch_id1']) # second user joins first channel
+    details2 = auth_register_v1('notanemail@email.com', 'verycoolpassword', 'Second', 'User')
+    channel_join_v1(details2['token'], one_user_made_two_channels['ch_id1']) # second user joins first channel
     with pytest.raises(InputError):
-        channel_invite_v1(one_user_made_two_channels['u_id'], one_user_made_two_channels['ch_id1'], u_id2)    # one user invites second user to first channel (already member)
+        channel_invite_v1(one_user_made_two_channels['token'], one_user_made_two_channels['ch_id1'], details2['auth_user_id'])    # one user invites second user to first channel (already member)
 
 def test_channel_invite_not_a_member(one_user_made_two_channels):
-    u_id2 = auth_register_v1('notanemail@email.com', 'verycoolpassword', 'Second', 'User')['auth_user_id']
+    token = auth_register_v1('notanemail@email.com', 'verycoolpassword', 'Second', 'User')['token']
     u_id3 = auth_register_v1('anotheremail@email.com', 'verycoolpassword', 'Third', 'User')['auth_user_id']
     with pytest.raises(AccessError):
-        channel_invite_v1(u_id2, one_user_made_two_channels['ch_id1'], u_id3)    # third user invited to first channel by second user (not a member)
+        channel_invite_v1(token, one_user_made_two_channels['ch_id1'], u_id3)    # third user invited to first channel by second user (not a member)
 
 
 # testing channel_messages
@@ -156,16 +163,16 @@ def test_channel_invite_not_a_member(one_user_made_two_channels):
 
 def test_channel_messages_invalid_channel_id():
     clear_v1()
-    u_id = auth_register_v1('anemail@email.com', 'verycoolpassword', 'Name', 'Name')['auth_user_id']
-    ch_id = channels_create_v1(u_id, 'channelName', True)['channel_id']
+    token = auth_register_v1('anemail@email.com', 'verycoolpassword', 'Name', 'Name')['token']
+    ch_id = channels_create_v1(token, 'channelName', True)['channel_id']
     with pytest.raises(InputError):
-        channel_messages_v1(u_id, ch_id + 1, 0)
+        channel_messages_v1(token, ch_id + 1, 0)
 
 def test_channel_messages_invalid_channel_id_empty():
     clear_v1()
-    u_id = auth_register_v1('anemail@email.com', 'verycoolpassword', 'Name', 'Name')['auth_user_id']
+    token = auth_register_v1('anemail@email.com', 'verycoolpassword', 'Name', 'Name')['token']
     with pytest.raises(InputError):
-        channel_messages_v1(u_id, 3, 0)
+        channel_messages_v1(token, 3, 0)
 
 '''def test_channel_messages_invalid_start():
     clear_v1()
@@ -178,26 +185,26 @@ def test_channel_messages_invalid_channel_id_empty():
 
 def test_channel_messages_unauthorised_user():
     clear_v1()
-    u_id1 = auth_register_v1('anemail@email.com', 'verycoolpassword', 'Name', 'Name')['auth_user_id']
-    u_id2 = auth_register_v1('anemail1@email.com', 'verycoolpassword', 'Name', 'Name')['auth_user_id']
-    ch_id = channels_create_v1(u_id1, 'channelName', True)['channel_id']
+    token = auth_register_v1('anemail@email.com', 'verycoolpassword', 'Name', 'Name')['token']
+    token2 = auth_register_v1('anemail1@email.com', 'verycoolpassword', 'Name', 'Name')['token']
+    ch_id = channels_create_v1(token, 'channelName', True)['channel_id']
     with pytest.raises(AccessError):
-        channel_messages_v1(u_id2, ch_id, 0)
-
+        channel_messages_v1(token2, ch_id, 0)
+'''
 def test_channel_messages_invalid_user():
     clear_v1()
     u_id = auth_register_v1('anemail@email.com', 'verycoolpassword', 'Name', 'Name')['auth_user_id']
     ch_id = channels_create_v1(u_id, 'channelName', True)['channel_id']
     with pytest.raises(AccessError):
         channel_messages_v1(u_id + 1, ch_id, 0)
-
+'''
 def test_channel_messages_invalid_start():
     clear_v1()
-    u_id = auth_register_v1('anemail@email.com', 'verycoolpassword', 'Name', 'Name')['auth_user_id']
-    ch_id = channels_create_v1(u_id, 'channelName', True)['channel_id']
+    token = auth_register_v1('anemail@email.com', 'verycoolpassword', 'Name', 'Name')['token']
+    ch_id = channels_create_v1(token, 'channelName', True)['channel_id']
     with pytest.raises(InputError):
-        channel_messages_v1(u_id, ch_id, 3)
-
+        channel_messages_v1(token, ch_id, 3)
+'''
 def test_channel_messages_double_error1():
     clear_v1()
     u_id = auth_register_v1('anemail@email.com', 'verycoolpassword', 'Name', 'Name')['auth_user_id']
@@ -211,15 +218,15 @@ def test_channel_messages_double_error1():
     ch_id = channels_create_v1(u_id, 'channelName', True)['channel_id']
     with pytest.raises(AccessError):
         channel_messages_v1(u_id + 1, ch_id + 1, 3)
-
+'''
 
 #Working tests
 
 def test_channel_messages_empty():
     clear_v1()
-    u_id = auth_register_v1('anemail@email.com', 'verycoolpassword', 'Name', 'Name')['auth_user_id']
-    ch_id = channels_create_v1(u_id, 'channelName', True)['channel_id']
-    assert channel_messages_v1(u_id, ch_id, 0) == {'messages': [], 'start': 0, 'end': -1}
+    token = auth_register_v1('anemail@email.com', 'verycoolpassword', 'Name', 'Name')['token']
+    ch_id = channels_create_v1(token, 'channelName', True)['channel_id']
+    assert channel_messages_v1(token, ch_id, 0) == {'messages': [], 'start': 0, 'end': -1}
 
 '''def test_channel_messages_twenty():
     clear_v1()
