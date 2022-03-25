@@ -165,6 +165,20 @@ def test_dm_remove_multiple_people_in_dm(reg_two_users_and_create_dm, reg_anothe
     assert len(dmlist2_data['dms']) == 1
     assert len(dmlist3_data['dms']) == 1
 
+#test error dm details
+
+def test_details_invalid_token(reg_two_users_and_create_dm):
+    resp = requests.get(config.url + 'dm/details/v1', params={'token': 'invalid_token' , 'dm_id': reg_two_users_and_create_dm['dm_id']})
+    assert resp.status_code == A_ERR
+
+def test_details_invalid_dm_id(reg_two_users_and_create_dm):
+    resp = requests.get(config.url + 'dm/details/v1', params={'token': reg_two_users_and_create_dm['token2'], 'dm_id': -1})
+    assert resp.status_code == I_ERR
+
+def test_details_not_member(reg_two_users_and_create_dm, reg_another_two_users_and_dm):
+    resp = requests.get(config.url + 'dm/details/v1', params={'token': reg_two_users_and_create_dm['token2'], 'dm_id': reg_another_two_users_and_dm['dm_id']})
+    assert resp.status_code == A_ERR
+
 #test working dm details
 def test_dm_details_basic(reg_two_users_and_create_dm):
     resp = requests.get(config.url + 'dm/details/v1', params={'token': reg_two_users_and_create_dm['token1'], 'dm_id': reg_two_users_and_create_dm['dm_id']})
