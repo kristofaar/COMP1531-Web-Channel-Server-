@@ -54,12 +54,6 @@ def check_if_valid(token):
     else:
         return False
 
-""" Token functions """
-def create_token(auth_user_id):
-    '''Create a unique token for a user'''
-    token = jwt.encode({'id': auth_user_id}, SECRET, algorithm='HS256')
-    return token
-
 def read_token(token):
     return jwt.decode(token, SECRET, algorithms=["HS256"])['id']
 

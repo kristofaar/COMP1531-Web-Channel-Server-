@@ -1,7 +1,7 @@
 from src.data_store import data_store
 from src.error import InputError
 from src.error import AccessError
-from src.other import create_token, read_token, check_if_valid
+from src.other import read_token, check_if_valid
 import hashlib, jwt
 
 SECRET = 'heheHAHA111'
