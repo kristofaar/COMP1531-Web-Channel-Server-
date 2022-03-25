@@ -39,7 +39,8 @@ def test_users_two_users(reg_two_users):
     assert resp1_data["users"][0]["u_id"] == reg_two_users["u_id1"]
     assert resp1_data["users"][1]["u_id"] == reg_two_users["u_id2"]
 
-def test_user_profile(reg_user):
+# Tests for user/profile/v1
+def test_user_profile_valid(reg_user):
     resp = requests.get(config.url + "user/profile/v1", params={"token": reg_user["token"], "u_id": reg_user["u_id"]})
     assert resp.status_code == OK
     assert resp.json() == [{
