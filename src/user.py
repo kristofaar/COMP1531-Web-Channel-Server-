@@ -63,7 +63,7 @@ def user_profile_v1(token, u_id):
 
     user_exists = False
     for user in users:
-        if user["u_id"] == u_id:
+        if user["id"] == u_id:
             user_exists = True
             return {
                 "u_id": user["id"], 
@@ -113,7 +113,7 @@ def user_profile_setname_v1(token, name_first, name_last):
     u_id = read_token(token)
 
     for user in users:
-        if user["u_id"] == u_id:
+        if user["id"] == u_id:
             user["name_first"] = name_first
             user["name_last"] = name_last
 
@@ -156,7 +156,7 @@ def user_profile_setemail_v1(token, email):
     u_id = read_token(token)
 
     for user in users:
-        if user["u_id"] == u_id:
+        if user["id"] == u_id:
             user["email"] = email
 
     return {}
@@ -196,14 +196,14 @@ def user_profile_sethandle_v1(token, handle_str):
     
     # Check duplicate handle
     for user in users:
-        if user["handle_str"] == handle_str:
+        if user["handle"] == handle_str:
             raise InputError(description="User handle already exists")
 
     # Get user ID from token
     u_id = read_token(token)
 
     for user in users:
-        if user["u_id"] == u_id:
-            user["handle_str"] = handle_str
+        if user["id"] == u_id:
+            user["handle"] = handle_str
 
     return {}
