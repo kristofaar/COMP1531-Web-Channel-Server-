@@ -184,8 +184,6 @@ def removeowner():
 
 
 # DM FUNCTION WRAPPERS
-
-
 @APP.route('/dm/create/v1', methods=['POST'])
 def dm_create():
     data = request.get_json()
@@ -201,9 +199,18 @@ def dm_list():
     return dm_list_v1(request.args.get("token"))
 
 
+@APP.route("/dm/remove/v1", methods=['DELETE'])
+def dm_remove():
+    data = request.get_json()
+    dm_remove_v1(data['token'], data['dm_id'])
+    save()
+    return dumps({})
+
+
 @APP.route('/dm/details/v1', methods=['GET'])
 def dm_details():
     return dm_details_v1(request.args.get("token"), request.args.get("dm_id"))
+
 
 @APP.route('/dm/leave/v1', methods=['POST'])
 def dm_leave():
@@ -212,11 +219,13 @@ def dm_leave():
     save()
     return dumps({})
 
+
 @APP.route("/dm/messages/v1", methods=['GET'])
 def dm_messages():
     return dumps(dm_messages_v1(request.args.get('token'), request.args.get('dm_id'), request.args.get('start')))
 
-#MESSAGES FUNCTION WRAPPERS
+
+# MESSAGES FUNCTION WRAPPERS
 @APP.route("/message/send/v1", methods=['POST'])
 def send_message():
     data = request.get_json()
@@ -259,18 +268,16 @@ def clear():
     clear_v1()
     save()
     return dumps({})
-    
-#USER FUNCTION WRAPPERS
+
+# USER FUNCTION WRAPPERS
+
+
 @APP.route('/users/all/v1', methods=['GET'])
 def users_all():
     return users_all_v1(request.args.get("token"))
 
 
-
 # NO NEED TO MODIFY BELOW THIS POINT
-
 if __name__ == "__main__":
     signal.signal(signal.SIGINT, quit_gracefully)  # For coverage
     APP.run(port=config.port)  # Do not edit this port
-
-    
