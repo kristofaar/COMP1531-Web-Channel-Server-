@@ -172,6 +172,10 @@ def dm_leave():
     save()
     return dumps({})
 
+@APP.route("/dm/messages/v1", methods=['GET'])
+def dm_messages():
+    return dumps(dm_messages_v1(request.args.get('token'), request.args.get('dm_id'), request.args.get('start')))
+
 #MESSAGES FUNCTION WRAPPERS
 @APP.route("/message/send/v1", methods=['POST'])
 def send_message():

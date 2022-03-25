@@ -196,3 +196,36 @@ def test_dm_leave_basic(reg_two_users_and_create_dm):
     dmlist_data = dmlist.json()
    
     assert len(dmlist_data['dms']) == 0
+
+
+#messages errors
+def test_dm_messages_invalid_token(reg_two_users_and_create_dm):
+    resp = requests.get(config.url + 'dm/messages/v1', params={'token': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c', 'channel_id': reg_two_users_and_create_dm['dm_id'], 'start': 0})
+    assert resp.status_code == A_ERR
+
+def test_dm_messages_expired_token(reg_two_users_and_create_dm):
+    resp1 = requests.post(config.url + 'auth/logout/v1', json={'token': reg_two_users_and_create_dm['token1']})
+    assert resp1.status_code == OK
+    resp2 = requests.get(config.url + 'dm/messages/v1', params={'token': reg_two_users_and_create_dm['token1'], 'dm_id': reg_two_users_and_create_dm['dm_id'], 'start': 0})
+    assert resp2.status_code == A_ERR
+
+def test_dm_messages_unauthorised(reg_two_users_and_create_dm, reg_another_two_users_and_dm):
+    resp = requests.get(config.url + 'dm/messages/v1', params={'token': reg_another_two_users_and_dm['token2'], 'dm_id': reg_two_users_and_create_dm['dm_id'], 'start': 0})
+    assert resp.status_code == A_ERR
+
+def test_dm_messages_invalid_channel(reg_two_users_and_create_dm):
+    resp = requests.get(config.url + 'dm/messages/v1', params={'token': reg_two_users_and_create_dm['token1'], 'dm_id': -1, 'start': 0})
+    assert resp.status_code == I_ERR
+
+def test_dm_messages_big_start(reg_two_users_and_create_dm):
+    resp = requests.get(config.url + 'dm/messages/v1', params={'token': reg_two_users_and_create_dm['token1'], 'dm_id': reg_two_users_and_create_dm['dm_id'], 'start': 1})
+    assert resp.status_code == I_ERR
+
+#messages working
+def test_dm_messages_empty(reg_two_users_and_create_dm):
+    resp = requests.get(config.url + 'dm/messages/v1', params={'token': reg_two_users_and_create_dm['token1'], 'dm_id': reg_two_users_and_create_dm['dm_id'], 'start': 0})
+    assert resp.status_code == OK
+    resp_data = resp.json()
+    assert resp_data['start'] == 0
+    assert resp_data['end'] == -1
+    assert resp_data['messages'] == []
