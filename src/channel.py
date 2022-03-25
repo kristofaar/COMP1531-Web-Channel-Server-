@@ -28,7 +28,7 @@ Exceptions:
     #staging variables
     storage = data_store.get()
     if not check_if_valid(token):
-        raise AccessError("Invalid token")
+        raise AccessError(description="Invalid token")
     auth_user_id = read_token(token)
 
     channels = storage['channels']
@@ -37,20 +37,20 @@ Exceptions:
     #search through channels by id until id is matched
     ch = next((channel for channel in channels if int(channel_id) == channel['channel_id_and_name']['channel_id']), None)
     if ch == None:
-        raise InputError("Invalid Channel Id")
+        raise InputError(description="Invalid Channel Id")
     
     #Check auth_user_id is a member 
     if auth_user_id not in ch['members']:
-        raise AccessError("Authorised user not in channel")
+        raise AccessError(description="Authorised user not in channel")
 
     #search through users until u_id is matched
     add_user = next((user for user in users if int(u_id) == user['id']), None)
     if add_user == None:
-        raise InputError("Adding an Invalid User")
+        raise InputError(description="Adding an Invalid User")
     
     #check u_id is not in channel members
     if int(u_id) in ch['members']:
-        raise InputError("User already in channel")
+        raise InputError(description="User already in channel")
     
     #add user to channel
     ch['members'].append(int(u_id))
@@ -84,7 +84,7 @@ Return Value:
     #staging variables
     storage = data_store.get()
     if not check_if_valid(token):
-        raise AccessError("Invalid token")
+        raise AccessError(description="Invalid token")
     auth_user_id = read_token(token)
 
     channels = storage['channels']
@@ -93,11 +93,11 @@ Return Value:
     #search through channels by id until id is matched
     ch = next((channel for channel in channels if int(channel_id) == channel['channel_id_and_name']['channel_id']), None)
     if ch == None:
-        raise InputError("Invalid Channel Id")
+        raise InputError(description="Invalid Channel Id")
 
     #check if auth_user_id is a member of the channel queried
     if auth_user_id not in ch['members']:
-        raise AccessError("Unauthorised User: User is not in channel")
+        raise AccessError(description="Unauthorised User: User is not in channel")
 
     #generate lists of users 
     owner_members = []
@@ -140,7 +140,7 @@ Return Value:
 
     storage = data_store.get()
     if not check_if_valid(token):
-        raise AccessError("Invalid token")
+        raise AccessError(description="Invalid token")
     auth_user_id = read_token(token)
 
     #getting channel
@@ -153,7 +153,7 @@ Return Value:
 
     #errors
     if not channel_exists:
-        raise InputError("Channel ID does not exist")
+        raise InputError(description="Channel ID does not exist")
     
     id_exists = False
     for user in temp_channel['members']:
@@ -161,10 +161,10 @@ Return Value:
             id_exists = True
     
     if not id_exists:
-        raise AccessError("Unauthorised ID")
+        raise AccessError(description="Unauthorised ID")
     
     if int(start) > len(temp_channel['messages']):
-        raise InputError("Start index is greater than number of messages")
+        raise InputError(description="Start index is greater than number of messages")
     
     #storing 50 messages into ret_messages
     ret_messages = []
@@ -203,7 +203,7 @@ Return Value:
     #staging variables
     storage = data_store.get()
     if not check_if_valid(token):
-        raise AccessError("Invalid token")
+        raise AccessError(description="Invalid token")
     auth_user_id = read_token(token)
 
     channels = storage['channels']
@@ -215,14 +215,14 @@ Return Value:
     # check channel is valid 
     channel = next((channel for channel in channels if int(channel_id) == channel['channel_id_and_name']['channel_id']), None)
     if channel == None:
-        raise InputError("Invalid Channel Id")
+        raise InputError(description="Invalid Channel Id")
 
     # check if already a member 
     member = next((member for member in channel['members'] if auth_user_id == member), None)
     if channel['is_public'] == False and member == None and not user['global_owner']:  # New member but private channel
-        raise AccessError('Channel is private and user is not a member')
+        raise AccessError(description='Channel is private and user is not a member')
     elif member != None:  # Existing member 
-        raise InputError('User already a channel member')
+        raise InputError(description='User already a channel member')
         
     
     # If conditions met, add new member to channel
