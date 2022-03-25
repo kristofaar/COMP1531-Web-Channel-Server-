@@ -56,6 +56,7 @@ def user_profile_v1(token, u_id):
 
     storage = data_store.get()
     users = storage["users"]
+    removed_users = storage["removed_users"]
 
     # Check valid token
     if not check_if_valid(token):
@@ -65,6 +66,14 @@ def user_profile_v1(token, u_id):
     for user in users:
         if user["id"] == u_id:
             user_exists = True
+            if u_id in removed_users[u_id]:
+                return {
+                    "u_id": user["id"], 
+                    "email": user["email"], 
+                    "name_first": "Removed",
+                    "name_last": "user",
+                    "handle_str": user["handle"]})
+                }
             return {
                 "u_id": user["id"], 
                 "email": user["email"], 
