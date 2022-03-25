@@ -63,18 +63,20 @@ def user_profile_v1(token, u_id):
         raise AccessError(description="Invalid token")
 
     user_exists = False
+    for removed_user in removed_users:
+        if removed_user['u_id'] = u_id:
+            user_exists = True
+            return {
+                "u_id": removed_user["id"], 
+                "email": removed_user["email"], 
+                "name_first": "Removed",
+                "name_last": "user",
+                "handle_str": removed_user["handle"]
+            }
+
     for user in users:
         if user["id"] == u_id:
             user_exists = True
-            for removed_user in removed_users:
-                if u_id in removed_user['u_id']:
-                    return {
-                        "u_id": user["id"], 
-                        "email": user["email"], 
-                        "name_first": "Removed",
-                        "name_last": "user",
-                        "handle_str": user["handle"]
-                    }
             return {
                 "u_id": user["id"], 
                 "email": user["email"], 
