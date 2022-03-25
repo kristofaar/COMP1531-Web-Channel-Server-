@@ -221,6 +221,63 @@ def dm_leave_v1(token, dm_id):
     data_store.set(storage)
     return{}
 
+def dm_messages_v1(token, dm_id, start):
 
-def dm_messages_v1():
-    pass
+    '''
+Returns information on up to 50 messages within the dm
+
+Arguments:
+    token                     - User who is trying to access the messages
+    dm_id      (Integer)      - Id of dm that the messages are being outputted from
+    start      (Integer)      - Which index of messages to start outputting
+
+Exceptions:
+    InputError  - Occurs when:
+        - dm_id does not refer to a valid dm
+        - start is greater than the total number of messages in the dm
+    AccessError - Occurs when:
+        - dm_id is valid and the authorised user is not a member of the dm
+        - auth_user_id is not a valid id in the system
+
+Return Value:
+    Returns {messages, start, end} always, where end is the index of the final message, -1 if up to date.
+'''
+
+    storage = data_store.get()
+    if not check_if_valid(token):
+        raise AccessError("Invalid token")
+    auth_user_id = read_token(token)
+
+    #getting channel
+    dm_exists = False
+    temp_dm = {}
+    for dm in storage['dms']:
+        if dm['dm_id'] == int(dm_id):
+            dm_exists = True
+            temp_dm = dm
+
+    #errors
+    if not dm_exists:
+        raise InputError("Channel ID does not exist")
+    
+    id_exists = False
+    for user in temp_dm['members']:
+        if user == auth_user_id:
+            id_exists = True
+    
+    if not id_exists:
+        raise AccessError("Unauthorised ID")
+    
+    if int(start) > len(temp_dm['messages']):
+        raise InputError("Start index is greater than number of messages")
+    
+    #storing 50 messages into ret_messages
+    ret_messages = []
+    for i in range(int(start), int(start) + 50 if int(start) + 50 < len(temp_dm['messages']) else len(temp_dm['messages'])):
+        ret_messages.append(temp_dm['messages'][i])
+
+    return {
+        'messages': ret_messages,
+        'start': int(start),
+        'end': int(start) + 50 if int(start) + 50 < len(temp_dm['messages']) else -1,
+    }

@@ -173,7 +173,7 @@ def dm_leave():
     return dumps({})
 
 @APP.route("/dm/messages/v1", methods=['GET'])
-def messages():
+def dm_messages():
     return dumps(dm_messages_v1(request.args.get('token'), request.args.get('dm_id'), request.args.get('start')))
 
 #MESSAGES FUNCTION WRAPPERS
