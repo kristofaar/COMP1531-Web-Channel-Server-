@@ -34,11 +34,6 @@ Exceptions:
     channels = storage['channels']
     users = storage['users']
 
-    # Check auth_user_id is registered 
-    check_auth_user_id = next((user for user in users if auth_user_id == user['id']), None)
-    if check_auth_user_id == None:
-        raise AccessError("Invalid User (Channel Inviter)")
-
     #search through channels by id until id is matched
     ch = next((channel for channel in channels if int(channel_id) == channel['channel_id_and_name']['channel_id']), None)
     if ch == None:
@@ -95,11 +90,6 @@ Return Value:
     channels = storage['channels']
     users = storage['users']
 
-    # Check auth_user_id is registered 
-    check_auth_user_id = next((user for user in users if auth_user_id == user['id']), None)
-    if check_auth_user_id == None:
-        raise AccessError("Invalid User (Channel Inviter)")
-
     #search through channels by id until id is matched
     ch = next((channel for channel in channels if int(channel_id) == channel['channel_id_and_name']['channel_id']), None)
     if ch == None:
@@ -151,18 +141,7 @@ Return Value:
     storage = data_store.get()
     if not check_if_valid(token):
         raise AccessError("Invalid token")
-    u_id = read_token(token)
-
-    #errors
-    id_exists = False
-    auth_user_id = -1
-    for user in storage['users']:
-        if user['id'] == u_id:
-            id_exists = True
-            auth_user_id = user['id']
-    
-    if not id_exists:
-        raise AccessError("ID does not exist")
+    auth_user_id = read_token(token)
 
     #getting channel
     channel_exists = False
@@ -230,10 +209,8 @@ Return Value:
     channels = storage['channels']
     users = storage['users']
     
-    # check auth_user_id is valid user 
-    user = next((user for user in users if user['id'] == auth_user_id), None)
-    if user == None: # User not found
-        raise AccessError('Unregistered user id')
+    # getting user
+    user = next(user for user in users if user['id'] == auth_user_id)
 
     # check channel is valid 
     channel = next((channel for channel in channels if int(channel_id) == channel['channel_id_and_name']['channel_id']), None)

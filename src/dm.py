@@ -28,9 +28,6 @@ def dm_create_v1(token, u_ids):
 
     #look through users to see if the given id matches any of their ids
     curr_user = next((user for user in users if user_id == user['id']), None)
-    #if the given id is not found in users then spit out error message
-    if curr_user == None:
-        raise AccessError("Invalid User Id ")
     
     u_ids.append(user_id)
     u_ids.sort()
@@ -86,9 +83,6 @@ def dm_list_v1(token):
 
     #iterate through users until a user with the corresponding id is found
     curr_user = next((user for user in users if user_id == user['id']), None)
-    #if no user has the given id raise an error
-    if curr_user == None:
-        raise AccessError("Invalid User Id ")
 
     
     return {
@@ -121,8 +115,6 @@ def dm_remove_v1(token, dm_id):
 
     # Check auth_user_id is registered 
     curr_user = next((user for user in users if user_id == user['id']), None)
-    if curr_user == None:
-        raise AccessError("Invalid User")
     
     #check if the user is the owner
     curr_dm = next((dm for dm in dms if int(dm_id) == dm['dm_id']), None)
@@ -159,12 +151,6 @@ def dm_details_v1(token, dm_id):
     auth_user_id = read_token(token)
     dms = storage['dms']
     users = storage['users']
-
-
-    # Check auth_user_id is registered 
-    check_auth_user_id = next((user for user in users if auth_user_id == user['id']), None)
-    if check_auth_user_id == None:
-        raise AccessError("Invalid User")
 
     #search through dms by id until id is matched
     curr_dm = next((dm for dm in dms if int(dm_id) == dm['dm_id']), None)
@@ -209,13 +195,7 @@ def dm_leave_v1(token, dm_id):
         raise AccessError("Invalid token")
     user_id = read_token(token)
     dms = storage['dms']
-    users = storage['users']
 
-    # Check auth_user_id is registered 
-    curr_user = next((user for user in users if user_id == user['id']), None)
-    if curr_user == None:
-        raise AccessError("Invalid User")
-    
     #check if the user is the owner
     curr_dm = next((dm for dm in dms if int(dm_id) == dm['dm_id']), None)
     if curr_dm == None:

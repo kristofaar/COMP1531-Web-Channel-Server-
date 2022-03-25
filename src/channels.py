@@ -26,10 +26,7 @@ def channels_list_v1(token):
 
             
     #iterate through users until a user with the corresponding id is found
-    curr_user = next((user for user in users if user_id == user['id']), None)
-    #if no user has the given id raise an error
-    if curr_user == None:
-        raise AccessError("Invalid User Id ")
+    curr_user = next(user for user in users if user_id == user['id'])
 
     return {
         'channels': curr_user['channels']
@@ -53,18 +50,7 @@ def channels_listall_v1(token):
     storage = data_store.get()
     if not check_if_valid(token):
         raise AccessError("Invalid token")
-    user_id = read_token(token)
-    users = storage['users']
-    
 
-    
-    #iterate through users until a user with the corresponding id is found
-    curr_user = next((user for user in users if user_id == user['id']), None)
-
-    #if no user has the given id raise an error
-    if curr_user == None:
-        raise AccessError("Invalid User Id ")
-    
     #add all the channels that have been created to a list 
     for channel in storage['channels']:
         channel_list.append(channel['channel_id_and_name'])
