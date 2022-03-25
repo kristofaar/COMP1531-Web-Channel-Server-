@@ -1,6 +1,6 @@
 from multiprocessing import dummy
 from src.data_store import data_store
-from src.other import generate_new_session_id, check_if_valid
+from src.other import generate_new_session_id, check_if_valid, read_token
 from src.error import InputError, AccessError
 import re, hashlib, jwt
 

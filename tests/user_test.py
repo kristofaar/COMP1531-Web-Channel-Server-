@@ -20,6 +20,14 @@ def reg_two_users():
     return {'token1': resp1_data['token'], 'token2': resp2_data['token'], 
     'u_id1': resp1_data['auth_user_id'], 'u_id2': resp2_data['auth_user_id']}
 
+#users test error
+
+def test_users_invalid_token(reg_two_users):
+    resp = requests.get(config.url + 'users/all/v1', params={'token': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c'})
+    assert resp.status_code == A_ERR
+
+#users tests working
+
 def test_users_two_users(reg_two_users):
     resp1 = requests.get(config.url + 'users/all/v1', params={'token': reg_two_users['token1']})
     assert resp1.status_code == OK

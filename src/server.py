@@ -182,8 +182,9 @@ def removeowner():
     save()
     return dumps({})
 
-
 # DM FUNCTION WRAPPERS
+
+
 @APP.route('/dm/create/v1', methods=['POST'])
 def dm_create():
     data = request.get_json()
@@ -224,8 +225,9 @@ def dm_leave():
 def dm_messages():
     return dumps(dm_messages_v1(request.args.get('token'), request.args.get('dm_id'), request.args.get('start')))
 
-
 # MESSAGES FUNCTION WRAPPERS
+
+
 @APP.route("/message/send/v1", methods=['POST'])
 def send_message():
     data = request.get_json()
@@ -278,6 +280,7 @@ def users_all():
 
 
 # NO NEED TO MODIFY BELOW THIS POINT
+
 if __name__ == "__main__":
     signal.signal(signal.SIGINT, quit_gracefully)  # For coverage
     APP.run(port=config.port)  # Do not edit this port
