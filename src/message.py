@@ -43,14 +43,14 @@ def message_send_v1(token, channel_id, message):
     #search through channels by id until id is matched
     ch = next((channel for channel in channels if int(channel_id) == channel['channel_id_and_name']['channel_id']), None)
     if ch == None:
-        raise InputError("Invalid Channel Id")
+        raise InputError(description="Invalid Channel Id")
 
     #check if auth_user_id is a member of the channel queried
     if auth_user_id not in ch['members']:
-        raise AccessError("Unauthorised User: User is not in channel")
+        raise AccessError(description="Unauthorised User: User is not in channel")
 
     if not 1 <= len(message) <= 1000:
-        raise InputError("Invalid message length")
+        raise InputError(description="Invalid message length")
 
     # Getting the current date
     # and time
@@ -120,13 +120,13 @@ def message_edit_v1(token, message_id, message):
             break
     
     if not msg:
-        raise InputError('Invalid message id')
+        raise InputError(description='Invalid message id')
     
     if msg['u_id'] != auth_user_id and not owner_perms(auth_user_id, ch['channel_id_and_name']['channel_id']):
-        raise AccessError("Unauthorised editor")
+        raise AccessError(description="Unauthorised editor")
 
     if len(message) > 1000:
-        raise InputError("Invalid message length")
+        raise InputError(description="Invalid message length")
 
     #editing message
     if len(message) == 0:
@@ -181,10 +181,10 @@ def message_remove_v1(token, message_id):
             break
     
     if not msg:
-        raise InputError('Invalid message id')
+        raise InputError(description='Invalid message id')
     
     if msg['u_id'] != auth_user_id and not owner_perms(auth_user_id, ch['channel_id_and_name']['channel_id']):
-        raise AccessError("Unauthorised editor")
+        raise AccessError(description="Unauthorised editor")
 
     #deleting message
     ch['messages'].remove(msg)
@@ -229,14 +229,14 @@ def message_senddm_v1(token, dm_id, message):
     #search through channels by id until id is matched
     dm = next((dm for dm in dms if int(dm_id) == dm['dm_id']), None)
     if dm == None:
-        raise InputError("Invalid Channel Id")
+        raise InputError(description="Invalid Channel Id")
 
     #check if auth_user_id is a member of the channel queried
     if auth_user_id not in dm['members']:
-        raise AccessError("Unauthorised User: User is not in channel")
+        raise AccessError(description="Unauthorised User: User is not in channel")
 
     if not 1 <= len(message) <= 1000:
-        raise InputError("Invalid message length")
+        raise InputError(description="Invalid message length")
 
     # Getting the current date
     # and time

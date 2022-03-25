@@ -19,7 +19,7 @@ def channels_list_v1(token):
     '''
     storage = data_store.get()
     if not check_if_valid(token):
-        raise AccessError("Invalid token")
+        raise AccessError(description="Invalid token")
     user_id = read_token(token)
     users = storage['users']
     
@@ -49,7 +49,7 @@ def channels_listall_v1(token):
     channel_list = []
     storage = data_store.get()
     if not check_if_valid(token):
-        raise AccessError("Invalid token")
+        raise AccessError(description="Invalid token")
 
     #add all the channels that have been created to a list 
     for channel in storage['channels']:
@@ -78,7 +78,7 @@ def channels_create_v1(token, name, is_public):
     #staging variables
     storage = data_store.get()
     if not check_if_valid(token):
-        raise AccessError("Invalid token")
+        raise AccessError(description="Invalid token")
     user_id = read_token(token)
     users = storage['users']
     channels = storage['channels']
@@ -86,9 +86,9 @@ def channels_create_v1(token, name, is_public):
     #look through users to see if the given id matches any of their ids
     curr_user = next(user for user in users if user_id == user['id'])
     if 1 > len(name):
-        raise InputError("Channel Name Is Too Short")
+        raise InputError(description="Channel Name Is Too Short")
     if len(name) > 20:
-        raise InputError("Channel Name Is Too Long")
+        raise InputError(description="Channel Name Is Too Long")
     
     #id creation is based off the last channel's id
     ch_id = 1

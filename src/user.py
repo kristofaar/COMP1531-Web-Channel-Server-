@@ -20,7 +20,7 @@ def users_all_v1(token):
     #staging variables
     storage = data_store.get()
     if not check_if_valid(token):
-        raise AccessError("Invalid token")
+        raise AccessError(description="Invalid token")
     users = storage['users']
     
     #append user data dictionary to list
