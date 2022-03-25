@@ -137,18 +137,18 @@ def dm_remove_v1(token, dm_id):
 
 def dm_details_v1(token, dm_id):
     '''
-returns name of dm and members of associated dm
+    returns name of dm and members of associated dm
 
-Arguments:
-    token        (str)    - passes in the unique token of whoever ran the funtion
-    dm_id        (int)    - passes in the unique dm id of the dm we are enquiring about
+    Arguments:
+        token        (str)    - passes in the unique token of whoever ran the funtion
+        dm_id        (int)    - passes in the unique dm id of the dm we are enquiring about
 
-Exceptions:
-    InputError  - Occurs when dm_id does not refer to a valid dm
-    AccessError - Occurs when dm_id is valid and the authorised user is not a member of the dm
+    Exceptions:
+        InputError  - Occurs when dm_id does not refer to a valid dm
+        AccessError - Occurs when dm_id is valid and the authorised user is not a member of the dm
 
-Return Value:
-    Returns name of the dm, and the members of the dm
+    Return Value:
+        Returns name of the dm, and the members of the dm
     '''
 
     #staging variables
@@ -188,6 +188,42 @@ Return Value:
 
     return {"name": dm_name, "members": dm_members}
 
+def dm_leave_v1(token, dm_id):
+    '''
+    Given a DM ID, the user is removed as a member of this DM
+
+    Arguments:
+        token        (str)    - passes in the unique token of whoever ran the funtion
+        dm_id        (int)    - passes in the unique dm id of the dm we are enquiring about
+
+    Exceptions:
+        InputError  - Occurs when dm_id does not refer to a valid dm
+        AccessError - Occurs when dm_id is valid and the authorised user is not a member of the dm
+
+    Return Value:
+        Returns name of the dm, and the members of the dm
+    '''
+    storage = data_store.get()
+    
+    if not check_if_valid(token):
+        raise AccessError("Invalid token")
+    user_id = read_token(token)
+    dms = storage['dms']
+    users = storage['users']
+
+    # Check auth_user_id is registered 
+    curr_user = next((user for user in users if user_id == user['id']), None)
+    if curr_user == None:
+        raise AccessError("Invalid User")
+    
+    #check if the user is the owner
+    curr_dm = next((dm for dm in dms if int(dm_id) == dm['dm_id']), None)
+    if curr_dm == None:
+        raise InputError("Invalid dm id")
+
+    curr_dm['members'].remove(user_id)
+    data_store.set(storage)
+    return{}
 
 
 def dm_messages_v1():
