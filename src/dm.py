@@ -19,44 +19,46 @@ def dm_create_v1(token, u_ids):
     Return Value:
         Returns dm_id on sucessful dm creation
     '''
+    #staging variables
     storage = data_store.get()
     if not check_if_valid(token):
         raise AccessError("Invalid token")
     user_id = read_token(token)
     users = storage['users']
     dm = storage['dms']
-
-    #look through users to see if the given id matches any of their ids
-    curr_user = next((user for user in users if user_id == user['id']), None)
     
     u_ids.append(user_id)
     u_ids.sort()
-
     handles = []
 
     #checks for duplicate in u_ids
     if len(u_ids) != len(set(u_ids)):
         raise InputError("U_ids Contains Duplicate(s)")
-
-    #adds handle to list of handles
-    for u_id in u_ids:
-        match_user = next((user for user in users if u_id == user['id']), None)
-        handles.append(match_user['handle'])
-
-    #creates dm name by concatenating handles
-    handles.sort()
-    name = ', '.join(handles) 
     
     #id creation is based off the last dm id
     dm_id = 1
     if len(dm):
        dm_id = dm[len(dm) - 1]['dm_id'] + 1
 
+    #adds handle to list of handles
+    for u_id in u_ids:
+        match_user = next((user for user in users if u_id == user['id']), None)
+        if match_user == None:
+            raise InputError("Invalid User Id(s) In U_id")
+        handles.append(match_user['handle'])
+
+    #creates dm name by concatenating handles
+    handles.sort()
+    name = ', '.join(handles) 
+
+    
     #updating the data store
     dm.append({'dm_id': dm_id, 'name' : name, 'owner': [user_id], 'members': u_ids, 'messages': []})
-
-    #updating user
-    curr_user['dms'].append({'dm_id' : dm_id, 'name' : name})
+    
+    #updating users
+    for u_id in u_ids:
+        curr_user = next((user for user in users if u_id == user['id']),None)
+        curr_user['dms'].append({'dm_id' : dm_id, 'name' : name})
     data_store.set(storage)
     return{
         'dm_id' : dm_id
@@ -75,6 +77,7 @@ def dm_list_v1(token):
     Return Value:
         Returns a dictionary of dm_ids and dm names when successful
     '''
+    #staging variables
     storage = data_store.get()
     if not check_if_valid(token):
         raise AccessError("Invalid token")
@@ -82,9 +85,7 @@ def dm_list_v1(token):
     users = storage['users']
 
     #iterate through users until a user with the corresponding id is found
-    curr_user = next((user for user in users if user_id == user['id']), None)
-
-    
+    curr_user = next((user for user in users if user_id == user['id']), None)    
     return {
         'dms': curr_user['dms']
     }
@@ -105,6 +106,7 @@ def dm_remove_v1(token, dm_id):
     Return Value:
         NULL
     '''
+    #staging variables
     storage = data_store.get()
     
     if not check_if_valid(token):
@@ -113,17 +115,25 @@ def dm_remove_v1(token, dm_id):
     dms = storage['dms']
     users = storage['users']
 
-    # Check auth_user_id is registered 
-    curr_user = next((user for user in users if user_id == user['id']), None)
-    
-    #check if the user is the owner
+    #check if the dm_id is valid
     curr_dm = next((dm for dm in dms if int(dm_id) == dm['dm_id']), None)
+    if curr_dm == None:
+        raise InputError("Invalid Dm_id")
+    
+    #check if the user is in dm
+    if user_id not in curr_dm['members']:
+        raise AccessError("User Is Not In Dm")
+    #check if the user is the owner
     if user_id not in curr_dm['owner']:
         raise AccessError("User Is Not Creator")
+    
+    
 
-    curr_user['dms'].remove({'dm_id': curr_dm['dm_id'], 'name': curr_dm['name']})
+    #updating user and dms
+    for members in curr_dm['members']:
+        curr_user = next((user for user in users if members == user['id']), None)
+        curr_user['dms'].remove({'dm_id': curr_dm['dm_id'], 'name': curr_dm['name']})
     dms.remove(curr_dm)
-    print(dms)
     data_store.set(storage)
     return{}
 
@@ -165,7 +175,7 @@ def dm_details_v1(token, dm_id):
     #generate lists of dm members
     dm_members = []
     for member in curr_dm['members']:
-        curr_user = next((user for user in users if member == user['id']), None)
+        curr_user = next(user for user in users if member == user['id'])
         dm_members.append({'u_id': curr_user['id'], 
                            'email': curr_user['email'], 
                            'name_first': curr_user['name_first'], 
@@ -195,12 +205,18 @@ def dm_leave_v1(token, dm_id):
         raise AccessError("Invalid token")
     user_id = read_token(token)
     dms = storage['dms']
-
+    users = storage['users']
+    
     #check if the user is the owner
     curr_dm = next((dm for dm in dms if int(dm_id) == dm['dm_id']), None)
     if curr_dm == None:
         raise InputError("Invalid dm id")
 
+    if int(user_id) not in curr_dm['members']:
+        raise AccessError("Unauthorised User: User is not in dm")
+
+    curr_user = next((user for user in users if user_id == user['id']), None)
+    curr_user['dms'].remove({'dm_id' : curr_dm['dm_id'], 'name' : curr_dm['name']})
     curr_dm['members'].remove(user_id)
     data_store.set(storage)
     return{}

@@ -84,10 +84,7 @@ def channels_create_v1(token, name, is_public):
     channels = storage['channels']
    
     #look through users to see if the given id matches any of their ids
-    curr_user = next((user for user in users if user_id == user['id']), None)
-    #if the given id is not found in users then spit out error message
-    if curr_user == None:
-        raise AccessError("Invalid User Id ")
+    curr_user = next(user for user in users if user_id == user['id'])
     if 1 > len(name):
         raise InputError("Channel Name Is Too Short")
     if len(name) > 20:
