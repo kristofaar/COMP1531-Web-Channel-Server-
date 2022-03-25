@@ -56,7 +56,7 @@ def dm_create_v1(token, u_ids):
        dm_id = dm[len(dm) - 1]['dm_id'] + 1
 
     #updating the data store
-    dm.append({'dm_id': dm_id, 'name' : name, 'owner': user_id, 'members': u_ids, 'messages': []})
+    dm.append({'dm_id': dm_id, 'name' : name, 'owner': [user_id], 'members': u_ids, 'messages': []})
 
     #updating user
     curr_user['dms'].append({'dm_id' : dm_id, 'name' : name})
@@ -90,12 +90,50 @@ def dm_list_v1(token):
     if curr_user == None:
         raise AccessError("Invalid User Id ")
 
+    
     return {
         'dms': curr_user['dms']
     }
 
-def dm_remove_v1():
-    pass
+def dm_remove_v1(token, dm_id):
+    '''
+    Remove an existing DM, so all members are no longer in the DM. This can only be done by the original creator of the DM.
+
+    Arguments:
+        token     (string)  - passes in the unique user token of whoever ran the funtion.
+        dm_id     (int)     - asses in the unique channel id of the dm we are removing.
+    
+    Exceptions:
+        AccessError - Occurrs when the dm_id provided is valid but the user is not the creator.
+        AccessError - Occurrs when the dm_id provided is valid but the user is not in the dm.
+        InputError  - Occurrs when the dm_id provided is not valid.
+
+    Return Value:
+        NULL
+    '''
+    storage = data_store.get()
+    
+    if not check_if_valid(token):
+        raise AccessError("Invalid token")
+    user_id = read_token(token)
+    dms = storage['dms']
+    users = storage['users']
+
+    # Check auth_user_id is registered 
+    curr_user = next((user for user in users if user_id == user['id']), None)
+    if curr_user == None:
+        raise AccessError("Invalid User")
+    
+    #check if the user is the owner
+    curr_dm = next((dm for dm in dms if int(dm_id) == dm['dm_id']), None)
+    if user_id not in curr_dm['owner']:
+        raise AccessError("User Is Not Creator")
+
+    curr_user['dms'].remove({'dm_id': curr_dm['dm_id'], 'name': curr_dm['name']})
+    dms.remove(curr_dm)
+    print(dms)
+    data_store.set(storage)
+    return{}
 
 def dm_details_v1(token, dm_id):
     '''
@@ -151,8 +189,6 @@ Return Value:
     return {"name": dm_name, "members": dm_members}
 
 
-def dm_leave_v1():
-    pass
 
 def dm_messages_v1():
     pass

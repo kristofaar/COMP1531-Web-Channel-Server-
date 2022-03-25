@@ -199,6 +199,12 @@ def dm_create():
 def dm_list():
     return dm_list_v1(request.args.get("token"))
 
+@APP.route("/dm/remove/v1", methods=['DELETE'])
+def dm_remove():
+    data = request.get_json()
+    dm_remove_v1(data['token'], data['dm_id'])
+    save()
+    return dumps({})
 
 @APP.route('/dm/details/v1', methods=['GET'])
 def dm_details():
