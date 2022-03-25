@@ -60,6 +60,7 @@ def user_profile_v1(token, u_id):
                 "name_last": user["name_last"],
                 "handle_str": user["handle"]})
             }
-        else:
-            raise InputError("Invalid user ID")
-            return {}
+
+    # If user not in users:
+    raise InputError("Invalid user ID")
+    return {}
