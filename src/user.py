@@ -116,3 +116,45 @@ def user_profile_setname_v1(token, name_first, name_last):
             user["name_last"] = name_last
 
     return {}
+
+def user_profile_setemail_v1(token, email):
+    '''
+    Update the authorised user's email address.
+
+    Arguments:
+        token (str)  - The user's session token.
+        email (str)  - The user's email.
+
+    Exceptions:
+        AccessError - Occurs when token does not refer to a valid session.
+        InputError  - Occurs when email entered is not in correct format (section 6.4).
+        InputError  - Occurs when email address is already being used by another user.
+
+    Return Value:
+        Returns nothing.
+    '''
+
+    store = data_store.get()
+    users = store["users"]
+
+    # Check valid token
+    if not check_if_valid(token):
+        raise AccessError(description="Invalid token")
+
+    # Check valid email
+    if not re.search(r'^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}$', email):
+        raise InputError(description="Invalid email")
+
+    # Check duplicate email
+    for user in users:
+        if user["email"] == email:
+            raise InputError(description="User email already exists")
+
+    # Get user ID from token
+    u_id = read_token(token)
+
+    for user in users:
+        if u_id == user["u_id"]:
+            user["email"] = email
+
+    return {}
