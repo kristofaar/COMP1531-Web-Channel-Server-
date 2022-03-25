@@ -66,20 +66,21 @@ def user_profile_v1(token, u_id):
     for user in users:
         if user["id"] == u_id:
             user_exists = True
-            if u_id in removed_users[u_id]:
-                return {
-                    "u_id": user["id"], 
-                    "email": user["email"], 
-                    "name_first": "Removed",
-                    "name_last": "user",
-                    "handle_str": user["handle"]})
-                }
+            for removed_user in removed_users:
+                if u_id in removed_user['u_id']:
+                    return {
+                        "u_id": user["id"], 
+                        "email": user["email"], 
+                        "name_first": "Removed",
+                        "name_last": "user",
+                        "handle_str": user["handle"]
+                    }
             return {
                 "u_id": user["id"], 
                 "email": user["email"], 
                 "name_first": user["name_first"],
                 "name_last": user["name_last"],
-                "handle_str": user["handle"]})
+                "handle_str": user["handle"]
             }
 
     # Check valid user ID
