@@ -49,21 +49,26 @@ def test_user_profile_valid(reg_user):
 
 # Tests for user/profile/setname/v1
 def test_setname_valid(reg_user):
-    resp = requests.put(config.url + "user/profile/setname/v1", json={"token": reg_user["token"], "new_first", "new_last"})
+    resp = requests.put(config.url + "user/profile/setname/v1", json={"token": reg_user["token"], "name_first": "new_first", "name_last": "new_last"})
     assert resp.status_code == OK
     assert resp.json() == [{
-        "name_first" == "new_first",
-        "name_last" == "new_last",
+        "name_first": "new_first",
+        "name_last": "new_last",
     }]
 def test_invalid_name_first(reg_user):
-    resp = requests.put(config.url + "user/profile/setname/v1", json={"token": reg_user["token"], "A" * 100, "new_last"})
+    resp = requests.put(config.url + "user/profile/setname/v1", json={"token": reg_user["token"], "name_first": "A" * 100, "name_last": "new_last"})
     assert resp.status_code == I_ERR
 def test_invalid_name_last(reg_user):
-    resp = requests.put(config.url + "user/profile/setname/v1", json={"token": reg_user["token"], "new_first", "A" * 100})
+    resp = requests.put(config.url + "user/profile/setname/v1", json={"token": reg_user["token"], "name_first": "new_first", "name_last": "A" * 100})
     assert resp.status_code == I_ERR
 
 # Tests for user/profile/setemail/v1
 def test_setemail_valid(reg_user):
+    resp = requests.put(config.url + "user/profile/setemail/v1", json={"token": reg_user["token"], "email": "2@lol.lol"})
+    assert resp.status_code == OK
+    assert resp.json() == [{
+        "email": "2@lol.lol"
+    }]
 def test_invalid_email(reg_user):
 def test_duplicate_email(reg_user):
 
