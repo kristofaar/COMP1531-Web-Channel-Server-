@@ -299,7 +299,8 @@ def channel_leave_v1(token, channel_id):
     users = storage['users']
 
     # find the user
-    user = next((user for user in users if user['u_id'] == auth_user_id), None)
+    user = next((user for user in users if user['id'] == auth_user_id), None)
+    assert user != None
 
     # check channel is valid
     channel = next((channel for channel in channels if channel_id ==
@@ -322,7 +323,7 @@ def channel_leave_v1(token, channel_id):
         channel['owner'].remove(auth_user_id)
     # remove channel_id from user
     for u_channel in user['channels']:
-        if u_channel['channel_id_and_name']['channel_id'] == channel_id:
+        if u_channel['channel_id'] == channel_id:
             user['channels'].remove(u_channel)
 
     data_store.set(storage)
@@ -387,7 +388,7 @@ def channel_addowner_v1(token, channel_id, u_id):
     owner = next(
         (owner for owner in channel['owner'] if auth_user_id == owner), None)
     if owner is None:
-        raise InputError(
+        raise AccessError(
             description='Authorised user is not an owner of the channel')
 
     # check if u_id is valid user
@@ -405,7 +406,7 @@ def channel_addowner_v1(token, channel_id, u_id):
     # check if u_id a member of channel
     member = next(
         (member for member in channel['members'] if u_id == member), None)
-    if u_id is None:
+    if member is None:
         raise InputError(
             description='User getting added is not a member of channel')
 
@@ -473,7 +474,7 @@ def channel_removeowner_v1(token, channel_id, u_id):
     owner = next(
         (owner for owner in channel['owner'] if auth_user_id == owner), None)
     if owner is None:
-        raise InputError(
+        raise AccessError(
             description='Authorised user is not an owner of the channel')
 
     # check if u_id is valid user
@@ -495,8 +496,7 @@ def channel_removeowner_v1(token, channel_id, u_id):
 
     # removing u_id from channel owners and members list
     channel['owner'].remove(u_id)
-    channel['members'].remove(u_id)
-
+    
     data_store.set(storage)
 
     return {}
