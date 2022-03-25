@@ -64,20 +64,7 @@ def save():
     with open('datastore.p', 'wb+') as FILE:
         pickle.dump(data, FILE)
 
-
-# Example
-@APP.route("/echo", methods=['GET'])
-def echo():
-    data = request.args.get('data')
-    if data == 'echo':
-        raise InputError(description='Cannot echo "echo"')
-    return dumps({
-        'data': data
-    })
-
 # AUTH FUNCTION WRAPPERS
-
-
 @APP.route("/auth/login/v2", methods=['POST'])
 def login():
     data = request.get_json()
