@@ -64,7 +64,7 @@ def user_profile_v1(token, u_id):
 
     user_exists = False
     for removed_user in removed_users:
-        if removed_user['u_id'] = u_id:
+        if removed_user["id"] == u_id:
             user_exists = True
             return {
                 "u_id": removed_user["id"], 
