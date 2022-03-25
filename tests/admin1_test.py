@@ -139,7 +139,7 @@ def test_admin_user_remove_v1_first_remove_second_check_dm(reg_two_users_and_cre
     dm_deets = resp.json()
     dm_id = dm_deets['dm_id']
 
-    resp = requests.post(config.url + 'message/senddm/v1', params={
+    resp = requests.post(config.url + 'message/senddm/v1', json={
                          'token': reg_two_users_and_create_two_channels['token2'], 'dm_id': dm_id, 'message': 'What a joke this is'})
     resp.status_code = OK
 
