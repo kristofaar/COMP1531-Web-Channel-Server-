@@ -34,12 +34,6 @@ Exceptions:
     channels = storage['channels']
     users = storage['users']
 
-    # Check auth_user_id is registered
-    check_auth_user_id = next(
-        (user for user in users if auth_user_id == user['id']), None)
-    if check_auth_user_id == None:
-        raise AccessError("Invalid User (Channel Inviter)")
-
     # search through channels by id until id is matched
     ch = next((channel for channel in channels if int(channel_id) ==
               channel['channel_id_and_name']['channel_id']), None)
@@ -97,12 +91,6 @@ Return Value:
     channels = storage['channels']
     users = storage['users']
 
-    # Check auth_user_id is registered
-    check_auth_user_id = next(
-        (user for user in users if auth_user_id == user['id']), None)
-    if check_auth_user_id == None:
-        raise AccessError("Invalid User (Channel Inviter)")
-
     # search through channels by id until id is matched
     ch = next((channel for channel in channels if int(channel_id) ==
               channel['channel_id_and_name']['channel_id']), None)
@@ -118,12 +106,12 @@ Return Value:
     all_members = []
     for member in ch['owner']:
         curr_user = next(
-            (user for user in users if member == user['id']), None)
+            (user for user in users if member == user['id']))
         owner_members.append({'u_id': curr_user['id'], 'email': curr_user['email'], 'name_first': curr_user['name_first'],
                              'name_last': curr_user['name_last'], 'handle_str': curr_user['handle']})
     for member in ch['members']:
         curr_user = next(
-            (user for user in users if member == user['id']), None)
+            (user for user in users if member == user['id']))
         all_members.append({'u_id': curr_user['id'], 'email': curr_user['email'], 'name_first': curr_user['name_first'],
                            'name_last': curr_user['name_last'], 'handle_str': curr_user['handle']})
 
@@ -235,10 +223,8 @@ Return Value:
     channels = storage['channels']
     users = storage['users']
 
-    # check auth_user_id is valid user
-    user = next((user for user in users if user['id'] == auth_user_id), None)
-    if user == None:  # User not found
-        raise AccessError('Unregistered user id')
+    # find auth_user
+    user = [user for user in users if user['id'] == auth_user_id][0]
 
     # check channel is valid
     channel = next((channel for channel in channels if int(
@@ -299,8 +285,7 @@ def channel_leave_v1(token, channel_id):
     users = storage['users']
 
     # find the user
-    user = next((user for user in users if user['id'] == auth_user_id), None)
-    assert user != None
+    user = next(user for user in users if user['id'] == auth_user_id)
 
     # check channel is valid
     channel = next((channel for channel in channels if channel_id ==
@@ -366,10 +351,8 @@ def channel_addowner_v1(token, channel_id, u_id):
     channels = storage['channels']
     users = storage['users']
 
-    # check auth_user_id is valid user
-    a_user = next((user for user in users if user['id'] == auth_user_id), None)
-    if a_user == None:  # User not found
-        raise InputError(description='Unregistered user id')
+    # find auth_user
+    a_user = next(user for user in users if user['id'] == auth_user_id)
 
     # check channel is valid
     channel = next((channel for channel in channels if channel_id ==
@@ -452,10 +435,8 @@ def channel_removeowner_v1(token, channel_id, u_id):
     channels = storage['channels']
     users = storage['users']
 
-    # check auth_user_id is valid user
-    a_user = next((user for user in users if user['id'] == auth_user_id), None)
-    if a_user == None:  # User not found
-        raise InputError(description='Unregistered user id')
+    # find auth_user
+    a_user = next(user for user in users if user['id'] == auth_user_id)
 
     # check channel is valid
     channel = next((channel for channel in channels if channel_id ==
@@ -496,7 +477,7 @@ def channel_removeowner_v1(token, channel_id, u_id):
 
     # removing u_id from channel owners and members list
     channel['owner'].remove(u_id)
-    
+
     data_store.set(storage)
 
     return {}

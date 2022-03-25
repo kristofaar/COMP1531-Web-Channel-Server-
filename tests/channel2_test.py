@@ -32,29 +32,39 @@ def reg_two_users_and_create_two_channels():
     return {'token1': resp1_data['token'], 'token2': resp2_data['token'], 'u_id1': resp1_data['auth_user_id'], 'u_id2': resp2_data['auth_user_id'], 'ch_id1': resp3_data['channel_id'], 'ch_id2': resp4_data['channel_id']}
 
 
-
-#details errors
+# details errors
 def test_channel_details_invalid_token(reg_two_users_and_create_two_channels):
-    resp = requests.get(config.url + 'channel/details/v2', params={'token': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c', 'channel_id': reg_two_users_and_create_two_channels['ch_id1']})
+    resp = requests.get(config.url + 'channel/details/v2', params={
+                        'token': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c', 'channel_id': reg_two_users_and_create_two_channels['ch_id1']})
     assert resp.status_code == A_ERR
+
 
 def test_channel_details_expired_token(reg_two_users_and_create_two_channels):
-    resp1 = requests.post(config.url + 'auth/logout/v1', json={'token': reg_two_users_and_create_two_channels['token1']})
+    resp1 = requests.post(config.url + 'auth/logout/v1',
+                          json={'token': reg_two_users_and_create_two_channels['token1']})
     assert resp1.status_code == OK
-    resp2 = requests.get(config.url + 'channel/details/v2', params={'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1']})
+    resp2 = requests.get(config.url + 'channel/details/v2', params={
+                         'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1']})
     assert resp2.status_code == A_ERR
 
+
 def test_channel_details_unauthorised(reg_two_users_and_create_two_channels):
-    resp = requests.get(config.url + 'channel/details/v2', params={'token': reg_two_users_and_create_two_channels['token2'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1']})
+    resp = requests.get(config.url + 'channel/details/v2', params={
+                        'token': reg_two_users_and_create_two_channels['token2'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1']})
     assert resp.status_code == A_ERR
 
+
 def test_channel_details_invalid_channel(reg_two_users_and_create_two_channels):
-    resp = requests.get(config.url + 'channel/details/v2', params={'token': reg_two_users_and_create_two_channels['token2'], 'channel_id': 123789})
+    resp = requests.get(config.url + 'channel/details/v2', params={
+                        'token': reg_two_users_and_create_two_channels['token2'], 'channel_id': 123789})
     assert resp.status_code == I_ERR
 
-#details working
+# details working
+
+
 def test_channel_details(reg_two_users_and_create_two_channels):
-    resp = requests.get(config.url + 'channel/details/v2', params={'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1']})
+    resp = requests.get(config.url + 'channel/details/v2', params={
+                        'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1']})
     assert resp.status_code == OK
     resp_data = resp.json()
     assert resp_data['name'] == 'CoolChannelName'
@@ -62,125 +72,182 @@ def test_channel_details(reg_two_users_and_create_two_channels):
     assert resp_data['owner_members'][0]['u_id'] == reg_two_users_and_create_two_channels['u_id1']
     assert resp_data['all_members'][0]['u_id'] == reg_two_users_and_create_two_channels['u_id1']
 
-#join errors
+# join errors
+
+
 def test_channel_join_invalid_token(reg_two_users_and_create_two_channels):
-    resp = requests.post(config.url + 'channel/join/v2', json={'token': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c', 'channel_id': reg_two_users_and_create_two_channels['ch_id1']})
+    resp = requests.post(config.url + 'channel/join/v2', json={
+                         'token': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c', 'channel_id': reg_two_users_and_create_two_channels['ch_id1']})
     assert resp.status_code == A_ERR
 
+
 def test_channel_join_expired_token(reg_two_users_and_create_two_channels):
-    resp1 = requests.post(config.url + 'auth/logout/v1', json={'token': reg_two_users_and_create_two_channels['token1']})
+    resp1 = requests.post(config.url + 'auth/logout/v1',
+                          json={'token': reg_two_users_and_create_two_channels['token1']})
     assert resp1.status_code == OK
-    resp2 = requests.post(config.url + 'channel/join/v2', json={'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1']})
+    resp2 = requests.post(config.url + 'channel/join/v2', json={
+                          'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1']})
     assert resp2.status_code == A_ERR
+
 
 def test_channel_join_unauthorised(reg_two_users_and_create_two_channels):
-    resp1 = requests.post(config.url + 'channels/create/v2', json={'token': reg_two_users_and_create_two_channels['token1'], 'name': 'CoolChannelName', 'is_public': False})
+    resp1 = requests.post(config.url + 'channels/create/v2', json={
+                          'token': reg_two_users_and_create_two_channels['token1'], 'name': 'CoolChannelName', 'is_public': False})
     assert resp1.status_code == OK
     resp1_data = resp1.json()
-    resp2 = requests.post(config.url + 'channel/join/v2', json={'token': reg_two_users_and_create_two_channels['token2'], 'channel_id': resp1_data['channel_id']})
+    resp2 = requests.post(config.url + 'channel/join/v2', json={
+                          'token': reg_two_users_and_create_two_channels['token2'], 'channel_id': resp1_data['channel_id']})
     assert resp2.status_code == A_ERR
 
+
 def test_channel_join_invalid(reg_two_users_and_create_two_channels):
-    resp = requests.post(config.url + 'channel/join/v2', json={'token': reg_two_users_and_create_two_channels['token2'], 'channel_id': 123789})
+    resp = requests.post(config.url + 'channel/join/v2', json={
+                         'token': reg_two_users_and_create_two_channels['token2'], 'channel_id': 123789})
     assert resp.status_code == I_ERR
+
 
 def test_channel_join_already_member(reg_two_users_and_create_two_channels):
-    resp = requests.post(config.url + 'channel/join/v2', json={'token':reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1']})
+    resp = requests.post(config.url + 'channel/join/v2', json={
+                         'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1']})
     assert resp.status_code == I_ERR
 
-#join working
+# join working
+
+
 def test_channel_join_global_owner(reg_two_users_and_create_two_channels):
-    resp1 = requests.post(config.url + 'channel/join/v2', json={'token':reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id2']})
+    resp1 = requests.post(config.url + 'channel/join/v2', json={
+                          'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id2']})
     assert resp1.status_code == OK
-    resp2 = requests.get(config.url + 'channel/details/v2', params={'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id2']})
+    resp2 = requests.get(config.url + 'channel/details/v2', params={
+                         'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id2']})
     assert resp2.status_code == OK
     resp_data = resp2.json()
     assert resp_data['all_members'][1]['u_id'] == reg_two_users_and_create_two_channels['u_id1']
 
+
 def test_channel_join_normal(reg_two_users_and_create_two_channels):
-    resp1 = requests.post(config.url + 'channels/create/v2', json={'token': reg_two_users_and_create_two_channels['token1'], 'name': 'NiceChannel222', 'is_public': True})
+    resp1 = requests.post(config.url + 'channels/create/v2', json={
+                          'token': reg_two_users_and_create_two_channels['token1'], 'name': 'NiceChannel222', 'is_public': True})
     assert resp1.status_code == OK
     resp1_data = resp1.json()
-    resp2 = requests.post(config.url + 'channel/join/v2', json={'token':reg_two_users_and_create_two_channels['token2'], 'channel_id': resp1_data['channel_id']})
+    resp2 = requests.post(config.url + 'channel/join/v2', json={
+                          'token': reg_two_users_and_create_two_channels['token2'], 'channel_id': resp1_data['channel_id']})
     assert resp2.status_code == OK
-    resp3 = requests.get(config.url + 'channel/details/v2', params={'token': reg_two_users_and_create_two_channels['token2'], 'channel_id': resp1_data['channel_id']})
+    resp3 = requests.get(config.url + 'channel/details/v2', params={
+                         'token': reg_two_users_and_create_two_channels['token2'], 'channel_id': resp1_data['channel_id']})
     assert resp3.status_code == OK
     resp3_data = resp3.json()
     assert resp3_data['all_members'][1]['u_id'] == reg_two_users_and_create_two_channels['u_id2']
 
-#invite errors
+# invite errors
+
+
 def test_channel_invite_invalid_token(reg_two_users_and_create_two_channels):
-    resp = requests.post(config.url + 'channel/invite/v2', json={'token': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c', 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'u_id': reg_two_users_and_create_two_channels['u_id2']})
+    resp = requests.post(config.url + 'channel/invite/v2', json={'token': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c',
+                         'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'u_id': reg_two_users_and_create_two_channels['u_id2']})
     assert resp.status_code == A_ERR
+
 
 def test_channel_invite_expired_token(reg_two_users_and_create_two_channels):
-    resp1 = requests.post(config.url + 'auth/logout/v1', json={'token': reg_two_users_and_create_two_channels['token1']})
+    resp1 = requests.post(config.url + 'auth/logout/v1',
+                          json={'token': reg_two_users_and_create_two_channels['token1']})
     assert resp1.status_code == OK
-    resp2 = requests.post(config.url + 'channel/invite/v2', json={'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'u_id': reg_two_users_and_create_two_channels['u_id2']})
+    resp2 = requests.post(config.url + 'channel/invite/v2', json={
+                          'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'u_id': reg_two_users_and_create_two_channels['u_id2']})
     assert resp2.status_code == A_ERR
 
+
 def test_channel_invite_unauthorised(reg_two_users_and_create_two_channels):
-    resp = requests.post(config.url + 'channel/invite/v2', json={'token': reg_two_users_and_create_two_channels['token2'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'u_id': reg_two_users_and_create_two_channels['u_id2']})
+    resp = requests.post(config.url + 'channel/invite/v2', json={
+                         'token': reg_two_users_and_create_two_channels['token2'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'u_id': reg_two_users_and_create_two_channels['u_id2']})
     assert resp.status_code == A_ERR
 
+
 def test_channel_invite_invalid_channel(reg_two_users_and_create_two_channels):
-    resp = requests.post(config.url + 'channel/invite/v2', json={'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': 6213732198, 'u_id': reg_two_users_and_create_two_channels['u_id2']})
+    resp = requests.post(config.url + 'channel/invite/v2', json={
+                         'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': 6213732198, 'u_id': reg_two_users_and_create_two_channels['u_id2']})
     assert resp.status_code == I_ERR
+
 
 def test_channel_invite_invalid_id(reg_two_users_and_create_two_channels):
-    resp = requests.post(config.url + 'channel/invite/v2', json={'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'u_id': 21376321})
+    resp = requests.post(config.url + 'channel/invite/v2', json={
+                         'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'u_id': 21376321})
     assert resp.status_code == I_ERR
+
 
 def test_channel_invite_already_in(reg_two_users_and_create_two_channels):
-    resp = requests.post(config.url + 'channel/invite/v2', json={'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'u_id': reg_two_users_and_create_two_channels['u_id1']})
+    resp = requests.post(config.url + 'channel/invite/v2', json={
+                         'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'u_id': reg_two_users_and_create_two_channels['u_id1']})
     assert resp.status_code == I_ERR
 
-#invite working
+# invite working
+
+
 def test_channel_invite(reg_two_users_and_create_two_channels):
-    resp1 = requests.post(config.url + 'channel/invite/v2', json={'token':reg_two_users_and_create_two_channels['token2'], 'channel_id': reg_two_users_and_create_two_channels['ch_id2'], 'u_id': reg_two_users_and_create_two_channels['u_id1']})
+    resp1 = requests.post(config.url + 'channel/invite/v2', json={
+                          'token': reg_two_users_and_create_two_channels['token2'], 'channel_id': reg_two_users_and_create_two_channels['ch_id2'], 'u_id': reg_two_users_and_create_two_channels['u_id1']})
     assert resp1.status_code == OK
-    resp2 = requests.get(config.url + 'channel/details/v2', params={'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id2']})
+    resp2 = requests.get(config.url + 'channel/details/v2', params={
+                         'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id2']})
     assert resp2.status_code == OK
     resp_data = resp2.json()
     assert resp_data['all_members'][1]['u_id'] == reg_two_users_and_create_two_channels['u_id1']
 
-#messages errors
+# messages errors
+
+
 def test_channel_messages_invalid_token(reg_two_users_and_create_two_channels):
-    resp = requests.get(config.url + 'channel/messages/v2', params={'token': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c', 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'start': 0})
+    resp = requests.get(config.url + 'channel/messages/v2', params={
+                        'token': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c', 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'start': 0})
     assert resp.status_code == A_ERR
+
 
 def test_channel_messages_expired_token(reg_two_users_and_create_two_channels):
-    resp1 = requests.post(config.url + 'auth/logout/v1', json={'token': reg_two_users_and_create_two_channels['token1']})
+    resp1 = requests.post(config.url + 'auth/logout/v1',
+                          json={'token': reg_two_users_and_create_two_channels['token1']})
     assert resp1.status_code == OK
-    resp2 = requests.get(config.url + 'channel/messages/v2', params={'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'start': 0})
+    resp2 = requests.get(config.url + 'channel/messages/v2', params={
+                         'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'start': 0})
     assert resp2.status_code == A_ERR
 
+
 def test_channel_messages_unauthorised(reg_two_users_and_create_two_channels):
-    resp = requests.get(config.url + 'channel/messages/v2', params={'token': reg_two_users_and_create_two_channels['token2'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'start': 0})
+    resp = requests.get(config.url + 'channel/messages/v2', params={
+                        'token': reg_two_users_and_create_two_channels['token2'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'start': 0})
     assert resp.status_code == A_ERR
 
+
 def test_channel_messages_invalid_channel(reg_two_users_and_create_two_channels):
-    resp = requests.get(config.url + 'channel/messages/v2', params={'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': 6213732198, 'start': 0})
+    resp = requests.get(config.url + 'channel/messages/v2', params={
+                        'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': 6213732198, 'start': 0})
     assert resp.status_code == I_ERR
+
 
 def test_channel_messages_big_start(reg_two_users_and_create_two_channels):
-    resp = requests.get(config.url + 'channel/messages/v2', params={'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'start': 1})
+    resp = requests.get(config.url + 'channel/messages/v2', params={
+                        'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'start': 1})
     assert resp.status_code == I_ERR
 
-#messages working
+# messages working
+
+
 def test_channel_messages_empty(reg_two_users_and_create_two_channels):
-    resp = requests.get(config.url + 'channel/messages/v2', params={'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'start': 0})
+    resp = requests.get(config.url + 'channel/messages/v2', params={
+                        'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'start': 0})
     assert resp.status_code == OK
     resp_data = resp.json()
     assert resp_data['start'] == 0
     assert resp_data['end'] == -1
     assert resp_data['messages'] == []
 
+
 def test_channel_small_messages(reg_two_users_and_create_two_channels):
     for i in range(2):
-        resp = requests.post(config.url + 'message/send/v1', json={'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'message': str(i)})
+        resp = requests.post(config.url + 'message/send/v1', json={
+                             'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'message': str(i)})
         assert resp.status_code == OK
-    resp = requests.get(config.url + 'channel/messages/v2', params={'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'start': 0})
+    resp = requests.get(config.url + 'channel/messages/v2', params={
+                        'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'start': 0})
     assert resp.status_code == OK
     resp_data = resp.json()
     assert resp_data['start'] == 0
@@ -188,18 +255,22 @@ def test_channel_small_messages(reg_two_users_and_create_two_channels):
     for i in range(2):
         assert resp_data['messages'][i]['message'] == str(1 - i)
 
+
 def test_channel_big_messages(reg_two_users_and_create_two_channels):
     for i in range(150):
-        resp = requests.post(config.url + 'message/send/v1', json={'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'message': str(i)})
+        resp = requests.post(config.url + 'message/send/v1', json={
+                             'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'message': str(i)})
         assert resp.status_code == OK
-    resp = requests.get(config.url + 'channel/messages/v2', params={'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'start': 0})
+    resp = requests.get(config.url + 'channel/messages/v2', params={
+                        'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'start': 0})
     assert resp.status_code == OK
     resp_data = resp.json()
     assert resp_data['start'] == 0
     assert resp_data['end'] == 50
     for i in range(50):
         assert resp_data['messages'][i]['message'] == str(149 - i)
-    resp = requests.get(config.url + 'channel/messages/v2', params={'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'start': 100})
+    resp = requests.get(config.url + 'channel/messages/v2', params={
+                        'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'start': 100})
     assert resp.status_code == OK
     resp_data = resp.json()
     assert resp_data['start'] == 100
@@ -207,21 +278,28 @@ def test_channel_big_messages(reg_two_users_and_create_two_channels):
     for i in range(50):
         assert resp_data['messages'][i]['message'] == str(49 - i)
 
-#leave errors
+# leave errors
+
+
 def test_channel_leave_invalid_token(reg_two_users_and_create_two_channels):
-    resp = requests.post(config.url + 'channel/leave/v1', json={'token': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c', 'channel_id': reg_two_users_and_create_two_channels['ch_id1']})
+    resp = requests.post(config.url + 'channel/leave/v1', json={
+                         'token': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c', 'channel_id': reg_two_users_and_create_two_channels['ch_id1']})
     assert resp.status_code == A_ERR
 
+
 def test_channel_leave_expired_token(reg_two_users_and_create_two_channels):
-    resp1 = requests.post(config.url + 'auth/logout/v1', json={'token': reg_two_users_and_create_two_channels['token1']})
+    resp1 = requests.post(config.url + 'auth/logout/v1',
+                          json={'token': reg_two_users_and_create_two_channels['token1']})
     assert resp1.status_code == OK
-    resp2 = requests.post(config.url + 'channel/leave/v1', json={'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1']})
+    resp2 = requests.post(config.url + 'channel/leave/v1', json={
+                          'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1']})
     assert resp2.status_code == A_ERR
 
-def test_channel_leave_unauthorised(reg_two_users_and_create_two_channels):
-    resp = requests.post(config.url + 'channel/leave/v1', json={'token': reg_two_users_and_create_two_channels['token2'], 'channel_id': reg_two_users_and_create_two_channels['ch_id2']})
-    assert resp.status_code == OK
 
+def test_channel_leave_unauthorised(reg_two_users_and_create_two_channels):
+    resp = requests.post(config.url + 'channel/leave/v1', json={
+                         'token': reg_two_users_and_create_two_channels['token2'], 'channel_id': reg_two_users_and_create_two_channels['ch_id2']})
+    assert resp.status_code == OK
 
 
 def test_channel_leave_invalid_channel(reg_two_users_and_create_two_channels):
@@ -230,112 +308,203 @@ def test_channel_leave_invalid_channel(reg_two_users_and_create_two_channels):
     assert resp.status_code == I_ERR
 
 
-#leave working
-def test_channel_leave(reg_two_users_and_create_two_channels):
-    resp1 = requests.post(config.url + 'channel/join/v2', json={'token': reg_two_users_and_create_two_channels['token2'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1']})
-    assert resp1.status_code == OK
-    resp2 = requests.post(config.url + 'channel/leave/v1', json={'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1']})
-    assert resp2.status_code == OK
-    resp3 = requests.get(config.url + 'channel/details/v2', params={'token': reg_two_users_and_create_two_channels['token2'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1']})
-    assert resp3.status_code == OK
-    resp4 = requests.get(config.url + 'channel/details/v2', params={'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1']})
-    assert resp4.status_code == A_ERR
-
-#addowner errors
-def test_channel_addowner_invalid_token(reg_two_users_and_create_two_channels):
-    resp = requests.post(config.url + 'channel/addowner/v1', json={'token': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c', 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'u_id': reg_two_users_and_create_two_channels['u_id1']})
+def test_channel_leave_invalid_channel_member(reg_two_users_and_create_two_channels):
+    resp = requests.post(config.url + 'channel/leave/v1', json={
+                         'token': reg_two_users_and_create_two_channels['token2'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1']})
     assert resp.status_code == A_ERR
 
-def test_channel_addowner_expired_token(reg_two_users_and_create_two_channels):
-    resp1 = requests.post(config.url + 'auth/logout/v1', json={'token': reg_two_users_and_create_two_channels['token1']})
+
+# leave working
+
+def test_channel_leave_owner_leaves_first_leaves_first_channel(reg_two_users_and_create_two_channels):
+    resp = requests.post(config.url + 'channel/leave/v1', json={
+                         'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1']})
+    resp.status_code = OK
+
+
+def test_channel_leave_user_joins_and_leaves_third_channel(reg_two_users_and_create_two_channels):
+    resp = requests.post(config.url + 'channels/create/v2', json={
+        'token': reg_two_users_and_create_two_channels['token1'], 'name': 'Third_channel', 'is_public': True})
+    resp.status_code = OK
+    data = resp.json()
+    third_channel_id = data['channel_id']
+
+    resp1 = requests.post(config.url + 'channel/leave/v1', json={
+        'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': third_channel_id})
+    resp1.status_code = OK
+
+
+def test_channel_leave_first_leaves_second_joins(reg_two_users_and_create_two_channels):
+    resp1 = requests.post(config.url + 'channel/join/v2', json={
+                          'token': reg_two_users_and_create_two_channels['token2'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1']})
     assert resp1.status_code == OK
-    resp2 = requests.post(config.url + 'channel/addowner/v1', json={'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'u_id': reg_two_users_and_create_two_channels['u_id1']})
+    resp2 = requests.post(config.url + 'channel/leave/v1', json={
+                          'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1']})
+    assert resp2.status_code == OK
+    resp3 = requests.get(config.url + 'channel/details/v2', params={
+                         'token': reg_two_users_and_create_two_channels['token2'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1']})
+    assert resp3.status_code == OK
+    resp4 = requests.get(config.url + 'channel/details/v2', params={
+                         'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1']})
+    assert resp4.status_code == A_ERR
+
+# addowner errors
+
+
+def test_channel_addowner_invalid_token(reg_two_users_and_create_two_channels):
+    resp = requests.post(config.url + 'channel/addowner/v1', json={'token': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c',
+                         'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'u_id': reg_two_users_and_create_two_channels['u_id1']})
+    assert resp.status_code == A_ERR
+
+
+def test_channel_addowner_expired_token(reg_two_users_and_create_two_channels):
+    resp1 = requests.post(config.url + 'auth/logout/v1',
+                          json={'token': reg_two_users_and_create_two_channels['token1']})
+    assert resp1.status_code == OK
+    resp2 = requests.post(config.url + 'channel/addowner/v1', json={
+                          'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'u_id': reg_two_users_and_create_two_channels['u_id1']})
     assert resp2.status_code == A_ERR
+
 
 def test_channel_addowner_unauthorised(reg_two_users_and_create_two_channels):
-    resp1 = requests.post(config.url + 'channel/join/v2', json={'token': reg_two_users_and_create_two_channels['token2'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1']})
+    resp1 = requests.post(config.url + 'channel/join/v2', json={
+                          'token': reg_two_users_and_create_two_channels['token2'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1']})
     assert resp1.status_code == OK
-    resp2 = requests.post(config.url + 'channel/addowner/v1', json={'token': reg_two_users_and_create_two_channels['token2'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'u_id': reg_two_users_and_create_two_channels['u_id2']})
+    resp2 = requests.post(config.url + 'channel/addowner/v1', json={
+                          'token': reg_two_users_and_create_two_channels['token2'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'u_id': reg_two_users_and_create_two_channels['u_id2']})
     assert resp2.status_code == A_ERR
 
+
 def test_channel_addowner_invalid_channel(reg_two_users_and_create_two_channels):
-    resp = requests.post(config.url + 'channel/addowner/v1', json={'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': 6213732198, 'u_id': reg_two_users_and_create_two_channels['u_id1']})
+    resp = requests.post(config.url + 'channel/addowner/v1', json={
+                         'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': 6213732198, 'u_id': reg_two_users_and_create_two_channels['u_id1']})
     assert resp.status_code == I_ERR
+
 
 def test_channel_addowner_invalid_id(reg_two_users_and_create_two_channels):
-    resp = requests.post(config.url + 'channel/addowner/v1', json={'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'u_id': 21376321})
+    resp = requests.post(config.url + 'channel/addowner/v1', json={
+                         'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'u_id': 21376321})
     assert resp.status_code == I_ERR
+
 
 def test_channel_addowner_already_owner(reg_two_users_and_create_two_channels):
-    resp = requests.post(config.url + 'channel/addowner/v1', json={'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'u_id': reg_two_users_and_create_two_channels['u_id1']})
+    resp = requests.post(config.url + 'channel/addowner/v1', json={
+                         'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'u_id': reg_two_users_and_create_two_channels['u_id1']})
     assert resp.status_code == I_ERR
+
 
 def test_channel_addowner_not_a_member(reg_two_users_and_create_two_channels):
-    resp = requests.post(config.url + 'channel/addowner/v1', json={'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'u_id': reg_two_users_and_create_two_channels['u_id2']})
+    resp = requests.post(config.url + 'channel/addowner/v1', json={
+                         'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'u_id': reg_two_users_and_create_two_channels['u_id2']})
     assert resp.status_code == I_ERR
 
-#addowner working
-def test_channel_addowner(reg_two_users_and_create_two_channels):
-    resp1 = requests.post(config.url + 'channel/join/v2', json={'token': reg_two_users_and_create_two_channels['token2'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1']})
+def test_channel_addowner_global_not_member(reg_two_users_and_create_two_channels):
+    resp = requests.post(config.url + 'auth/register/v2', json={
+                          'email': 'third@guy.test', 'password': 'neets4life', 'name_first': 'ronald', 'name_last': 'longbottom'})
+    assert resp.status_code == OK
+    data = resp.json()
+    token3 = data['token']
+    resp1 = requests.post(config.url + 'channels/create/v2', json={
+                          'token': token3, 'name': 'Third_channel', 'is_public': True})
     assert resp1.status_code == OK
-    resp2 = requests.post(config.url + 'channel/addowner/v1', json={'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'u_id': reg_two_users_and_create_two_channels['u_id2']})
+    ch_id3 = resp1.json()['channel_id']
+    resp2 = requests.post(config.url + 'channel/join/v2', json={
+                          'token': reg_two_users_and_create_two_channels['token2'], 'channel_id': ch_id3})
     assert resp2.status_code == OK
-    resp3 = requests.get(config.url + 'channel/details/v2', params={'token': reg_two_users_and_create_two_channels['token2'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1']})
+    resp2 = requests.post(config.url + 'channel/addowner/v1', json={
+                         'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': ch_id3, 'u_id': reg_two_users_and_create_two_channels['u_id2']})
+    assert resp2.status_code == A_ERR
+
+# addowner working
+
+
+def test_channel_addowner(reg_two_users_and_create_two_channels):
+    resp1 = requests.post(config.url + 'channel/join/v2', json={
+                          'token': reg_two_users_and_create_two_channels['token2'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1']})
+    assert resp1.status_code == OK
+    resp2 = requests.post(config.url + 'channel/addowner/v1', json={
+                          'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'u_id': reg_two_users_and_create_two_channels['u_id2']})
+    assert resp2.status_code == OK
+    resp3 = requests.get(config.url + 'channel/details/v2', params={
+                         'token': reg_two_users_and_create_two_channels['token2'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1']})
     assert resp3.status_code == OK
     resp_data = resp3.json()
     assert resp_data['owner_members'][1]['u_id'] == reg_two_users_and_create_two_channels['u_id2']
 
-#removeowner errors
+# removeowner errors
+
+
 def test_channel_removeowner_invalid_token(reg_two_users_and_create_two_channels):
-    resp = requests.post(config.url + 'channel/removeowner/v1', json={'token': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c', 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'u_id': reg_two_users_and_create_two_channels['u_id1']})
+    resp = requests.post(config.url + 'channel/removeowner/v1', json={'token': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c',
+                         'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'u_id': reg_two_users_and_create_two_channels['u_id1']})
     assert resp.status_code == A_ERR
 
+
 def test_channel_removeowner_expired_token(reg_two_users_and_create_two_channels):
-    resp1 = requests.post(config.url + 'auth/logout/v1', json={'token': reg_two_users_and_create_two_channels['token1']})
+    resp1 = requests.post(config.url + 'auth/logout/v1',
+                          json={'token': reg_two_users_and_create_two_channels['token1']})
     assert resp1.status_code == OK
-    resp2 = requests.post(config.url + 'channel/removeowner/v1', json={'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'u_id': reg_two_users_and_create_two_channels['u_id1']})
+    resp2 = requests.post(config.url + 'channel/removeowner/v1', json={
+                          'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'u_id': reg_two_users_and_create_two_channels['u_id1']})
     assert resp2.status_code == A_ERR
+
 
 def test_channel_removeowner_unauthorised(reg_two_users_and_create_two_channels):
-    resp1 = requests.post(config.url + 'channel/join/v2', json={'token': reg_two_users_and_create_two_channels['token2'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1']})
+    resp1 = requests.post(config.url + 'channel/join/v2', json={
+                          'token': reg_two_users_and_create_two_channels['token2'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1']})
     assert resp1.status_code == OK
-    resp2 = requests.post(config.url + 'channel/removeowner/v1', json={'token': reg_two_users_and_create_two_channels['token2'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'u_id': reg_two_users_and_create_two_channels['u_id1']})
+    resp2 = requests.post(config.url + 'channel/removeowner/v1', json={
+                          'token': reg_two_users_and_create_two_channels['token2'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'u_id': reg_two_users_and_create_two_channels['u_id1']})
     assert resp2.status_code == A_ERR
 
+
 def test_channel_removeowner_invalid_channel(reg_two_users_and_create_two_channels):
-    resp = requests.post(config.url + 'channel/removeowner/v1', json={'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': 6213732198, 'u_id': reg_two_users_and_create_two_channels['u_id1']})
+    resp = requests.post(config.url + 'channel/removeowner/v1', json={
+                         'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': 6213732198, 'u_id': reg_two_users_and_create_two_channels['u_id1']})
     assert resp.status_code == I_ERR
+
 
 def test_channel_removeowner_invalid_id(reg_two_users_and_create_two_channels):
-    resp = requests.post(config.url + 'channel/removeowner/v1', json={'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'u_id': 21376321})
+    resp = requests.post(config.url + 'channel/removeowner/v1', json={
+                         'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'u_id': 21376321})
     assert resp.status_code == I_ERR
+
 
 def test_channel_removeowner_not_owner(reg_two_users_and_create_two_channels):
-    resp1 = requests.post(config.url + 'channel/join/v2', json={'token': reg_two_users_and_create_two_channels['token2'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1']})
+    resp1 = requests.post(config.url + 'channel/join/v2', json={
+                          'token': reg_two_users_and_create_two_channels['token2'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1']})
     assert resp1.status_code == OK
-    resp2 = requests.post(config.url + 'channel/removeowner/v1', json={'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'u_id': reg_two_users_and_create_two_channels['u_id2']})
+    resp2 = requests.post(config.url + 'channel/removeowner/v1', json={
+                          'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'u_id': reg_two_users_and_create_two_channels['u_id2']})
     assert resp2.status_code == I_ERR
 
+
 def test_channel_removeowner_only_owner(reg_two_users_and_create_two_channels):
-    resp = requests.post(config.url + 'channel/removeowner/v1', json={'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'u_id': reg_two_users_and_create_two_channels['u_id1']})
+    resp = requests.post(config.url + 'channel/removeowner/v1', json={
+                         'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'u_id': reg_two_users_and_create_two_channels['u_id1']})
     assert resp.status_code == I_ERR
 
-#removeowner working
+# removeowner working
+
+
 def test_channel_removeowner(reg_two_users_and_create_two_channels):
-    resp1 = requests.post(config.url + 'channel/join/v2', json={'token': reg_two_users_and_create_two_channels['token2'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1']})
+    resp1 = requests.post(config.url + 'channel/join/v2', json={
+                          'token': reg_two_users_and_create_two_channels['token2'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1']})
     assert resp1.status_code == OK
-    resp2 = requests.post(config.url + 'channel/addowner/v1', json={'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'u_id': reg_two_users_and_create_two_channels['u_id2']})
+    resp2 = requests.post(config.url + 'channel/addowner/v1', json={
+                          'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'u_id': reg_two_users_and_create_two_channels['u_id2']})
     assert resp2.status_code == OK
-    resp3 = requests.get(config.url + 'channel/details/v2', params={'token': reg_two_users_and_create_two_channels['token2'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1']})
+    resp3 = requests.get(config.url + 'channel/details/v2', params={
+                         'token': reg_two_users_and_create_two_channels['token2'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1']})
     assert resp3.status_code == OK
     resp3_data = resp3.json()
     assert resp3_data['owner_members'][1]['u_id'] == reg_two_users_and_create_two_channels['u_id2']
-    resp4 = requests.post(config.url + 'channel/removeowner/v1', json={'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'u_id': reg_two_users_and_create_two_channels['u_id2']})
+    resp4 = requests.post(config.url + 'channel/removeowner/v1', json={
+                          'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'u_id': reg_two_users_and_create_two_channels['u_id2']})
     assert resp4.status_code == OK
-    resp5 = requests.get(config.url + 'channel/details/v2', params={'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1']})
+    resp5 = requests.get(config.url + 'channel/details/v2', params={
+                         'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1']})
     assert resp5.status_code == OK
     resp5_data = resp5.json()
     assert len(resp5_data['owner_members']) == 1
     assert len(resp5_data['all_members']) == 2
-
-
