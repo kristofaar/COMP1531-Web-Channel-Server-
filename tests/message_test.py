@@ -137,6 +137,13 @@ def test_message_edit_bad_length(reg_two_users_and_create_two_channels):
         msg += 'a'
     resp2 = requests.put(config.url + 'message/edit/v1', json={'token': reg_two_users_and_create_two_channels['token1'], 'message_id': resp1_data['message_id'], 'message': msg})
     assert resp2.status_code == I_ERR
+    resp3 = requests.put(config.url + 'message/edit/v1', json={'token': reg_two_users_and_create_two_channels['token1'], 'message_id': resp1_data['message_id'], 'message': ''})
+    assert resp3.status_code == OK
+    resp4 = requests.get(config.url + 'channel/messages/v2', params={'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'start': 0})
+    assert resp4.status_code == OK
+    resp_data = resp4.json()
+    assert resp_data['messages'] == []
+
 
 #edit working
 def test_message_edit_basic(reg_two_users_and_create_two_channels):
@@ -307,7 +314,7 @@ def test_message_senddm_bad_length(reg_two_users_and_create_dm):
         msg += 'a'
     resp2 = requests.post(config.url + 'message/senddm/v1', json={'token': reg_two_users_and_create_dm['token1'], 'dm_id': reg_two_users_and_create_dm['dm_id'], 'message': msg})
     assert resp2.status_code == I_ERR
-'''
+
 #send working
 def test_one_user_two_dms(reg_two_users_and_create_dm):
     resp1 = requests.post(config.url + 'message/senddm/v1', json={'token': reg_two_users_and_create_dm['token1'], 'dm_id': reg_two_users_and_create_dm['dm_id'], 'message': 'hi'})
@@ -340,15 +347,12 @@ def test_two_users_one_dm(reg_two_users_and_create_dm):
     resp3_data = resp3.json()
     resp4 = requests.get(config.url + 'dm/messages/v1', params={'token': reg_two_users_and_create_dm['token2'], 'dm_id': reg_two_users_and_create_dm['dm_id'], 'start': 0})
     assert resp4.status_code == OK
-    resp4_data = resp4.json()
     assert resp3_data['start'] == 0
     assert resp3_data['end'] == -1
-    assert resp4_data['start'] == 0
-    assert resp4_data['end'] == -1
-    assert resp3_data['messages'][0]['message_id'] != resp4_data['messages'][0]['message_id']
-    assert resp3_data['messages'][0]['u_id'] == reg_two_users_and_create_dm['u_id1']
-    assert resp4_data['messages'][0]['u_id'] == reg_two_users_and_create_dm['u_id2']
-    assert resp4_data['messages'][0]['message'] == 'cool'
-    assert resp3_data['messages'][0]['message'] == 'hi'
-    assert resp4_data['messages'][0]['time_sent'] >= resp3_data['messages'][0]['time_sent']
-    '''
+    assert resp3_data['messages'][0]['message_id'] != resp3_data['messages'][1]['message_id']
+    assert resp3_data['messages'][0]['u_id'] == reg_two_users_and_create_dm['u_id2']
+    assert resp3_data['messages'][1]['u_id'] == reg_two_users_and_create_dm['u_id1']
+    assert resp3_data['messages'][0]['message'] == 'cool'
+    assert resp3_data['messages'][1]['message'] == 'hi'
+    assert resp3_data['messages'][0]['time_sent'] >= resp3_data['messages'][1]['time_sent']
+    
