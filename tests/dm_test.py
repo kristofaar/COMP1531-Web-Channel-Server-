@@ -70,6 +70,10 @@ def test_dm_list_invalid_token(reg_two_users_and_create_dm):
     assert dmlist.status_code == A_ERR
 
 #remove errors
+def test_dm_remove_invalid_token(reg_two_users_and_create_dm):
+    remove = requests.delete(config.url + 'dm/remove/v1', json={'token': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c',
+                                                                'dm_id': reg_two_users_and_create_dm['dm_id']})
+    assert remove.status_code == A_ERR
 def test_non_creator_remove(reg_two_users_and_create_dm):
     remove = requests.delete(config.url + 'dm/remove/v1', json={'token': reg_two_users_and_create_dm['token2'], 'dm_id': reg_two_users_and_create_dm['dm_id']})
     assert remove.status_code == A_ERR
@@ -82,6 +86,18 @@ def test_invalid_dm_id(reg_two_users_and_create_dm):
     remove = requests.delete(config.url + 'dm/remove/v1', json={'token': reg_two_users_and_create_dm['token1'], 'dm_id': -9128349012})
     assert remove.status_code == I_ERR
 #detail errors
+
+#dm leave errors
+def test_leave_invalid_token(reg_two_users_and_create_dm):
+    leave = requests.post(config.url + 'dm/leave/v1', json={'token': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c' , 'dm_id': reg_two_users_and_create_dm['dm_id']})
+    assert leave.status_code == A_ERR
+def test_leave_invalid_dm_id(reg_two_users_and_create_dm):
+    leave = requests.post(config.url + 'dm/leave/v1', json={'token': reg_two_users_and_create_dm['token2'], 'dm_id': -129831941})
+    assert leave.status_code == I_ERR
+
+def test_leave_unauthorised_user(reg_two_users_and_create_dm, reg_another_two_users_and_dm):
+    leave = requests.post(config.url + 'dm/leave/v1', json={'token': reg_another_two_users_and_dm['token1'], 'dm_id': reg_two_users_and_create_dm['dm_id']})
+    assert leave.status_code == A_ERR
 
 #test working create
 def test_dm_create_basic(reg_two_users_and_create_dm):

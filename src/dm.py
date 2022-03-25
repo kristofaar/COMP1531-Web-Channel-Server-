@@ -57,7 +57,7 @@ def dm_create_v1(token, u_ids):
     
     #updating users
     for u_id in u_ids:
-        curr_user = next(user for user in users if u_id == user['id'])
+        curr_user = next((user for user in users if u_id == user['id']),None)
         curr_user['dms'].append({'dm_id' : dm_id, 'name' : name})
     data_store.set(storage)
     return{
@@ -85,8 +85,7 @@ def dm_list_v1(token):
     users = storage['users']
 
     #iterate through users until a user with the corresponding id is found
-    curr_user = next(user for user in users if user_id == user['id'])
-    
+    curr_user = next((user for user in users if user_id == user['id']), None)    
     return {
         'dms': curr_user['dms']
     }
@@ -132,7 +131,7 @@ def dm_remove_v1(token, dm_id):
 
     #updating user and dms
     for members in curr_dm['members']:
-        curr_user = next(user for user in users if members == user['id'])
+        curr_user = next((user for user in users if members == user['id']), None)
         curr_user['dms'].remove({'dm_id': curr_dm['dm_id'], 'name': curr_dm['name']})
     dms.remove(curr_dm)
     data_store.set(storage)
@@ -162,8 +161,6 @@ def dm_details_v1(token, dm_id):
     auth_user_id = read_token(token)
     dms = storage['dms']
     users = storage['users']
-
-
 
     #search through dms by id until id is matched
     curr_dm = next((dm for dm in dms if int(dm_id) == dm['dm_id']), None)
@@ -215,7 +212,10 @@ def dm_leave_v1(token, dm_id):
     if curr_dm == None:
         raise InputError("Invalid dm id")
 
-    curr_user = next(user for user in users if user_id == user['id'])
+    if int(user_id) not in curr_dm['members']:
+        raise AccessError("Unauthorised User: User is not in dm")
+
+    curr_user = next((user for user in users if user_id == user['id']), None)
     curr_user['dms'].remove({'dm_id' : curr_dm['dm_id'], 'name' : curr_dm['name']})
     curr_dm['members'].remove(user_id)
     data_store.set(storage)
