@@ -211,7 +211,7 @@ def users_all():
 
 @APP.route("/user/profile/v1", methods=["GET"])
 def user_profile():
-    return user_profile_v1(request.args.get("token"))
+    return user_profile_v1(request.args.get("token"), request.args.get("u_id"))
 
 @APP.route("/user/profile/setname/v1", methods=["PUT"])
 def user_profile():
