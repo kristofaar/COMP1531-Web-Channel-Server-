@@ -45,7 +45,7 @@ class Datastore:
 
     def set(self, store):
         if not isinstance(store, dict):
-            raise TypeError('store must be of type dictionary')
+            raise TypeError(description='store must be of type dictionary')
         self.__store = store
 
 print('Loading Datastore...')

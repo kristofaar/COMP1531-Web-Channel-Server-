@@ -19,17 +19,14 @@ def channels_list_v1(token):
     '''
     storage = data_store.get()
     if not check_if_valid(token):
-        raise AccessError("Invalid token")
+        raise AccessError(description="Invalid token")
     user_id = read_token(token)
     users = storage['users']
     
 
             
     #iterate through users until a user with the corresponding id is found
-    curr_user = next((user for user in users if user_id == user['id']), None)
-    #if no user has the given id raise an error
-    if curr_user == None:
-        raise AccessError("Invalid User Id ")
+    curr_user = next(user for user in users if user_id == user['id'])
 
     return {
         'channels': curr_user['channels']
@@ -52,19 +49,8 @@ def channels_listall_v1(token):
     channel_list = []
     storage = data_store.get()
     if not check_if_valid(token):
-        raise AccessError("Invalid token")
-    user_id = read_token(token)
-    users = storage['users']
-    
+        raise AccessError(description="Invalid token")
 
-    
-    #iterate through users until a user with the corresponding id is found
-    curr_user = next((user for user in users if user_id == user['id']), None)
-
-    #if no user has the given id raise an error
-    if curr_user == None:
-        raise AccessError("Invalid User Id ")
-    
     #add all the channels that have been created to a list 
     for channel in storage['channels']:
         channel_list.append(channel['channel_id_and_name'])
@@ -92,20 +78,17 @@ def channels_create_v1(token, name, is_public):
     #staging variables
     storage = data_store.get()
     if not check_if_valid(token):
-        raise AccessError("Invalid token")
+        raise AccessError(description="Invalid token")
     user_id = read_token(token)
     users = storage['users']
     channels = storage['channels']
    
     #look through users to see if the given id matches any of their ids
-    curr_user = next((user for user in users if user_id == user['id']), None)
-    #if the given id is not found in users then spit out error message
-    if curr_user == None:
-        raise AccessError("Invalid User Id ")
+    curr_user = next(user for user in users if user_id == user['id'])
     if 1 > len(name):
-        raise InputError("Channel Name Is Too Short")
+        raise InputError(description="Channel Name Is Too Short")
     if len(name) > 20:
-        raise InputError("Channel Name Is Too Long")
+        raise InputError(description="Channel Name Is Too Long")
     
     #id creation is based off the last channel's id
     ch_id = 1

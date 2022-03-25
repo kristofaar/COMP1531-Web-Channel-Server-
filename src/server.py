@@ -12,6 +12,7 @@ from src.channel import channel_details_v1, channel_invite_v1, channel_join_v1, 
 from src.dm import dm_create_v1, dm_list_v1, dm_remove_v1, dm_details_v1, dm_leave_v1, dm_messages_v1
 from src.other import clear_v1
 from src.message import message_send_v1, message_edit_v1, message_remove_v1, message_senddm_v1
+from src.user import users_all_v1
 import pickle
 
 
@@ -204,9 +205,18 @@ def dm_list():
 def dm_details():
     return dm_details_v1(request.args.get("token"), request.args.get("dm_id"))
 
-# MESSAGES FUNCTION WRAPPERS
+@APP.route('/dm/leave/v1', methods=['POST'])
+def dm_leave():
+    data = request.get_json()
+    dm_leave_v1(data['token'], data['dm_id'])
+    save()
+    return dumps({})
 
+@APP.route("/dm/messages/v1", methods=['GET'])
+def dm_messages():
+    return dumps(dm_messages_v1(request.args.get('token'), request.args.get('dm_id'), request.args.get('start')))
 
+#MESSAGES FUNCTION WRAPPERS
 @APP.route("/message/send/v1", methods=['POST'])
 def send_message():
     data = request.get_json()
@@ -249,6 +259,12 @@ def clear():
     clear_v1()
     save()
     return dumps({})
+    
+#USER FUNCTION WRAPPERS
+@APP.route('/users/all/v1', methods=['GET'])
+def users_all():
+    return users_all_v1(request.args.get("token"))
+
 
 
 # NO NEED TO MODIFY BELOW THIS POINT
