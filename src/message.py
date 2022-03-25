@@ -169,7 +169,7 @@ def message_remove_v1(token, message_id):
 
     users = storage['users']
     channels = storage['channels']
-    user = next((user for user in users if auth_user_id == user['id']), None)
+    user = next(user for user in users if auth_user_id == user['id'])
 
     #search through channels by id until id is matched
     msg = None
