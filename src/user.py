@@ -6,6 +6,8 @@ import hashlib, jwt
 
 MIN_NAME_LENGTH = 1
 MAX_NAME_LENGTH = 50
+MIN_HANDLE_LENGTH = 3
+MAX_HANDLE_LENGTH = 20
 
 def users_all_v1(token):
     '''
@@ -61,7 +63,7 @@ def user_profile_v1(token, u_id):
 
     user_exists = False
     for user in users:
-        if u_id == user["u_id"]:
+        if user["u_id"] == u_id:
             user_exists = True
             return {
                 "u_id": user["id"], 
@@ -111,7 +113,7 @@ def user_profile_setname_v1(token, name_first, name_last):
     u_id = read_token(token)
 
     for user in users:
-        if u_id == user["u_id"]:
+        if user["u_id"] == u_id:
             user["name_first"] = name_first
             user["name_last"] = name_last
 
@@ -154,7 +156,54 @@ def user_profile_setemail_v1(token, email):
     u_id = read_token(token)
 
     for user in users:
-        if u_id == user["u_id"]:
+        if user["u_id"] == u_id:
             user["email"] = email
+
+    return {}
+
+def user_profile_sethandle_v1(token, handle_str):
+    '''
+    Update the authorised user's handle (i.e. display name).
+
+    Arguments:
+        token (str)       - The user's session token.
+        handle_str (str)  - The user's display name.
+
+    Exceptions:
+        AccessError - Occurs when token does not refer to a valid session.
+        InputError  - Occurs when length of handle_str is not between 3 and 20 characters inclusive.
+        InputError  - Occurs when handle_str contains characters that are not alphanumeric.
+        InputError  - Occurs when the handle is already being used by another user.
+
+    Return Value:
+        Returns nothing.
+    '''
+
+    store = data_store.get()
+    users = store["users"]
+
+    # Check valid token
+    if not check_if_valid(token):
+        raise AccessError(description="Invalid token")
+
+    # Check valid handle length
+    if not MIN_HANDLE_LENGTH <= len(handle_str) <= MAX_HANDLE_LENGTH:
+        raise InputError(description="Invalid handle length")
+
+    # Check valid handle input
+    if not isalnum(handle_str):
+        raise InputError(description="Invalid handle input")
+    
+    # Check duplicate handle
+    for user in users:
+        if user["handle_str"] == handle_str:
+            raise InputError(description="User handle already exists")
+
+    # Get user ID from token
+    u_id = read_token(token)
+
+    for user in users:
+        if user["u_id"] == u_id:
+            user["handle_str"] = handle_str
 
     return {}
