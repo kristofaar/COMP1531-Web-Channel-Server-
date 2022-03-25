@@ -9,3 +9,7 @@ def test_echo():
     '''
     resp = requests.get(config.url + 'echo', params={'data': 'hello'})
     assert json.loads(resp.text) == {'data': 'hello'}
+
+def test_echo_error():
+    resp = requests.get(config.url + 'echo', params={'data': 'hello'})
+    assert resp.status_code == 400

@@ -27,7 +27,7 @@ def reg_two_users_and_create_two_channels():
 
 #send errors
 def test_message_send_invalid_token(reg_two_users_and_create_two_channels):
-    resp = requests.post(config.url + 'message/send/v1', json={'token': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c', 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'message': 'hi'})
+    resp = requests.post(config.url + 'message/send/v1', json={'token': 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6MjEzODcsInNlc3Npb25faWQiOjF9.XFf0uaLmhPnqIW231NDjAsTFJnhSSbdayu2j5JNEnos', 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'message': 'hi'})
     assert resp.status_code == A_ERR
 
 def test_message_send_expired_token(reg_two_users_and_create_two_channels):
@@ -99,7 +99,7 @@ def test_two_users_one_message(reg_two_users_and_create_two_channels):
 
 #edit errors
 def test_message_edit_invalid_token(reg_two_users_and_create_two_channels):
-    resp = requests.put(config.url + 'message/edit/v1', json={'token': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c', 'message_id': 0, 'message': 'hi'})
+    resp = requests.put(config.url + 'message/edit/v1', json={'token': 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzZXNzaW9uX2lkIjoyfQ.qrzphrWzd35ouH9TDO5M8IhyOju6uMpqe__PPTxHQBg', 'message_id': 0, 'message': 'hi'})
     assert resp.status_code == A_ERR
 
 def test_message_edit_expired_token(reg_two_users_and_create_two_channels):

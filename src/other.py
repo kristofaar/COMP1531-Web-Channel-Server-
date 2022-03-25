@@ -16,12 +16,8 @@ def clear_v1():
 """Owner perms checker"""
 def owner_perms(u_id, ch_id):
     store = data_store.get()
-    ch = next((channel for channel in store['channels'] if ch_id == channel['channel_id_and_name']['channel_id']), None)
-    if not ch:
-        return False
-    user = next((user for user in store['users'] if user['id'] == u_id), None)
-    if not user:
-        return False
+    ch = next(channel for channel in store['channels'] if ch_id == channel['channel_id_and_name']['channel_id'])
+    user = next(user for user in store['users'] if user['id'] == u_id)
     is_owner = next((owner for owner in ch['owner'] if owner == u_id), None)
     if is_owner != None or user['global_owner']:
         return True
