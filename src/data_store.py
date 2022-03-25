@@ -29,11 +29,11 @@ initial_object = {
     # users will contain a list of dictionaries containing in order:
     # {id, email, name_first, name_last, handle, email, global_owner, }
     'users': [],
-    'channels': [],  # {owner, members}
+    'channels': [],
+    'dms': [],
     'no_users': True,
     'session_id': 0,
     'removed_users': [],
-    'dms': [],
 }
 # YOU SHOULD MODIFY THIS OBJECT ABOVE
 
@@ -49,7 +49,7 @@ class Datastore:
 
     def set(self, store):
         if not isinstance(store, dict):
-            raise TypeError('store must be of type dictionary')
+            raise TypeError(description='store must be of type dictionary')
         self.__store = store
 
 

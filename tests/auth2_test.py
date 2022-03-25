@@ -62,3 +62,30 @@ def test_invalid_name(reg_two_users):
         assert resp3.status_code == I_ERR
         resp4 = requests.post(config.url + 'auth/register/v2', json={'email': '4@test.test', 'password': '2131443214das', 'name_first': 'asd', 'name_last': 'te2317213g8y21g38g321876g3218g312687t327816t73821tg78321tg78321gt78321tg78312t78321t783t78132t78213ty87123t78123ty78123t78t32178'})
         assert resp4.status_code == I_ERR
+
+#register working
+
+def test_register():
+    clear_resp = requests.delete(config.url + 'clear/v1')
+    assert clear_resp.status_code == OK
+    resp1 = requests.post(config.url + 'auth/register/v2', json={'email': 'teast@test.test', 'password': 'testtesttest', 'name_first': 'test', 'name_last': 'test'})
+    assert resp1.status_code == OK
+
+#logout error
+
+def test_invalid_logout(reg_two_users):
+    resp1 = requests.post(config.url + 'auth/logout/v1', json={'token': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c'})
+    assert resp1.status_code == A_ERR
+
+def test_logout_twice(reg_two_users):
+    requests.post(config.url + 'auth/logout/v1', json={'token': reg_two_users['token1']})
+    resp1 = requests.post(config.url + 'auth/logout/v1', json={'token': reg_two_users['token1']})
+    assert resp1.status_code == A_ERR
+
+#logout working
+
+def test_logout(reg_two_users):
+    resp1 = requests.post(config.url + 'auth/logout/v1', json={'token': reg_two_users['token1']})
+    assert resp1.status_code == OK
+    resp2 = requests.post(config.url + 'channels/create/v2', json={'token': reg_two_users['token1'], 'name': 'okName', 'is_public': False})
+    assert resp2.status_code == A_ERR

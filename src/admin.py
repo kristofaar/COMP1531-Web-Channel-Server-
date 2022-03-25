@@ -44,7 +44,9 @@ def admin_user_remove_v1(token, u_id):
         raise InputError(description="Invalid User Id")
 
     # check u_id the only global owner
-    if u_id == auth_user_id:
+    other_owner = next((user for user in users if user['global_owner'] and user['id'] != auth_user_id), None)
+        
+    if not other_owner:
         raise InputError(description='User is the only global owner')
 
     # remove user from channels
@@ -85,3 +87,5 @@ def admin_user_remove_v1(token, u_id):
 
     return {}
 
+def admin_userpermission_change_v1(token, u_id, permission_id):
+    return {}
