@@ -103,10 +103,10 @@ def test_admin_user_remove_v1_first_remove_second_check_users_list(reg_two_users
 def test_admin_user_remove_v1_first_remove_second_check_user_profile(reg_two_users_and_create_two_channels):
     resp = requests.delete(config.url + 'admin/user/remove/v1', json={
                            'token': reg_two_users_and_create_two_channels['token1'], 'u_id': reg_two_users_and_create_two_channels['u_id2']})
-    resp.status_code = OK
+    assert resp.status_code == OK
     resp2 = requests.get(config.url + 'user/profile/v1', params={
                            'token': reg_two_users_and_create_two_channels['token1'], 'u_id': reg_two_users_and_create_two_channels['u_id2']})
-    resp2.status_code = OK
+    assert resp2.status_code == OK
     resp1_data = resp2.json()
     assert resp1_data['user']['name_first'] == 'Removed'
     assert resp1_data['user']['name_last'] == 'user'

@@ -63,32 +63,32 @@ def user_profile_v1(token, u_id):
     if not check_if_valid(token):
         raise AccessError(description="Invalid token")
 
-    user_exists = False
     for user in users:
-        if user["id"] == u_id:
-            user_exists = True
-            return {
+        if user["id"] == int(u_id):
+            return {'user': 
+                {
                 "u_id": user["id"], 
                 "email": user["email"], 
                 "name_first": user["name_first"],
                 "name_last": user["name_last"],
                 "handle_str": user["handle"]
+                }
             }
-        
+
     for removed_user in removed_users:
-        if removed_user["id"] == u_id:
-            user_exists = True
-            return {
+        if removed_user["id"] == int(u_id):
+            return {'user': 
+                {
                 "u_id": removed_user["id"], 
                 "email": removed_user["email"], 
                 "name_first": "Removed",
                 "name_last": "user",
                 "handle_str": removed_user["handle"]
+                }
             }
 
     # Check valid user ID
-    if not user_exists:
-        raise InputError(description="Invalid user ID")
+    raise InputError(description="Invalid user ID")
 
 def user_profile_setname_v1(token, name_first, name_last):
     '''

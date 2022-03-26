@@ -270,8 +270,9 @@ def users_all():
 
 @APP.route("/user/profile/v1", methods=["GET"])
 def user_profile():
+    user = user_profile_v1(request.args.get("token"), request.args.get("u_id"))['user']
     return dumps({
-        'user': user_profile_v1(request.args.get("token"), request.args.get("u_id"))
+        'user': user
     })
 
 

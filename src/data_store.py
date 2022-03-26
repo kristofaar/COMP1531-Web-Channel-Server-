@@ -33,7 +33,7 @@ initial_object = {
     'dms': [],
     'no_users': True,
     'session_id': 0,
-    'removed_users': [],
+    'removed_users': []
 }
 # YOU SHOULD MODIFY THIS OBJECT ABOVE
 

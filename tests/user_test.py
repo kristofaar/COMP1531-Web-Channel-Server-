@@ -95,9 +95,9 @@ def test_invalid_handle_len(reg_user):
     resp = requests.put(config.url + "user/profile/sethandle/v1", json={"token": reg_user["token"], "handle_str": "na"})
     assert resp.status_code == I_ERR
 def test_non_alnum_handle(reg_user):
-    resp = requests.put(config.url + "user/profile/sethandle/v1", json={"token": reg_user["token"], "handle_str": "!@#$%^&*"})
+    resp = requests.put(config.url + "user/profile/sethandle/v1", json={"token": reg_user["token"], "handle_str": "abcde1*"})
     assert resp.status_code == I_ERR
 def test_duplicate_handle(reg_two_users):
-    resp = requests.put(config.url + "user/profile/sethandle/v1", json={"token1": reg_two_users["token1"], "handle_str1": reg_two_users["handle_str2"]})
+    resp = requests.put(config.url + "user/profile/sethandle/v1", json={"token": reg_two_users["token1"], "handle_str": 'secondjanesecondaust'})
     assert resp.status_code == I_ERR
 
