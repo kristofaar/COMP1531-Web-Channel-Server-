@@ -229,3 +229,40 @@ def test_dm_messages_empty(reg_two_users_and_create_dm):
     assert resp_data['start'] == 0
     assert resp_data['end'] == -1
     assert resp_data['messages'] == []
+
+def test_dm_small_messages(reg_two_users_and_create_dm):
+    for i in range(2):
+        resp = requests.post(config.url + 'message/senddm/v1', json={
+                             'token': reg_two_users_and_create_dm['token1'], 'dm_id': reg_two_users_and_create_dm['dm_id'], 'message': str(i)})
+        assert resp.status_code == OK
+    resp = requests.get(config.url + 'dm/messages/v1', params={
+                        'token': reg_two_users_and_create_dm['token1'], 'dm_id': reg_two_users_and_create_dm['dm_id'], 'start': 0})
+    assert resp.status_code == OK
+    resp_data = resp.json()
+    assert resp_data['start'] == 0
+    assert resp_data['end'] == -1
+    for i in range(2):
+        assert resp_data['messages'][i]['message'] == str(1 - i)
+
+
+def test_dm_big_messages(reg_two_users_and_create_dm):
+    for i in range(150):
+        resp = requests.post(config.url + 'message/senddm/v1', json={
+                             'token': reg_two_users_and_create_dm['token1'], 'dm_id': reg_two_users_and_create_dm['dm_id'], 'message': str(i)})
+        assert resp.status_code == OK
+    resp = requests.get(config.url + 'dm/messages/v1', params={
+                        'token': reg_two_users_and_create_dm['token1'], 'dm_id': reg_two_users_and_create_dm['dm_id'], 'start': 0})
+    assert resp.status_code == OK
+    resp_data = resp.json()
+    assert resp_data['start'] == 0
+    assert resp_data['end'] == 50
+    for i in range(50):
+        assert resp_data['messages'][i]['message'] == str(149 - i)
+    resp = requests.get(config.url + 'dm/messages/v1', params={
+                        'token': reg_two_users_and_create_dm['token1'], 'dm_id': reg_two_users_and_create_dm['dm_id'], 'start': 100})
+    assert resp.status_code == OK
+    resp_data = resp.json()
+    assert resp_data['start'] == 100
+    assert resp_data['end'] == -1
+    for i in range(50):
+        assert resp_data['messages'][i]['message'] == str(49 - i)
