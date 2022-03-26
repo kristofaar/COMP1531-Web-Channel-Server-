@@ -12,7 +12,7 @@ from src.channel import channel_details_v1, channel_invite_v1, channel_join_v1, 
 from src.dm import dm_create_v1, dm_list_v1, dm_remove_v1, dm_details_v1, dm_leave_v1, dm_messages_v1
 from src.other import clear_v1
 from src.message import message_send_v1, message_edit_v1, message_remove_v1, message_senddm_v1
-from src.user import users_all_v1
+from src.user import users_all_v1, user_profile_v1, user_profile_setname_v1, user_profile_setemail_v1, user_profile_sethandle_v1
 from src.admin import admin_user_remove_v1, admin_userpermission_change_v1
 import pickle
 
@@ -267,6 +267,35 @@ def users_all():
     return dumps({
         'users': users
     })
+
+@APP.route("/user/profile/v1", methods=["GET"])
+def user_profile():
+    user = user_profile_v1(request.args.get("token"), request.args.get("u_id"))['user']
+    return dumps({
+        'user': user
+    })
+
+
+@APP.route("/user/profile/setname/v1", methods=["PUT"])
+def user_setname():
+    data = request.get_json()
+    user_profile_setname_v1(data['token'], data['name_first'], data['name_last'])
+    save()
+    return dumps({})
+
+@APP.route("/user/profile/setemail/v1", methods=["PUT"])
+def user_setemail():
+    data = request.get_json()
+    user_profile_setemail_v1(data['token'], data['email'])
+    save()
+    return dumps({})
+
+@APP.route("/user/profile/sethandle/v1", methods=["PUT"])
+def user_sethandle():
+    data = request.get_json()
+    user_profile_sethandle_v1(data['token'], data['handle_str'])
+    save()
+    return dumps({})
 
 
 #ADMIN WRAPPER FUNCTIONS

@@ -9,6 +9,7 @@ def clear_v1():
     store['dms'] = []
     store['no_users'] = True
     store['session_id'] = 0
+    store['removed_users'] = []
     data_store.set(store)
     return {
     }

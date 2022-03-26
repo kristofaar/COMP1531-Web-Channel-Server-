@@ -76,8 +76,7 @@ def admin_user_remove_v1(token, u_id):
     users.remove(u_user)
 
     # move user to removed users list
-    removed_users = storage['removed_users']
-    removed_users.append(u_user)
+    storage['removed_users'].append(u_user)
 
     data_store.set(storage)
     return {}
