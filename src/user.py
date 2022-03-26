@@ -55,9 +55,9 @@ def user_profile_v1(token, u_id):
         Returns information about a user's user_id, email, first name, last name, and handle when given a valid user u_id.
     '''
 
-    storage = data_store.get()
-    users = storage["users"]
-    removed_users = storage["removed_users"]
+    store = data_store.get()
+    users = store["users"]
+    removed_users = store["removed_users"]
 
     # Check valid token
     if not check_if_valid(token):
@@ -108,9 +108,9 @@ def user_profile_setname_v1(token, name_first, name_last):
         Returns nothing.
     '''
 
-    storage = data_store.get()
-    users = storage["users"]
-    channels = storage["channels"]
+    store = data_store.get()
+    users = store["users"]
+    channels = store["channels"]
 
     # Check valid token
     if not check_if_valid(token):
