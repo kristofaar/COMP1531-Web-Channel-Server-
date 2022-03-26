@@ -110,7 +110,6 @@ def user_profile_setname_v1(token, name_first, name_last):
 
     store = data_store.get()
     users = store["users"]
-    channels = store["channels"]
 
     # Check valid token
     if not check_if_valid(token):
