@@ -46,7 +46,6 @@ def test_users_two_users(reg_two_users):
     resp1_data = resp1.json()
     assert resp1_data["users"][0]["u_id"] == reg_two_users["u_id1"]
     assert resp1_data["users"][1]["u_id"] == reg_two_users["u_id2"]
-<<<<<<< HEAD
 
 # Tests for user/profile/v1
 def test_user_profile_valid(reg_user):
@@ -101,5 +100,4 @@ def test_non_alnum_handle(reg_user):
 def test_duplicate_handle(reg_two_users):
     resp = requests.put(config.url + "user/profile/sethandle/v1", json={"token1": reg_two_users["token1"], "handle_str1": reg_two_users["handle_str2"]})
     assert resp.status_code == I_ERR
-=======
->>>>>>> 705c9c0782446d7351daee00a29415cb6530a547
+

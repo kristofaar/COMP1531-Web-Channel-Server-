@@ -2,6 +2,7 @@ from src.data_store import data_store
 from src.error import InputError
 from src.error import AccessError
 from src.other import read_token, check_if_valid
+import re
 import hashlib, jwt
 
 MIN_NAME_LENGTH = 1
@@ -63,17 +64,6 @@ def user_profile_v1(token, u_id):
         raise AccessError(description="Invalid token")
 
     user_exists = False
-    for removed_user in removed_users:
-        if removed_user["id"] == u_id:
-            user_exists = True
-            return {
-                "u_id": removed_user["id"], 
-                "email": removed_user["email"], 
-                "name_first": "Removed",
-                "name_last": "user",
-                "handle_str": removed_user["handle"]
-            }
-
     for user in users:
         if user["id"] == u_id:
             user_exists = True
@@ -83,6 +73,17 @@ def user_profile_v1(token, u_id):
                 "name_first": user["name_first"],
                 "name_last": user["name_last"],
                 "handle_str": user["handle"]
+            }
+        
+    for removed_user in removed_users:
+        if removed_user["id"] == u_id:
+            user_exists = True
+            return {
+                "u_id": removed_user["id"], 
+                "email": removed_user["email"], 
+                "name_first": "Removed",
+                "name_last": "user",
+                "handle_str": removed_user["handle"]
             }
 
     # Check valid user ID
@@ -128,7 +129,7 @@ def user_profile_setname_v1(token, name_first, name_last):
         if user["id"] == u_id:
             user["name_first"] = name_first
             user["name_last"] = name_last
-
+    data_store.set(store)
     return {}
 
 def user_profile_setemail_v1(token, email):
@@ -170,7 +171,7 @@ def user_profile_setemail_v1(token, email):
     for user in users:
         if user["id"] == u_id:
             user["email"] = email
-
+    data_store.set(store)
     return {}
 
 def user_profile_sethandle_v1(token, handle_str):
@@ -203,7 +204,7 @@ def user_profile_sethandle_v1(token, handle_str):
         raise InputError(description="Invalid handle length")
 
     # Check valid handle input
-    if not isalnum(handle_str):
+    if not handle_str.isalnum():
         raise InputError(description="Invalid handle input")
     
     # Check duplicate handle
@@ -217,5 +218,5 @@ def user_profile_sethandle_v1(token, handle_str):
     for user in users:
         if user["id"] == u_id:
             user["handle"] = handle_str
-
+    data_store.set(store)
     return {}
