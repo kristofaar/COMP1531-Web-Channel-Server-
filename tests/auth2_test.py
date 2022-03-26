@@ -70,6 +70,8 @@ def test_register():
     assert clear_resp.status_code == OK
     resp1 = requests.post(config.url + 'auth/register/v2', json={'email': 'teast@test.test', 'password': 'testtesttest', 'name_first': 'test', 'name_last': 'test'})
     assert resp1.status_code == OK
+    resp2 = requests.post(config.url + 'auth/register/v2', json={'email': 'teat@test.test', 'password': 'testtesttest', 'name_first': 'test', 'name_last': 'test'})
+    assert resp2.status_code == OK
 
 #logout error
 
