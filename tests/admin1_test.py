@@ -32,6 +32,24 @@ def reg_two_users_and_create_two_channels():
     resp4_data = resp4.json()
     return {'token1': resp1_data['token'], 'token2': resp2_data['token'], 'u_id1': resp1_data['auth_user_id'], 'u_id2': resp2_data['auth_user_id'], 'ch_id1': resp3_data['channel_id'], 'ch_id2': resp4_data['channel_id']}
 
+@pytest.fixture
+def reg_another_two_users_and_dm():
+    reg1 = requests.post(config.url + 'auth/register/v2', json={'email': '3@test.test', 'password': '3testtest', 'name_first': 'third_name', 'name_last': 'third_last_name'})
+    assert reg1.status_code == OK
+    reg2 = requests.post(config.url + 'auth/register/v2', json={'email': '4@lol.lol', 'password': '4abcabc', 'name_first': 'Fourth_boi', 'name_last': 'Fourth_last'})
+    assert reg2.status_code == OK
+    reg1_data = reg1.json()
+    reg2_data = reg2.json()
+    dmcreate = requests.post(config.url + 'dm/create/v1', json={'token': reg1_data['token'], 'u_ids': [reg2_data['auth_user_id']]})
+    assert dmcreate.status_code == OK
+    dmcreate_data = dmcreate.json()
+    dmdet = requests.get(config.url + 'dm/details/v1', params={'token': reg1_data['token'], 'dm_id': dmcreate_data['dm_id']})
+    dmdet_data = dmdet.json()
+    return {'token1': reg1_data['token'], 'token2': reg2_data['token'], 
+    'u_id1': reg1_data['auth_user_id'], 'u_id2': reg2_data['auth_user_id'], 
+    'dm_id': dmcreate_data['dm_id'], 'dm_name': dmdet_data['name']}
+
+
 # test admin_user_remove_v1 errors
 def test_admin_user_remove_v1_invalid_token(reg_two_users_and_create_two_channels):
     resp = requests.delete(config.url + 'admin/user/remove/v1', json={
@@ -102,7 +120,11 @@ def test_admin_user_remove_v1_first_remove_second_check_channels(reg_two_users_a
     resp1 = requests.post(config.url + 'message/send/v1', json={
                           'token': reg_two_users_and_create_two_channels['token2'], 'channel_id': reg_two_users_and_create_two_channels['ch_id2'], 'message': 'a random msg'})
     assert resp1.status_code == OK
-
+    resp1 = requests.post(config.url + 'channel/join/v2', json={'token':reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id2']})
+    assert resp1.status_code == OK
+    resp1 = requests.post(config.url + 'message/send/v1', json={
+                          'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id2'], 'message': 'a random msglol'})
+    assert resp1.status_code == OK
     resp = requests.delete(config.url + 'admin/user/remove/v1', json={
                            'token': reg_two_users_and_create_two_channels['token1'], 'u_id': reg_two_users_and_create_two_channels['u_id2']})
     assert resp.status_code == OK
@@ -110,8 +132,7 @@ def test_admin_user_remove_v1_first_remove_second_check_channels(reg_two_users_a
     # check 2nd user doesn't exist in 2nd channel members list
     token1 = reg_two_users_and_create_two_channels['token1']
     ch_id2 = reg_two_users_and_create_two_channels['ch_id2']
-    resp1 = requests.post(config.url + 'channel/join/v2', json={'token':reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id2']})
-    assert resp1.status_code == OK
+    
     resp1 = requests.get(config.url + 'channel/details/v2' +
                          f'?token={token1}&channel_id={ch_id2}')
     assert resp1.status_code == OK
@@ -127,11 +148,12 @@ def test_admin_user_remove_v1_first_remove_second_check_channels(reg_two_users_a
                          'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id2'], 'start': 0})
     assert resp3.status_code == OK
     channel_msgs = resp3.json()['messages']
-    assert channel_msgs[0]['message'] == 'Removed user'
+    assert channel_msgs[0]['message'] == 'a random msglol'
+    assert channel_msgs[1]['message'] == 'Removed user'
 
 
 
-def test_admin_user_remove_v1_first_remove_second_check_dm(reg_two_users_and_create_two_channels):
+def test_admin_user_remove_v1_first_remove_second_check_dm(reg_two_users_and_create_two_channels, reg_another_two_users_and_dm):
     # second user makes dm msg to first user
     resp = requests.post(config.url + 'dm/create/v1', json={
                          'token': reg_two_users_and_create_two_channels['token2'], 'u_ids': [reg_two_users_and_create_two_channels['u_id1']]})
@@ -142,6 +164,9 @@ def test_admin_user_remove_v1_first_remove_second_check_dm(reg_two_users_and_cre
     resp = requests.post(config.url + 'message/senddm/v1', json={
                          'token': reg_two_users_and_create_two_channels['token2'], 'dm_id': dm_id, 'message': 'What a joke this is'})
     assert resp.status_code == OK
+    resp = requests.post(config.url + 'message/senddm/v1', json={
+                         'token': reg_two_users_and_create_two_channels['token1'], 'dm_id': dm_id, 'message': 'What a joke this is1'})
+    assert resp.status_code == OK
 
     # delete second user
     resp1 = requests.delete(config.url + 'admin/user/remove/v1', json={
@@ -151,7 +176,8 @@ def test_admin_user_remove_v1_first_remove_second_check_dm(reg_two_users_and_cre
     resp3 = requests.get(config.url + 'dm/messages/v1', params={
                          'token': reg_two_users_and_create_two_channels['token1'], 'dm_id': dm_id, 'start': 0})
     msg_list = resp3.json()['messages']
-    assert msg_list[0]['message'] == 'Removed user'
+    assert msg_list[0]['message'] == 'What a joke this is1'
+    assert msg_list[1]['message'] == 'Removed user'
 
 
 def test_admin_user_remove_v1_removing_global_user(reg_two_users_and_create_two_channels):
@@ -197,7 +223,7 @@ def test_admin_userpermission_v1_not_global(reg_two_users_and_create_two_channel
 
 
 def test_admin_userpermission_v1_invalid_uid(reg_two_users_and_create_two_channels):
-    resp = requests.delete(config.url + 'admin/userpermission/change/v1', json={
+    resp = requests.post(config.url + 'admin/userpermission/change/v1', json={
                            'token': reg_two_users_and_create_two_channels['token1'], 'u_id': -1, 'permission_id': 1})
     assert resp.status_code == I_ERR
 
