@@ -49,7 +49,12 @@ def test_user_profile_valid(reg_user):
     assert resp.status_code == OK
     resp_data = resp.json()
     assert resp_data["user"]["u_id"] == reg_user["u_id"]
-# TODO: add test for invalid u_id
+def test_user_profile_invalid_token(reg_user):
+    resp = requests.get(config.url + "user/profile/v1", params={"token": "invalid", "u_id": reg_user["u_id"]})
+    assert resp.status_code == A_ERR
+def test_user_profile_invalid_id(reg_user):
+    resp = requests.get(config.url + "user/profile/v1", params={"token": reg_user["token"], "u_id": "-1"})
+    assert resp.status_code == I_ERR
 
 # Tests for user/profile/setname/v1
 def test_setname_valid(reg_user):
@@ -60,7 +65,9 @@ def test_setname_valid(reg_user):
     resp_data = resp.json()
     assert resp_data["user"]["name_first"] == "new_first"
     assert resp_data["user"]["name_last"] == "new_last"
-
+def test_setname_invalid_token(reg_user):
+    resp = requests.put(config.url + "user/profile/setname/v1", json={"token": "invalid", "name_first": "new_first", "name_last": "new_last"})
+    assert resp.status_code == A_ERR
 def test_invalid_name_first(reg_user):
     resp = requests.put(config.url + "user/profile/setname/v1", json={"token": reg_user["token"], "name_first": "A" * 100, "name_last": "new_last"})
     assert resp.status_code == I_ERR
@@ -76,6 +83,9 @@ def test_setemail_valid(reg_user):
     assert resp.status_code == OK
     resp_data = resp.json()
     assert resp_data["user"]["email"] == "2@lol.lol"
+def test_setemail_invalid_token(reg_user):
+    resp = requests.put(config.url + "user/profile/setemail/v1", json={"token": "invalid", "email": "2@lol.lol"})
+    assert resp.status_code == A_ERR
 def test_invalid_email(reg_user):
     resp = requests.put(config.url + "user/profile/setemail/v1", json={"token": reg_user["token"], "email": "invalid"})
     assert resp.status_code == I_ERR
@@ -91,6 +101,9 @@ def test_sethandle_valid(reg_user):
     assert resp.status_code == OK
     resp_data = resp.json()
     assert resp_data["user"]["handle_str"] == "newhandle"
+def test_sethandle_invalid_token(reg_user):
+    resp = requests.put(config.url + "user/profile/sethandle/v1", json={"token": "invalid", "handle_str": "newhandle"})
+    assert resp.status_code == A_ERR
 def test_invalid_handle_len(reg_user):
     resp = requests.put(config.url + "user/profile/sethandle/v1", json={"token": reg_user["token"], "handle_str": "na"})
     assert resp.status_code == I_ERR
