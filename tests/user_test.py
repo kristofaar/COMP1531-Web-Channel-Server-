@@ -47,8 +47,6 @@ def test_users_invalid_token(reg_two_users):
 def test_user_profile_valid(reg_user):
     resp = requests.get(config.url + "user/profile/v1", params={"token": reg_user["token"], "u_id": reg_user["u_id"]})
     assert resp.status_code == OK
-    resp = requests.get(config.url + "user/profile/v1", params={"token": reg_user["token"], "u_id": reg_user["u_id"]})
-    assert resp.status_code == OK
     resp_data = resp.json()
     assert resp_data["user"]["u_id"] == reg_user["u_id"]
 # TODO: add test for invalid u_id
