@@ -113,7 +113,6 @@ def admin_userpermission_change_v1(token, u_id, permission_id):
     storage = data_store.get()
     auth_user_id = read_token(token)
     users = storage['users']
-    channels = storage['channels']
 
     # check token user is global owner
     auth_user = next(
