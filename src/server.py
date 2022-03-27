@@ -42,6 +42,7 @@ APP.register_error_handler(Exception, defaultHandler)
 
 # NO NEED TO MODIFY ABOVE THIS POINT, EXCEPT IMPORTS
 
+#Persistence data gathering
 datas = []
 try:
     datas = pickle.load(open("datastore.p", "rb"))
@@ -56,10 +57,8 @@ try:
 except Exception:
     pass
 
-# persistence
-
-
 def save():
+    '''For persistence, saves current data_store into datastore.p'''
     storage = data_store.get()
     data = {'users': storage['users'], 'channels': storage['channels'], 'no_users': storage['no_users'], 
             'dms': storage['dms'], 'session_id': storage['session_id'], 'removed_users': storage['removed_users']}
