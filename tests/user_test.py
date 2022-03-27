@@ -57,10 +57,10 @@ def test_user_profile_invalid_id(reg_user):
     assert resp.status_code == I_ERR
 
 # Tests for user/profile/setname/v1
-def test_setname_valid(reg_user):
-    resp = requests.put(config.url + "user/profile/setname/v1", json={"token": reg_user["token"], "name_first": "new_first", "name_last": "new_last"})
+def test_setname_valid(reg_two_users):
+    resp = requests.put(config.url + "user/profile/setname/v1", json={"token": reg_two_users["token1"], "name_first": "new_first", "name_last": "new_last"})
     assert resp.status_code == OK
-    resp = requests.get(config.url + "user/profile/v1", params={"token": reg_user["token"], "u_id": reg_user["u_id"]})
+    resp = requests.get(config.url + "user/profile/v1", params={"token": reg_two_users["token1"], "u_id": reg_two_users["u_id1"]})
     assert resp.status_code == OK
     resp_data = resp.json()
     assert resp_data["user"]["name_first"] == "new_first"
@@ -76,13 +76,13 @@ def test_setname_invalid_name_last(reg_user):
     assert resp.status_code == I_ERR
 
 # Tests for user/profile/setemail/v1
-def test_setemail_valid(reg_user):
-    resp = requests.put(config.url + "user/profile/setemail/v1", json={"token": reg_user["token"], "email": "2@lol.lol"})
+def test_setemail_valid(reg_two_users):
+    resp = requests.put(config.url + "user/profile/setemail/v1", json={"token": reg_two_users["token1"], "email": "3@lol.lol"})
     assert resp.status_code == OK
-    resp = requests.get(config.url + "user/profile/v1", params={"token": reg_user["token"], "u_id": reg_user["u_id"]})
+    resp = requests.get(config.url + "user/profile/v1", params={"token": reg_two_users["token1"], "u_id": reg_two_users["u_id1"]})
     assert resp.status_code == OK
     resp_data = resp.json()
-    assert resp_data["user"]["email"] == "2@lol.lol"
+    assert resp_data["user"]["email"] == "3@lol.lol"
 def test_setemail_invalid_token(reg_user):
     resp = requests.put(config.url + "user/profile/setemail/v1", json={"token": "invalid", "email": "2@lol.lol"})
     assert resp.status_code == A_ERR
@@ -94,10 +94,10 @@ def test_setemail_duplicate_email(reg_two_users):
     assert resp.status_code == I_ERR
 
 # Tests for user/profile/sethandle/v1
-def test_sethandle_valid(reg_user):
-    resp = requests.put(config.url + "user/profile/sethandle/v1", json={"token": reg_user["token"], "handle_str": "newhandle"})
+def test_sethandle_valid(reg_two_users):
+    resp = requests.put(config.url + "user/profile/sethandle/v1", json={"token": reg_two_users["token1"], "handle_str": "newhandle"})
     assert resp.status_code == OK
-    resp = requests.get(config.url + "user/profile/v1", params={"token": reg_user["token"], "u_id": reg_user["u_id"]})
+    resp = requests.get(config.url + "user/profile/v1", params={"token": reg_two_users["token1"], "u_id": reg_two_users["u_id1"]})
     assert resp.status_code == OK
     resp_data = resp.json()
     assert resp_data["user"]["handle_str"] == "newhandle"

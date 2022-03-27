@@ -3,6 +3,7 @@ import re, hashlib, jwt
 SECRET = 'heheHAHA111'
 
 def clear_v1():
+    '''Sets data_store to a clean state'''
     store = data_store.get()
     store['users'] = []
     store['channels'] = []
@@ -17,9 +18,18 @@ def clear_v1():
 """Owner perms checker"""
 def owner_perms(u_id, ch_id):
     store = data_store.get()
-    ch = next(channel for channel in store['channels'] if ch_id == channel['channel_id_and_name']['channel_id'])
-    user = next(user for user in store['users'] if user['id'] == u_id)
-    is_owner = next((owner for owner in ch['owner'] if owner == u_id), None)
+    ch = None
+    for channel in store['channels']:
+        if ch_id == channel['channel_id_and_name']['channel_id']:
+            ch = channel
+    user = None
+    for usa in store['users']:
+        if usa['id'] == u_id:
+            user = usa
+    is_owner = None
+    for owner in ch['owner']:
+        if owner == u_id:
+            is_owner = owner
     if is_owner != None or user['global_owner']:
         return True
     else:
@@ -42,10 +52,16 @@ def check_if_valid(token):
         return False
     if not ("id" in details.keys() and "session_id" in details.keys() and len(details.keys()) == 2):
         return False
-    user = next((user for user in store['users'] if details['id'] == user['id']), None)
+    user = None
+    for usa in store['users']:
+        if details['id'] == usa['id']:
+            user = usa
     if user == None:
         return False
-    id = next ((id for id in user['session_list'] if id == details['session_id']), None)
+    id = None
+    for i in user['session_list']:
+        if i == details['session_id']:
+            id = i
     if id != None:
         return True
     else:

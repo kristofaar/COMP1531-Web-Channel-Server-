@@ -101,6 +101,12 @@ def test_admin_user_remove_v1_first_remove_second_check_users_list(reg_two_users
         assert reg_two_users_and_create_two_channels['u_id2'] != user['u_id']
 
 def test_admin_user_remove_v1_first_remove_second_check_user_profile(reg_two_users_and_create_two_channels):
+    reg1 = requests.post(config.url + 'auth/register/v2', json={'email': '3@test.test', 'password': '3testtest', 'name_first': 'third_name', 'name_last': 'third_last_name'})
+    assert reg1.status_code == OK
+    reg1_data = reg1.json()
+    resp0 = requests.delete(config.url + 'admin/user/remove/v1', json={
+                           'token': reg_two_users_and_create_two_channels['token1'], 'u_id': reg1_data['auth_user_id']})
+    assert resp0.status_code == OK
     resp = requests.delete(config.url + 'admin/user/remove/v1', json={
                            'token': reg_two_users_and_create_two_channels['token1'], 'u_id': reg_two_users_and_create_two_channels['u_id2']})
     assert resp.status_code == OK
