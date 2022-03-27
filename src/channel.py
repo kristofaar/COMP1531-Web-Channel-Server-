@@ -336,7 +336,6 @@ def channel_addowner_v1(token, channel_id, u_id):
         raise AccessError(description="Invalid Token")
 
     # staging variables
-    check_if_valid(token)
     storage = data_store.get()
     auth_user_id = read_token(token)
 
@@ -355,14 +354,14 @@ def channel_addowner_v1(token, channel_id, u_id):
     # check if auth_user_id is member of channel and a global owner
     member = next(
         (member for member in channel['members'] if auth_user_id == member), None)
-    if member is None and a_user['global_owner']:
+    if member == None:
         raise AccessError(
             description='Authorised user is global user but not member of channel')
 
     # check if auth_user_id an owner of channel
     owner = next(
         (owner for owner in channel['owner'] if auth_user_id == owner), None)
-    if owner is None:
+    if owner == None and not a_user['global_owner']:
         raise AccessError(
             description='Authorised user is not an owner of the channel')
 
@@ -374,7 +373,7 @@ def channel_addowner_v1(token, channel_id, u_id):
     # check if u_id already an owner of channel
     u_owner = next(
         (owner for owner in channel['owner'] if u_id == owner), None)
-    if u_owner is not None:
+    if not u_owner == None:
         raise InputError(
             description='User getting added is already owner of the channel')
 
@@ -420,7 +419,6 @@ def channel_removeowner_v1(token, channel_id, u_id):
         raise AccessError(description="Invalid Token")
 
     # staging variables
-    check_if_valid(token)
     storage = data_store.get()
     auth_user_id = read_token(token)
 
@@ -439,26 +437,26 @@ def channel_removeowner_v1(token, channel_id, u_id):
     # check if auth_user_id is member of channel and a global owner
     member = next(
         (member for member in channel['members'] if auth_user_id == member), None)
-    if member is None and a_user['global_owner']:
+    if member == None:
         raise AccessError(
             description='Authorised user is global user but not member of channel')
 
     # check if auth_user_id an owner of channel
     owner = next(
         (owner for owner in channel['owner'] if auth_user_id == owner), None)
-    if owner is None:
+    if owner == None and not a_user['global_owner']:
         raise AccessError(
             description='Authorised user is not an owner of the channel')
 
     # check if u_id is valid user
     u_user = next((user for user in users if user['id'] == u_id), None)
-    if u_user is None:  # User not found
+    if u_user == None:  # User not found
         raise InputError(description='Unregistered user id')
 
     # check if u_id not an owner of channel
     u_owner = next(
         (owner for owner in channel['owner'] if u_id == owner), None)
-    if u_owner is None:
+    if u_owner == None:
         raise InputError(
             description='User getting removed is not an owner of the channel')
 
