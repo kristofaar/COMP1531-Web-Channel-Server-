@@ -26,7 +26,10 @@ def channels_list_v1(token):
 
             
     #iterate through users until a user with the corresponding id is found
-    curr_user = next(user for user in users if user_id == user['id'])
+    curr_user = None
+    for user in users:
+        if user_id == user['id']:
+            curr_user = user
 
     return {
         'channels': curr_user['channels']
@@ -84,7 +87,10 @@ def channels_create_v1(token, name, is_public):
     channels = storage['channels']
    
     #look through users to see if the given id matches any of their ids
-    curr_user = next(user for user in users if user_id == user['id'])
+    curr_user = None
+    for user in users:
+        if user_id == user['id']:
+            curr_user = user
     if 1 > len(name):
         raise InputError(description="Channel Name Is Too Short")
     if len(name) > 20:

@@ -41,7 +41,10 @@ def message_send_v1(token, channel_id, message):
     channels = storage['channels']
     
     #search through channels by id until id is matched
-    ch = next((channel for channel in channels if int(channel_id) == channel['channel_id_and_name']['channel_id']), None)
+    ch = None
+    for channel in channels:
+        if int(channel_id) == channel['channel_id_and_name']['channel_id']:
+            ch = channel
     if ch == None:
         raise InputError(description="Invalid Channel Id")
 
@@ -108,7 +111,10 @@ def message_edit_v1(token, message_id, message):
 
     users = storage['users']
     channels = storage['channels']
-    user = next((user for user in users if auth_user_id == user['id']), None)
+    user = None
+    for usa in users:
+        if auth_user_id == usa['id']:
+            user = usa
 
     #search through channels by id until id is matched
     msg = None
@@ -169,7 +175,10 @@ def message_remove_v1(token, message_id):
 
     users = storage['users']
     channels = storage['channels']
-    user = next(user for user in users if auth_user_id == user['id'])
+    user = None
+    for usa in users:
+        if auth_user_id == usa['id']:
+            user = usa
 
     #search through channels by id until id is matched
     msg = None
@@ -227,7 +236,10 @@ def message_senddm_v1(token, dm_id, message):
     dms = storage['dms']
     
     #search through channels by id until id is matched
-    dm = next((dm for dm in dms if int(dm_id) == dm['dm_id']), None)
+    dm = None
+    for dee_em in dms:
+        if int(dm_id) == dee_em['dm_id']:
+            dm = dee_em
     if dm == None:
         raise InputError(description="Invalid Channel Id")
 
