@@ -13,7 +13,9 @@ pytest:
   stage: checks
   script:
     - SERVER_LOG=$(mktemp)
-    - coverage run -m src.server >& $SERVER_LOG &
+    - coverage run -m src.server &> $SERVER_LOG & pid=$!
+    - sleep 2
+    - ps -o pid | egrep -q "^\s*${pid}$" || (cat $SERVER_LOG && exit 1)
     - pytest tests/
     - kill -SIGINT %1
     - cat $SERVER_LOG
