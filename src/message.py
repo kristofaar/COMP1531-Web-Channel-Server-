@@ -111,6 +111,7 @@ def message_edit_v1(token, message_id, message):
 
     users = storage['users']
     channels = storage['channels']
+    dms = storage['dms']
     user = None
     for usa in users:
         if auth_user_id == usa['id']:
@@ -119,16 +120,30 @@ def message_edit_v1(token, message_id, message):
     #search through channels by id until id is matched
     msg = None
     ch = None
+    dm = None
     for user_channel in user['channels']:
-        ch = next((channel for channel in channels if user_channel['channel_id'] == channel['channel_id_and_name']['channel_id']), None)
+        for channel in channels:
+            if user_channel['channel_id'] == channel['channel_id_and_name']['channel_id']:
+                ch = channel
         msg = next((msg for msg in ch['messages'] if int(message_id) == msg['message_id']), None)
         if msg != None:
             break
-    
+
+    for user_dm in user['dms']:
+        for dm_ in dms:
+            if user_dm['dm_id'] == dm_['dm_id']:
+                dm = dm_
+        msg = next((msg for msg in dm['messages'] if int(message_id) == msg['message_id']), None)
+        if msg != None:
+            break
+
     if not msg:
         raise InputError(description='Invalid message id')
     
-    if msg['u_id'] != auth_user_id and not owner_perms(auth_user_id, ch['channel_id_and_name']['channel_id']):
+    if ch != None and msg['u_id'] != auth_user_id and not owner_perms(auth_user_id, ch['channel_id_and_name']['channel_id']):
+        raise AccessError(description="Unauthorised editor")
+    
+    if dm != None and msg['u_id'] != auth_user_id and not auth_user_id in dm['owner']:
         raise AccessError(description="Unauthorised editor")
 
     if len(message) > 1000:
@@ -136,7 +151,10 @@ def message_edit_v1(token, message_id, message):
 
     #editing message
     if len(message) == 0:
-        ch['messages'].remove(msg)
+        if ch != None:
+            ch['messages'].remove(msg)
+        else:
+            dm['messages'].remove(msg)
     else:
         msg['message'] = message
     data_store.set(storage)
@@ -175,6 +193,7 @@ def message_remove_v1(token, message_id):
 
     users = storage['users']
     channels = storage['channels']
+    dms = storage['dms']
     user = None
     for usa in users:
         if auth_user_id == usa['id']:
@@ -183,20 +202,37 @@ def message_remove_v1(token, message_id):
     #search through channels by id until id is matched
     msg = None
     ch = None
+    dm = None
     for user_channel in user['channels']:
-        ch = next((channel for channel in channels if user_channel['channel_id'] == channel['channel_id_and_name']['channel_id']), None)
+        for channel in channels:
+            if user_channel['channel_id'] == channel['channel_id_and_name']['channel_id']:
+                ch = channel
         msg = next((msg for msg in ch['messages'] if int(message_id) == msg['message_id']), None)
+        if msg != None:
+            break
+    
+    for user_dm in user['dms']:
+        for dm_ in dms:
+            if user_dm['dm_id'] == dm_['dm_id']:
+                dm = dm_
+        msg = next((msg for msg in dm['messages'] if int(message_id) == msg['message_id']), None)
         if msg != None:
             break
     
     if not msg:
         raise InputError(description='Invalid message id')
     
-    if msg['u_id'] != auth_user_id and not owner_perms(auth_user_id, ch['channel_id_and_name']['channel_id']):
+    if ch != None and msg['u_id'] != auth_user_id and not owner_perms(auth_user_id, ch['channel_id_and_name']['channel_id']):
+        raise AccessError(description="Unauthorised editor")
+    
+    if dm != None and msg['u_id'] != auth_user_id and not auth_user_id in dm['owner']:
         raise AccessError(description="Unauthorised editor")
 
     #deleting message
-    ch['messages'].remove(msg)
+    if ch != None:
+        ch['messages'].remove(msg)
+    else:
+        dm['messages'].remove(msg)
     data_store.set(storage)
     return {}
 
