@@ -91,3 +91,19 @@ def test_logout(reg_two_users):
     assert resp1.status_code == OK
     resp2 = requests.post(config.url + 'channels/create/v2', json={'token': reg_two_users['token1'], 'name': 'okName', 'is_public': False})
     assert resp2.status_code == A_ERR
+
+#password reset not comprehensive, just for coverage
+#request
+def test_reset_invalid_email(reg_two_users):
+    resp1 = requests.post(config.url + 'auth/passwordreset/request/v1', json={'email': 'lol@gg.com'})
+    assert resp1.status_code == OK
+
+def test_reset_valid_email(reg_two_users):
+    resp1 = requests.post(config.url + 'auth/passwordreset/request/v1', json={'email': 'teast@test.test'})
+    assert resp1.status_code == OK
+    resp1 = requests.post(config.url + 'auth/passwordreset/reset/v1', json={'reset_code': -1, 'new_password': 'hj321hiu'})
+    assert resp1.status_code == I_ERR
+    resp1 = requests.post(config.url + 'auth/passwordreset/reset/v1', json={'reset_code': None, 'new_password': ''})
+    assert resp1.status_code == I_ERR
+    resp1 = requests.post(config.url + 'auth/passwordreset/reset/v1', json={'reset_code': None, 'new_password': 'adsffdsa12'})
+    assert resp1.status_code == I_ERR

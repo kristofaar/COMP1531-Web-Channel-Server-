@@ -2,7 +2,7 @@ from multiprocessing import dummy
 from src.data_store import data_store
 from src.other import generate_new_session_id, check_if_valid
 from src.error import InputError, AccessError
-import re, hashlib, jwt
+import re, hashlib, jwt, random
 
 SECRET = 'heheHAHA111'
 
@@ -120,7 +120,8 @@ def auth_register_v1(email, password, name_first, name_last):
     session_id = generate_new_session_id()
 
     storage['users'].append({'id': new_id, 'email': email, 'name_first': name_first, 'name_last': name_last, 'handle': handle, 
-                            'channels' : [],'dms':[], 'global_owner': is_first, 'password': hashlib.sha256(password.encode()).hexdigest(), 'session_list': [session_id]})
+                            'channels' : [],'dms':[], 'global_owner': is_first, 'password': hashlib.sha256(password.encode()).hexdigest(), 'session_list': [session_id],
+                            'reset_code': None})
     
     data_store.set(storage)
     return {
@@ -148,5 +149,69 @@ def auth_logout_v1(token):
     for user in storage['users']:
         if (details['session_id'] in user['session_list']):
             user['session_list'].remove(details['session_id'])
+    data_store.set(storage)
+    return {}
+
+def auth_passwordreset_request_v1(email):
+    '''Sends a code through email to reset password.
+
+    Arguments:
+        email (String)         - A user's email. 
+
+    Return Value:
+        Nothing.
+    '''
+    storage = data_store.get()
+    users = storage['users']
+    user = next((user for user in users if user['email'] == email), None)
+    if not user:
+        return None
+    
+    #code will be a unique random 5 digit number
+    code = None
+    temp_user = user
+    while temp_user != None:
+        code = random.randint(10000, 99999)
+        temp_user = next((temp_user for temp_user in users if temp_user['reset_code'] == code), None)
+
+    #encoding the code :)
+    user['reset_code'] = hashlib.sha256(str(code).encode()).hexdigest()
+    #login user out everywhere
+    user['session_list'] = []
+
+    data_store.set(storage)
+    return code
+
+def auth_passwordreset_reset_v1(reset_code, new_password):
+    '''Resets a password for a user with the corresponding code.
+
+    Arguments:
+        reset_code (String)         - A reset code for password. 
+        new_password (String)       - New password
+    
+    Exceptions:
+        InputError when any of:
+            
+            reset_code is not a valid reset code
+            password entered is less than 6 characters long
+
+    Return Value:
+        Nothing.
+    '''
+
+    storage = data_store.get()
+    users = storage['users']
+    #finding the user who needs their account reset
+    user = next((user for user in users if user['reset_code'] == hashlib.sha256(str(reset_code).encode()).hexdigest()), None)
+
+    #errors
+    if not user:
+        raise InputError(description="Invalid Code")
+    if len(new_password) < 6:
+        raise InputError(description="Invalid Password")
+
+    user['password'] = hashlib.sha256(new_password.encode()).hexdigest()
+    user['reset_code'] = None
+
     data_store.set(storage)
     return {}
