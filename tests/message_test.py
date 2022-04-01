@@ -358,11 +358,11 @@ def test_two_users_one_dm(reg_two_users_and_create_dm):
     assert resp3_data['messages'][0]['time_sent'] >= resp3_data['messages'][1]['time_sent']
 
 #edit and remove for dms errors
-def test_message_edit_invalid_id(reg_two_users_and_create_dm):
+def test_message_edit_dm_invalid_id(reg_two_users_and_create_dm):
     resp = requests.put(config.url + 'message/edit/v1', json={'token': reg_two_users_and_create_dm['token1'], 'message_id': 123312321345, 'message': 'hi'})
     assert resp.status_code == I_ERR
 
-def test_message_remove_invalid_id(reg_two_users_and_create_dm):
+def test_message_remove_dm_invalid_id(reg_two_users_and_create_dm):
     resp = requests.delete(config.url + 'message/remove/v1', json={'token': reg_two_users_and_create_dm['token1'], 'message_id': 123312321345})
     assert resp.status_code == I_ERR
 
