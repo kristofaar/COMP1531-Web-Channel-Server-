@@ -1,5 +1,4 @@
 from multiprocessing import dummy
-from tkinter.tix import MAX
 from src.data_store import data_store
 from src.other import generate_new_session_id, check_if_valid
 from src.error import InputError, AccessError
