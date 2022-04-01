@@ -68,11 +68,11 @@ def save():
 
 #For email for password reset
 APP.config['MAIL_SERVER'] = 'smtp.gmail.com'
-APP.config['MAIL_PORT'] = 999
+APP.config['MAIL_PORT'] = 465
 APP.config['MAIL_USERNAME'] = 'comp1531f11b.ant@gmail.com'
 APP.config['MAIL_PASSWORD'] = 'Comppass123'
 APP.config['MAIL_USE_TLS'] = False
-APP.config['MAIL_USER_SSL'] = True
+APP.config['MAIL_USE_SSL'] = True
 mail = Mail(APP)
 
 # AUTH FUNCTION WRAPPERS
@@ -111,9 +111,10 @@ def logout():
 def resetrequest():
     data = request.get_json()
     code = str(auth_passwordreset_request_v1(data['email']))
-    msg = Message("Password reset", sender='comp1531f11b.ant@gmail.com', recipients=[data['email']])
-    msg.body = f"Hi, your code is: {code}"
-    mail.sent(msg)
+    if code != None:
+        msg = Message("Password reset", sender='comp1531f11b.ant@gmail.com', recipients=[data['email']])
+        msg.body = f"Hi, your code is: {code}"
+        mail.send(msg)
     save()
     return dumps({})
 

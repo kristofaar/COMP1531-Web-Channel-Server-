@@ -6,7 +6,6 @@ from src.error import InputError, AccessError
 import re, hashlib, jwt, random
 
 SECRET = 'heheHAHA111'
-MAX_USERS = 999999999999
 
 def auth_login_v1(email, password):
     '''Given a correct email and associated password returns the user's id.
@@ -167,24 +166,24 @@ def auth_passwordreset_request_v1(email):
     users = storage['users']
     user = next((user for user in users if user['email'] == email), None)
     if not user:
-        return {}
+        return None
     
     #code will be a unique random 5 digit number
     code = None
     temp_user = user
     while temp_user != None:
-        code = random.randint(0, MAX_USERS)
+        code = random.randint(10000, 99999)
         temp_user = next((temp_user for temp_user in users if temp_user['reset_code'] == code), None)
 
     #encoding the code :)
-    user['reset_code'] == hashlib.sha256(code.encode()).hexdigest()
+    user['reset_code'] = hashlib.sha256(str(code).encode()).hexdigest()
     #login user out everywhere
     user['session_list'] = []
 
     data_store.set(storage)
     return code
 
-def auth_passwordreset_request_v1(reset_code, new_password):
+def auth_passwordreset_reset_v1(reset_code, new_password):
     '''Resets a password for a user with the corresponding code.
 
     Arguments:
@@ -204,7 +203,7 @@ def auth_passwordreset_request_v1(reset_code, new_password):
     storage = data_store.get()
     users = storage['users']
     #finding the user who needs their account reset
-    user = next((user for user in users if user['reset_code'] == hashlib.sha256(int(reset_code).encode()).hexdigest()), None)
+    user = next((user for user in users if user['reset_code'] == hashlib.sha256(str(reset_code).encode()).hexdigest()), None)
 
     #errors
     if not user:

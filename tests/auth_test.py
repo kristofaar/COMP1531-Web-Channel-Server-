@@ -1,6 +1,6 @@
 import pytest
 
-from src.auth import auth_register_v1, auth_login_v1
+from src.auth import auth_register_v1, auth_login_v1, auth_passwordreset_request_v1, auth_passwordreset_reset_v1
 from src.error import InputError
 from src.channels import channels_create_v1
 from src.channel import channel_details_v1
@@ -157,3 +157,4 @@ def test_clear_v1_users():
     log_id1 = login_return['auth_user_id']
 
     assert reg_id1 == log_id1
+
