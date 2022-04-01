@@ -2,10 +2,11 @@ import sys
 import signal
 from json import dumps
 from flask import Flask, request
+from flask_mail import Mail, Message
 from flask_cors import CORS
 from src.error import InputError
 from src import config
-from src.auth import auth_login_v1, auth_register_v1, auth_logout_v1
+from src.auth import auth_login_v1, auth_register_v1, auth_logout_v1, auth_passwordreset_request_v1, auth_passwordreset_reset_v1
 from src.data_store import data_store
 from src.channels import channels_create_v1, channels_listall_v1, channels_list_v1
 from src.channel import channel_details_v1, channel_invite_v1, channel_join_v1, channel_messages_v1, channel_leave_v1, channel_addowner_v1, channel_removeowner_v1
@@ -65,6 +66,15 @@ def save():
     with open('datastore.p', 'wb+') as FILE:
         pickle.dump(data, FILE)
 
+#For email for password reset
+APP.config['MAIL_SERVER'] = 'smtp.gmail.com'
+APP.config['MAIL_PORT'] = 999
+APP.config['MAIL_USERNAME'] = 'comp1531f11b.ant@gmail.com'
+APP.config['MAIL_PASSWORD'] = 'Comppass123'
+APP.config['MAIL_USE_TLS'] = False
+APP.config['MAIL_USER_SSL'] = True
+mail = Mail(APP)
+
 # AUTH FUNCTION WRAPPERS
 @APP.route("/auth/login/v2", methods=['POST'])
 def login():
@@ -94,6 +104,23 @@ def register():
 def logout():
     data = request.get_json()
     auth_logout_v1(data['token'])
+    save()
+    return dumps({})
+
+@APP.route('/auth/passwordreset/request/v1', methods=['POST'])
+def resetrequest():
+    data = request.get_json()
+    code = str(auth_passwordreset_request_v1(data['email']))
+    msg = Message("Password reset", sender='comp1531f11b.ant@gmail.com', recipients=[data['email']])
+    msg.body = f"Hi, your code is: {code}"
+    mail.sent(msg)
+    save()
+    return dumps({})
+
+@APP.route('/auth/passwordreset/reset/v1', methods=['POST'])
+def resetpass():
+    data = request.get_json()
+    auth_passwordreset_reset_v1(data['reset_code'], data['new_password'])
     save()
     return dumps({})
 
