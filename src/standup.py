@@ -3,6 +3,7 @@ from src.error import InputError
 from src.error import AccessError
 from src.other import read_token, check_if_valid
 import datetime
+from datetime import timezone
 
 def standup_start(token, channel_id, length):
     '''
@@ -22,7 +23,39 @@ def standup_start(token, channel_id, length):
     Return Value:
         Returns time the standup finishes as a unix timestamp integer
     '''
-    return {"time_finish"}
+    #staging variables
+    storage = data_store.get()
+    
+    if not check_if_valid(token):
+        raise AccessError(description="Invalid token")
+    auth_user_id = read_token(token)
+
+    channels = storage['channels']
+    users = storage['users']
+
+    # search through channels by id until id is matched
+    ch = next((channel for channel in channels if int(channel_id) ==
+              channel['channel_id_and_name']['channel_id']), None)
+    if ch == None:
+        raise InputError(description="Invalid Channel Id")
+
+    if int(length) < 0:
+        raise InputError(description="Length is a negative number")
+
+    if standup_active(token, channel_id):
+        raise InputError(description="An active standup is currently running in this channel")
+
+    if auth_user_id not in ch["members"]:
+        raise AccessError(description="Authorised user is not a member of the channel")
+
+    #fetch current time
+    dt = datetime.datetime.now(timezone.utc)
+    utc_time = dt.replace(tzinfo=timezone.utc)
+    utc_timestamp = utc_time.timestamp()
+
+    time_finish = utc_timestamp + int(length)
+
+    return {"time_finish": time_finish}
 
 def standup_active(token, channel_id):
     '''
@@ -39,7 +72,36 @@ def standup_active(token, channel_id):
     Return Value:
         Returns whether or not there is an active standup in the channel and when the standup will finish
     '''
-    return {"is_active", "time_finish"}
+    #staging variables
+    storage = data_store.get()
+    
+    if not check_if_valid(token):
+        raise AccessError(description="Invalid token")
+    auth_user_id = read_token(token)
+
+    channels = storage['channels']
+
+    # search through channels by id until id is matched
+    ch = next((channel for channel in channels if int(channel_id) ==
+              channel['channel_id_and_name']['channel_id']), None)
+    if ch == None:
+        raise InputError(description="Invalid Channel Id")
+
+    if auth_user_id not in ch["members"]:
+        raise AccessError(description="Authorised user is not a member of the channel")
+        
+    dt = datetime.datetime.now(timezone.utc)
+    utc_time = dt.replace(tzinfo=timezone.utc)
+    utc_timestamp = utc_time.timestamp()
+
+    if utc_timestamp < ch["standup_time"]:
+        is_active = True
+        time_finish = ch["standup_time"]
+    else:
+        is_active = False
+        time_finish = None
+
+    return {"is_active": is_active, "time_finish": time_finish}
 
 def standup_send(token, channel_id, message):
     '''
@@ -59,4 +121,34 @@ def standup_send(token, channel_id, message):
     Return Value:
         None
     '''
+    #staging variables
+    storage = data_store.get()
+    
+    if not check_if_valid(token):
+        raise AccessError(description="Invalid token")
+    auth_user_id = read_token(token)
+
+    channels = storage['channels']
+    users = storage['users']
+
+    # search through channels by id until id is matched
+    ch = next((channel for channel in channels if int(channel_id) ==
+              channel['channel_id_and_name']['channel_id']), None)
+    if ch == None:
+        raise InputError(description="Invalid Channel Id")
+
+    if len(message) > 1000:
+        raise InputError(description="Length of message is over 1000 characters")
+
+    if ch["standup_time"] == 0:
+        raise InputError(description="An active standup is not currently running in the channel")
+
+    if auth_user_id not in ch["members"]:
+        raise AccessError(description="Authorised user is not a member of the channel")
+        
+    if ch["standup_time"] == 0:
+        raise InputError("An active standup is not currently running in the channel")
+
+    ch["standup_messages"].append(message)
+    data_store.set(storage)
     return {}
