@@ -4,6 +4,9 @@ from src.error import AccessError
 from src.other import read_token, check_if_valid
 import datetime
 from datetime import timezone
+import threading
+import time
+from src.message import message_send_v1
 
 def standup_start(token, channel_id, length):
     '''
@@ -52,6 +55,17 @@ def standup_start(token, channel_id, length):
     dt = datetime.datetime.now(timezone.utc)
     utc_time = dt.replace(tzinfo=timezone.utc)
     utc_timestamp = utc_time.timestamp()
+
+    def thread_standup(channel_id, length):
+        time.sleep(length)
+        for message in ch["standup_messages"]:
+            message_send_v1(token, channel_id, message)
+        ch["standup_time"] = 0
+        ch["standup_messages"] = []
+        data_store.set(storage)
+
+    x = threading.Thread(target=thread_standup, args=(channel_id, length,))
+    x.start()
 
     time_finish = utc_timestamp + int(length)
 
