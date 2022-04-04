@@ -106,13 +106,17 @@ Return Value:
     owner_members = []
     all_members = []
     for member in ch['owner']:
-        curr_user = next(
-            (user for user in users if member == user['id']), None)
+        curr_user = None
+        for user in users:
+            if member == user['id']:
+                curr_user = user
         owner_members.append({'u_id': curr_user['id'], 'email': curr_user['email'], 'name_first': curr_user['name_first'],
                              'name_last': curr_user['name_last'], 'handle_str': curr_user['handle']})
     for member in ch['members']:
-        curr_user = next(
-            (user for user in users if member == user['id']), None)
+        curr_user = None
+        for user in users:
+            if member == user['id']:
+                curr_user = user
         all_members.append({'u_id': curr_user['id'], 'email': curr_user['email'], 'name_first': curr_user['name_first'],
                            'name_last': curr_user['name_last'], 'handle_str': curr_user['handle']})
 
@@ -215,7 +219,10 @@ Return Value:
     users = storage['users']
 
     # getting user
-    user = next(user for user in users if user['id'] == auth_user_id)
+    user = None
+    for usa in users:
+        if usa['id'] == auth_user_id:
+            user = usa
 
     # check channel is valid
     channel = next((channel for channel in channels if int(
@@ -277,7 +284,10 @@ def channel_leave_v1(token, channel_id):
     users = storage['users']
 
     # find the user
-    user = next(user for user in users if user['id'] == auth_user_id)
+    user = None
+    for usa in users:
+        if usa['id'] == auth_user_id:
+            user = usa
 
     # check channel is valid
     channel = next((channel for channel in channels if channel_id ==
@@ -343,7 +353,10 @@ def channel_addowner_v1(token, channel_id, u_id):
     users = storage['users']
 
     # find auth_user
-    a_user = next(user for user in users if user['id'] == auth_user_id)
+    a_user = None
+    for usa in users:
+        if usa['id'] == auth_user_id:
+            a_user = usa
 
     # check channel is valid
     channel = next((channel for channel in channels if channel_id ==
@@ -426,7 +439,10 @@ def channel_removeowner_v1(token, channel_id, u_id):
     users = storage['users']
 
     # find auth_user
-    a_user = next(user for user in users if user['id'] == auth_user_id)
+    a_user = None
+    for usa in users:
+        if usa['id'] == auth_user_id:
+            a_user = usa
 
     # check channel is valid
     channel = next((channel for channel in channels if channel_id ==

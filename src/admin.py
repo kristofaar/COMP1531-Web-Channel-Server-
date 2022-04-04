@@ -36,8 +36,10 @@ def admin_user_remove_v1(token, u_id):
     channels = storage['channels']
 
     # check token user is global owner
-    auth_user = next(
-        (user for user in users if auth_user_id == user['id']), None)
+    auth_user = None
+    for user in users:
+        if auth_user_id == user['id']:
+            auth_user = user
     if not auth_user['global_owner']:
         raise AccessError(description='Authorised user is not a global owner')
 
@@ -114,8 +116,10 @@ def admin_userpermission_change_v1(token, u_id, permission_id):
     users = storage['users']
 
     # check token user is global owner
-    auth_user = next(
-        (user for user in users if auth_user_id == user['id']), None)
+    auth_user = None
+    for user in users:
+        if auth_user_id == user['id']:
+            auth_user = user
     if not auth_user['global_owner']:
         raise AccessError(description='Authorised user is not a global owner')
 
