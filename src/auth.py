@@ -18,7 +18,7 @@ def auth_login_v1(email, password):
             -email entered does not belong to a user
             -password is not correct
     Return Value:
-        Returns auth_user_id always.
+        Returns auth_user_id and token always.
     '''
 
     storage = data_store.get()
@@ -205,10 +205,11 @@ def auth_passwordreset_reset_v1(reset_code, new_password):
     user = next((user for user in users if user['reset_code'] == hashlib.sha256(str(reset_code).encode()).hexdigest()), None)
 
     #errors
-    if not user:
-        raise InputError(description="Invalid Code")
     if len(new_password) < 6:
         raise InputError(description="Invalid Password")
+    if not user:
+        raise InputError(description="Invalid Code")
+    
 
     user['password'] = hashlib.sha256(new_password.encode()).hexdigest()
     user['reset_code'] = None

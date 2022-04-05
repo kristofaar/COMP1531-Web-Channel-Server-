@@ -258,7 +258,8 @@ def test_message_remove_global_owner(reg_two_users_and_create_two_channels):
 def reg_two_users_and_create_dm():
     clear_resp = requests.delete(config.url + 'clear/v1')
     assert clear_resp.status_code == OK
-    resp1 = requests.post(config.url + 'auth/register/v2', json={'email': '1@test.test', 'password': '1testtest', 'name_first': 'first_test', 'name_last': 'first_test'})
+    requests.post(config.url + 'auth/register/v2', json={'email': '1@test.test', 'password': '1testtest', 'name_first': 'first_test', 'name_last': 'first_test'})
+    resp1 = requests.post(config.url + 'auth/login/v2', json={'email': '1@test.test', 'password': '1testtest'})
     assert resp1.status_code == OK
     resp2 = requests.post(config.url + 'auth/register/v2', json={'email': '2@lol.lol', 'password': '2abcabc', 'name_first': 'Second_Jane', 'name_last': 'Second_Austen'})
     assert resp2.status_code == OK
