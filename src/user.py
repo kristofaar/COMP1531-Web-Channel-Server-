@@ -219,3 +219,43 @@ def user_profile_sethandle_v1(token, handle_str):
             user["handle"] = handle_str
     data_store.set(store)
     return {}
+
+def user_stats_v1(token):
+    '''
+    Fetches the required statistics about this user's use of UNSW Seams.
+
+    Arguments:
+        token (str)       - The user's session token.
+
+    Exceptions:
+        AccessError - Occurs when token does not refer to a valid session.
+
+    Return Value:
+        user_stats        - Dictionary of shape {
+                            channels_joined: [{num_channels_joined, time_stamp}],
+                            dms_joined: [{num_dms_joined, time_stamp}], 
+                            messages_sent: [{num_messages_sent, time_stamp}], 
+                            involvement_rate 
+                            }.
+    '''
+    return {}
+
+def users_stats_v1(token):
+    '''
+    Fetches the required statistics about the use of UNSW Seams.
+
+    Arguments:
+        token (str)       - The user's session token.
+
+    Exceptions:
+        AccessError - Occurs when token does not refer to a valid session.
+
+    Return Value:
+        workspace_stats     - Dictionary of shape Dictionary of shape {
+                              channels_exist: [{num_channels_exist, time_stamp}], 
+                              dms_exist: [{num_dms_exist, time_stamp}], 
+                              messages_exist: [{num_messages_exist, time_stamp}], 
+                              utilization_rate 
+                              }
+    '''
+    return {}
