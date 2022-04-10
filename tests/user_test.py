@@ -215,6 +215,26 @@ def test_user_stats_working_invite_leave(reg_two_users):
     resp_data = resp.json()
     assert resp_data['user_stats']['channels_joined'][2]['num_channels_joined'] == 0
 
+def test_user_stats_dm_leave_remove(reg_two_users):
+    resp = requests.post(config.url + "dm/create/v1", json={"token": reg_two_users['token1'], "u_ids": [reg_two_users['u_id2']]})
+    assert resp.status_code == OK
+    dm_id1 = resp.json()['dm_id']
+    resp = requests.post(config.url + "dm/create/v1", json={"token": reg_two_users['token2'], "u_ids": [reg_two_users['u_id1']]})
+    assert resp.status_code == OK
+    dm_id2 = resp.json()['dm_id']
+    resp = requests.get(config.url + "user/stats/v1", json={"token": reg_two_users['token2']})
+    assert resp.status_code == OK
+    resp_data = resp.json()
+    assert resp_data['user_stats']['dms_joined'][2]['num_dms_joined'] == 2
+    resp = requests.delete(config.url + "dm/remove/v1", json={"token": reg_two_users['token1'], "dm_id": dm_id1})
+    assert resp.status_code == OK
+    resp = requests.post(config.url + "dm/leave/v1", json={"token": reg_two_users['token1'], "dm_id": dm_id2})
+    assert resp.status_code == OK
+    resp = requests.get(config.url + "user/stats/v1", json={"token": reg_two_users['token2']})
+    assert resp.status_code == OK
+    resp_data = resp.json()
+    assert resp_data['user_stats']['dms_joined'][3]['num_dms_joined'] == 1
+    assert resp_data['user_stats']['dms_joined'][4]['num_dms_joined'] == 0
 
 #tests for users_stats
 def test_users_stats_invalid_token():
