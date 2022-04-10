@@ -144,6 +144,7 @@ def test_user_stats_initial(reg_two_users):
     assert resp_data['user_stats']['involvement_rate'] == 0
 
 def test_user_stats_working(reg_two_users):
+    #channels create, dm create, message send, message senddm, channel join, auth register, message remove
     resp = requests.post(config.url + "channels/create/v2", json={"token": reg_two_users['token1'], "name": "name", "is_public": True})
     assert resp.status_code == OK
     ch_id1 = resp.json()['channel_id']
@@ -159,22 +160,21 @@ def test_user_stats_working(reg_two_users):
     resp = requests.get(config.url + "user/stats/v1", json={"token": reg_two_users['token1']})
     assert resp.status_code == OK
     resp_data = resp.json()
-    assert len(resp_data['user_stats']) == 5
     assert resp_data['user_stats']['channels_joined'][1]['num_channels_joined'] == 1
     assert resp_data['user_stats']['channels_joined'][1]['time_stamp'] > resp_data['user_stats']['channels_joined'][0]['time_stamp']
-    assert resp_data['user_stats']['dms_joined'][2]['num_dms_joined'] == 1
-    assert resp_data['user_stats']['dms_joined'][2]['time_stamp'] > resp_data['user_stats']['channels_joined'][1]['time_stamp']
-    assert resp_data['user_stats']['messages_sent'][3]['num_messages_sent'] == 1
-    assert resp_data['user_stats']['messages_sent'][3]['time_stamp'] > resp_data['user_stats']['dms_joined'][2]['time_stamp']
-    assert resp_data['user_stats']['messages_sent'][4]['num_messages_sent'] == 2
-    assert resp_data['user_stats']['messages_sent'][4]['time_stamp'] > resp_data['user_stats']['messages_sent'][3]['time_stamp']
+    assert resp_data['user_stats']['dms_joined'][1]['num_dms_joined'] == 1
+    assert resp_data['user_stats']['dms_joined'][1]['time_stamp'] > resp_data['user_stats']['channels_joined'][1]['time_stamp']
+    assert resp_data['user_stats']['messages_sent'][1]['num_messages_sent'] == 1
+    assert resp_data['user_stats']['messages_sent'][1]['time_stamp'] > resp_data['user_stats']['dms_joined'][1]['time_stamp']
+    assert resp_data['user_stats']['messages_sent'][2]['num_messages_sent'] == 2
+    assert resp_data['user_stats']['messages_sent'][2]['time_stamp'] > resp_data['user_stats']['messages_sent'][1]['time_stamp']
     assert resp_data['user_stats']['involvement_rate'] == 1
     resp = requests.get(config.url + "channel/messages/v2", json={"token": reg_two_users['token1'], "channel_id": ch_id1, "start": 0})
     assert resp.status_code == OK
-    assert resp.json()["messages"][0]["time_sent"] == resp_data['user_stats']['messages_sent'][3]['time_stamp']
+    assert resp.json()["messages"][0]["time_sent"] == resp_data['user_stats']['messages_sent'][1]['time_stamp']
     resp = requests.get(config.url + "dm/messages/v1", json={"token": reg_two_users['token1'], "dm_id": dm_id1, "start": 0})
     assert resp.status_code == OK
-    assert resp.json()["messages"][0]["time_sent"] == resp_data['user_stats']['messages_sent'][4]['time_stamp']
+    assert resp.json()["messages"][0]["time_sent"] == resp_data['user_stats']['messages_sent'][2]['time_stamp']
     resp = requests.post(config.url + "channels/create/v2", json={"token": reg_two_users['token2'], "name": "namea", "is_public": True})
     assert resp.status_code == OK
     ch_id2 = resp.json()['channel_id']
@@ -192,13 +192,29 @@ def test_user_stats_working(reg_two_users):
     resp = requests.get(config.url + "user/stats/v1", json={"token": reg_two_users['token1']})
     assert resp.status_code == OK
     resp_data = resp.json()
-    assert len(resp_data['user_stats']) == 7
     assert resp_data['user_stats']['involvement_rate'] == 1
     resp = requests.get(config.url + "user/stats/v1", json={"token": reg_two_users['token2']})
     assert resp.status_code == OK
     resp_data = resp.json()
-    assert len(resp_data['user_stats']) == 4
     assert resp_data['user_stats']['involvement_rate'] == 0.8
+
+def test_user_stats_working_invite_leave(reg_two_users):
+    resp = requests.post(config.url + "channels/create/v2", json={"token": reg_two_users['token1'], "name": "name", "is_public": True})
+    assert resp.status_code == OK
+    ch_id1 = resp.json()['channel_id']
+    resp = requests.post(config.url + "channel/invite/v2", json={"token": reg_two_users['token1'], "channel_id": ch_id1, "u_id": reg_two_users["u_id2"]})
+    assert resp.status_code == OK
+    resp = requests.get(config.url + "user/stats/v1", json={"token": reg_two_users['token2']})
+    assert resp.status_code == OK
+    resp_data = resp.json()
+    assert resp_data['user_stats']['channels_joined'][1]['num_channels_joined'] == 1
+    resp = requests.post(config.url + "channel/leave/v1", json={"token": reg_two_users['token2'], "channel_id": ch_id1})
+    assert resp.status_code == OK
+    resp = requests.get(config.url + "user/stats/v1", json={"token": reg_two_users['token2']})
+    assert resp.status_code == OK
+    resp_data = resp.json()
+    assert resp_data['user_stats']['channels_joined'][2]['num_channels_joined'] == 0
+
 
 #tests for users_stats
 def test_users_stats_invalid_token():
