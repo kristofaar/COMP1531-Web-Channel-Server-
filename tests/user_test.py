@@ -370,7 +370,7 @@ def test_users_stats_working(reg_two_users):
     assert resp_data['workspace_stats']['messages_exist'][4]['num_messages_exist'] == 2
     assert resp_data['workspace_stats']['messages_exist'][5]['num_messages_exist'] == 1
 
-def test_user_stats_working_invite_leave_join(reg_two_users):
+def test_users_stats_working_invite_leave_join(reg_two_users):
     resp = requests.post(config.url + "channels/create/v2", json={"token": reg_two_users['token1'], "name": "name", "is_public": True})
     assert resp.status_code == OK
     ch_id1 = resp.json()['channel_id']
@@ -397,7 +397,7 @@ def test_user_stats_working_invite_leave_join(reg_two_users):
     resp_data = resp.json()
     assert resp_data['workspace_stats']['utilization_rate'] == 1
 
-def test_user_stats_dm_leave_remove(reg_two_users):
+def test_users_stats_dm_leave_remove(reg_two_users):
     resp = requests.post(config.url + "dm/create/v1", json={"token": reg_two_users['token1'], "u_ids": [reg_two_users['u_id2']]})
     assert resp.status_code == OK
     dm_id1 = resp.json()['dm_id']
@@ -418,7 +418,7 @@ def test_user_stats_dm_leave_remove(reg_two_users):
     assert resp_data['workspace_stats']['utilization_rate'] == 0.5
     assert resp_data['workspace_stats']['dms_exist'][3]['num_dms_exist'] == 1
 
-def test_user_stats_message_share(reg_two_users):
+def test_users_stats_message_share(reg_two_users):
     resp = requests.post(config.url + "dm/create/v1", json={"token": reg_two_users['token1'], "u_ids": [reg_two_users['u_id2']]})
     assert resp.status_code == OK
     dm_id1 = resp.json()['dm_id']
@@ -435,7 +435,7 @@ def test_user_stats_message_share(reg_two_users):
     resp_data = resp.json()
     assert resp_data['workspace_stats']['messages_exist'][2]['num_messages_exist'] == 2
 
-def test_user_stats_message_send_later(reg_two_users):
+def test_users_stats_message_send_later(reg_two_users):
     resp = requests.post(config.url + "channels/create/v2", json={"token": reg_two_users['token1'], "name": "name", "is_public": True})
     assert resp.status_code == OK
     ch_id1 = resp.json()['channel_id']
