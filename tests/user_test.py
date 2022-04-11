@@ -1,6 +1,9 @@
 import pytest
 import requests
 import json
+from datetime import timezone
+import datetime
+import time
 from src import config
 
 A_ERR = 403
@@ -236,6 +239,57 @@ def test_user_stats_dm_leave_remove(reg_two_users):
     assert resp_data['user_stats']['dms_joined'][3]['num_dms_joined'] == 1
     assert resp_data['user_stats']['dms_joined'][4]['num_dms_joined'] == 0
 
+def test_user_stats_message_share(reg_two_users):
+    resp = requests.post(config.url + "dm/create/v1", json={"token": reg_two_users['token1'], "u_ids": [reg_two_users['u_id2']]})
+    assert resp.status_code == OK
+    dm_id1 = resp.json()['dm_id']
+    resp = requests.post(config.url + "dm/create/v1", json={"token": reg_two_users['token2'], "u_ids": [reg_two_users['u_id1']]})
+    assert resp.status_code == OK
+    dm_id2 = resp.json()['dm_id']
+    resp = requests.post(config.url + "message/senddm/v1", json={"token": reg_two_users['token2'], "dm_id": dm_id2, "message": "Hello!x3"})
+    assert resp.status_code == OK
+    msg_id = resp.json()['message_id']
+    resp = requests.post(config.url + "message/share/v1", json={"token": reg_two_users['token1'], "og_message_id": msg_id, "message": "", "channel_id": -1, "dm_id": dm_id1})
+    assert resp.status_code == OK
+    resp = requests.get(config.url + "user/stats/v1", json={"token": reg_two_users['token1']})
+    assert resp.status_code == OK
+    resp_data = resp.json()
+    assert resp_data['user_stats']['messages_sent'][1]['num_messages_sent'] == 1
+
+def test_user_stats_message_send_later(reg_two_users):
+    resp = requests.post(config.url + "channels/create/v2", json={"token": reg_two_users['token1'], "name": "name", "is_public": True})
+    assert resp.status_code == OK
+    ch_id1 = resp.json()['channel_id']
+    resp = requests.post(config.url + "dm/create/v1", json={"token": reg_two_users['token1'], "u_ids": [reg_two_users['u_id2']]})
+    assert resp.status_code == OK
+    dm_id1 = resp.json()['dm_id']
+    # Getting the current date
+    # and time
+    datet = datetime.datetime.now(timezone.utc)
+    time = datet.replace(tzinfo=timezone.utc)
+    time_sent = time.timestamp()
+    resp = requests.post(config.url + "message/sendlater/v1", json={"token": reg_two_users['token1'], "channel_id": ch_id1, "message": "hi", "time_sent": time_sent + 1})
+    assert resp.status_code == OK
+    resp = requests.post(config.url + "message/sendlaterdm/v1", json={"token": reg_two_users['token1'], "dm_id": dm_id1, "message": "hix2", "time_sent": time_sent + 1})
+    assert resp.status_code == OK
+    resp = requests.post(config.url + "standup/start/v1", json={"token": reg_two_users['token1'], "channel_id": ch_id1, "length": 1})
+    assert resp.status_code == OK
+    resp = requests.post(config.url + "standup/send/v1", json={"token": reg_two_users['token1'], "channel_id": ch_id1, "message": "hix3"})
+    assert resp.status_code == OK
+    resp = requests.get(config.url + "user/stats/v1", json={"token": reg_two_users['token1']})
+    assert resp.status_code == OK
+    resp_data = resp.json()
+    assert len(resp_data['user_stats']['messages_sent']) == 1
+    time.sleep(1)
+    resp = requests.get(config.url + "user/stats/v1", json={"token": reg_two_users['token1']})
+    assert resp.status_code == OK
+    resp_data = resp.json()
+    assert resp_data['user_stats']['messages_sent'][1]['num_messages_sent'] == 1
+    assert resp_data['user_stats']['messages_sent'][2]['num_messages_sent'] == 2
+    assert resp_data['user_stats']['messages_sent'][3]['num_messages_sent'] == 3
+    
+
+
 #tests for users_stats
 def test_users_stats_invalid_token():
     clear_resp = requests.delete(config.url + 'clear/v1')
@@ -265,5 +319,148 @@ def test_users_stats_initial(reg_two_users):
     assert resp_data['workplace_stats']['messages_exist'][0]['time_stamp'] == resp_data['workplace_stats']['channels_exist'][0]['time_stamp']
     assert resp_data['workplace_stats']['involvement_rate'] == 0
 
-def test_user_stats_working(reg_two_users):
-    pass
+def test_users_stats_working(reg_two_users):
+    #channels create, dm create, message send, message senddm, channel join, auth register, message remove
+    resp = requests.post(config.url + "channels/create/v2", json={"token": reg_two_users['token1'], "name": "name", "is_public": True})
+    assert resp.status_code == OK
+    ch_id1 = resp.json()['channel_id']
+    resp = requests.post(config.url + "dm/create/v1", json={"token": reg_two_users['token1'], "u_ids": [reg_two_users['u_id2']]})
+    assert resp.status_code == OK
+    dm_id1 = resp.json()['dm_id']
+    resp = requests.post(config.url + "message/send/v1", json={"token": reg_two_users['token1'], "channel_id": ch_id1, "message": "Hello!"})
+    assert resp.status_code == OK
+    msg_id1 = resp.json()['message_id']
+    resp = requests.post(config.url + "message/senddm/v1", json={"token": reg_two_users['token1'], "dm_id": dm_id1, "message": "Hello!x2"})
+    assert resp.status_code == OK
+    msg_id2 = resp.json()['message_id']
+    resp = requests.get(config.url + "users/stats/v1", json={"token": reg_two_users['token1']})
+    assert resp.status_code == OK
+    resp_data = resp.json()
+    assert resp_data['workspace_stats']['channels_exist'][1]['num_channels_exist'] == 1
+    assert resp_data['workspace_stats']['channels_exist'][1]['time_stamp'] > resp_data['workspace_stats']['channels_exist'][0]['time_stamp']
+    assert resp_data['workspace_stats']['dms_exist'][1]['num_dms_exist'] == 1
+    assert resp_data['workspace_stats']['dms_exist'][1]['time_stamp'] > resp_data['workspace_stats']['channels_exist'][1]['time_stamp']
+    assert resp_data['workspace_stats']['messages_exist'][1]['num_messages_exist'] == 1
+    assert resp_data['workspace_stats']['messages_exist'][1]['time_stamp'] > resp_data['workspace_stats']['dms_exist'][1]['time_stamp']
+    assert resp_data['workspace_stats']['messages_exist'][2]['num_messages_exist'] == 2
+    assert resp_data['workspace_stats']['messages_exist'][2]['time_stamp'] > resp_data['workspace_stats']['messages_exist'][1]['time_stamp']
+    assert resp_data['workspace_stats']['utilization_rate'] == 1
+    resp = requests.get(config.url + "channel/messages/v2", json={"token": reg_two_users['token1'], "channel_id": ch_id1, "start": 0})
+    assert resp.status_code == OK
+    assert resp.json()["messages"][0]["time_sent"] == resp_data['workspace_stats']['messages_exist'][1]['time_stamp']
+    resp = requests.get(config.url + "dm/messages/v1", json={"token": reg_two_users['token1'], "dm_id": dm_id1, "start": 0})
+    assert resp.status_code == OK
+    assert resp.json()["messages"][0]["time_sent"] == resp_data['workspace_stats']['messages_exist'][2]['time_stamp']
+    resp = requests.post(config.url + "channels/create/v2", json={"token": reg_two_users['token2'], "name": "namea", "is_public": True})
+    assert resp.status_code == OK
+    ch_id2 = resp.json()['channel_id']
+    resp = requests.post(config.url + "dm/create/v1", json={"token": reg_two_users['token2'], "u_ids": [reg_two_users['u_id1']]})
+    assert resp.status_code == OK
+    dm_id2 = resp.json()['dm_id']
+    resp = requests.post(config.url + "message/senddm/v1", json={"token": reg_two_users['token2'], "dm_id": dm_id2, "message": "Hello!x3"})
+    assert resp.status_code == OK
+    resp = requests.delete(config.url + "message/remove/v1", json={"token": reg_two_users['token1'], "message_id": msg_id1})
+    assert resp.status_code == OK
+    resp = requests.delete(config.url + "message/remove/v1", json={"token": reg_two_users['token1'], "message_id": msg_id2})
+    assert resp.status_code == OK
+    resp = requests.get(config.url + "users/stats/v1", json={"token": reg_two_users['token1']})
+    assert resp.status_code == OK
+    resp_data = resp.json()
+    assert resp_data['workspace_stats']['messages_exist'][3]['num_messages_exist'] == 3
+    assert resp_data['workspace_stats']['messages_exist'][4]['num_messages_exist'] == 2
+    assert resp_data['workspace_stats']['messages_exist'][5]['num_messages_exist'] == 1
+
+def test_user_stats_working_invite_leave_join(reg_two_users):
+    resp = requests.post(config.url + "channels/create/v2", json={"token": reg_two_users['token1'], "name": "name", "is_public": True})
+    assert resp.status_code == OK
+    ch_id1 = resp.json()['channel_id']
+    resp = requests.get(config.url + "users/stats/v1", json={"token": reg_two_users['token1']})
+    assert resp.status_code == OK
+    resp_data = resp.json()
+    assert resp_data['workspace_stats']['utilization_rate'] == 0.5
+    resp = requests.post(config.url + "channel/invite/v2", json={"token": reg_two_users['token1'], "channel_id": ch_id1, "u_id": reg_two_users["u_id2"]})
+    assert resp.status_code == OK
+    resp = requests.get(config.url + "users/stats/v1", json={"token": reg_two_users['token2']})
+    assert resp.status_code == OK
+    resp_data = resp.json()
+    assert resp_data['workspace_stats']['utilization_rate'] == 1
+    resp = requests.post(config.url + "channel/leave/v1", json={"token": reg_two_users['token2'], "channel_id": ch_id1})
+    assert resp.status_code == OK
+    resp = requests.get(config.url + "users/stats/v1", json={"token": reg_two_users['token2']})
+    assert resp.status_code == OK
+    resp_data = resp.json()
+    assert resp_data['workspace_stats']['utilization_rate'] == 0.5
+    resp = requests.post(config.url + "channel/join/v2", json={"token": reg_two_users['token2'], "channel_id": ch_id1})
+    assert resp.status_code == OK
+    resp = requests.get(config.url + "users/stats/v1", json={"token": reg_two_users['token2']})
+    assert resp.status_code == OK
+    resp_data = resp.json()
+    assert resp_data['workspace_stats']['utilization_rate'] == 1
+
+def test_user_stats_dm_leave_remove(reg_two_users):
+    resp = requests.post(config.url + "dm/create/v1", json={"token": reg_two_users['token1'], "u_ids": [reg_two_users['u_id2']]})
+    assert resp.status_code == OK
+    dm_id1 = resp.json()['dm_id']
+    resp = requests.post(config.url + "dm/create/v1", json={"token": reg_two_users['token2'], "u_ids": [reg_two_users['u_id1']]})
+    assert resp.status_code == OK
+    dm_id2 = resp.json()['dm_id']
+    resp = requests.get(config.url + "users/stats/v1", json={"token": reg_two_users['token2']})
+    assert resp.status_code == OK
+    resp_data = resp.json()
+    assert resp_data['workspace_stats']['utilization_rate'] == 1
+    resp = requests.delete(config.url + "dm/remove/v1", json={"token": reg_two_users['token1'], "dm_id": dm_id1})
+    assert resp.status_code == OK
+    resp = requests.post(config.url + "dm/leave/v1", json={"token": reg_two_users['token1'], "dm_id": dm_id2})
+    assert resp.status_code == OK
+    resp = requests.get(config.url + "users/stats/v1", json={"token": reg_two_users['token2']})
+    assert resp.status_code == OK
+    resp_data = resp.json()
+    assert resp_data['workspace_stats']['utilization_rate'] == 0.5
+    assert resp_data['workspace_stats']['dms_exist'][3]['num_dms_exist'] == 1
+
+def test_user_stats_message_share(reg_two_users):
+    resp = requests.post(config.url + "dm/create/v1", json={"token": reg_two_users['token1'], "u_ids": [reg_two_users['u_id2']]})
+    assert resp.status_code == OK
+    dm_id1 = resp.json()['dm_id']
+    resp = requests.post(config.url + "dm/create/v1", json={"token": reg_two_users['token2'], "u_ids": [reg_two_users['u_id1']]})
+    assert resp.status_code == OK
+    dm_id2 = resp.json()['dm_id']
+    resp = requests.post(config.url + "message/senddm/v1", json={"token": reg_two_users['token2'], "dm_id": dm_id2, "message": "Hello!x3"})
+    assert resp.status_code == OK
+    msg_id = resp.json()['message_id']
+    resp = requests.post(config.url + "message/share/v1", json={"token": reg_two_users['token1'], "og_message_id": msg_id, "message": "", "channel_id": -1, "dm_id": dm_id1})
+    assert resp.status_code == OK
+    resp = requests.get(config.url + "users/stats/v1", json={"token": reg_two_users['token1']})
+    assert resp.status_code == OK
+    resp_data = resp.json()
+    assert resp_data['workspace_stats']['messages_exist'][2]['num_messages_exist'] == 2
+
+def test_user_stats_message_send_later(reg_two_users):
+    resp = requests.post(config.url + "channels/create/v2", json={"token": reg_two_users['token1'], "name": "name", "is_public": True})
+    assert resp.status_code == OK
+    ch_id1 = resp.json()['channel_id']
+    resp = requests.post(config.url + "dm/create/v1", json={"token": reg_two_users['token1'], "u_ids": [reg_two_users['u_id2']]})
+    assert resp.status_code == OK
+    dm_id1 = resp.json()['dm_id']
+    # Getting the current date
+    # and time
+    datet = datetime.datetime.now(timezone.utc)
+    time = datet.replace(tzinfo=timezone.utc)
+    time_sent = time.timestamp()
+    resp = requests.post(config.url + "message/sendlater/v1", json={"token": reg_two_users['token1'], "channel_id": ch_id1, "message": "hi", "time_sent": time_sent + 1})
+    assert resp.status_code == OK
+    resp = requests.post(config.url + "message/sendlaterdm/v1", json={"token": reg_two_users['token1'], "dm_id": dm_id1, "message": "hix2", "time_sent": time_sent + 1})
+    assert resp.status_code == OK
+    resp = requests.post(config.url + "standup/start/v1", json={"token": reg_two_users['token1'], "channel_id": ch_id1, "length": 1})
+    assert resp.status_code == OK
+    resp = requests.post(config.url + "standup/send/v1", json={"token": reg_two_users['token1'], "channel_id": ch_id1, "message": "hix3"})
+    assert resp.status_code == OK
+    resp = requests.get(config.url + "users/stats/v1", json={"token": reg_two_users['token1']})
+    assert resp.status_code == OK
+    resp_data = resp.json()
+    assert len(resp_data['workspace_stats']['messages_exist']) == 1
+    time.sleep(1)
+    resp = requests.get(config.url + "users/stats/v1", json={"token": reg_two_users['token1']})
+    assert resp.status_code == OK
+    resp_data = resp.json()
+    assert len(resp_data['workspace_stats']['messages_exist']) == 4
