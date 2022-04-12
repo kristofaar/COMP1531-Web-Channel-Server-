@@ -135,13 +135,15 @@ def message_edit_v1(token, message_id, message):
         if msg != None:
             break
 
-    for user_dm in user['dms']:
-        for dm_ in dms:
-            if user_dm['dm_id'] == dm_['dm_id']:
-                dm = dm_
-        msg = next((msg for msg in dm['messages'] if int(message_id) == msg['message_id']), None)
-        if msg != None:
-            break
+    if not msg:
+        ch = None
+        for user_dm in user['dms']:
+            for dm_ in dms:
+                if user_dm['dm_id'] == dm_['dm_id']:
+                    dm = dm_
+            msg = next((msg for msg in dm['messages'] if int(message_id) == msg['message_id']), None)
+            if msg != None:
+                break
 
     if not msg:
         raise InputError(description='Invalid message id')
@@ -222,13 +224,15 @@ def message_remove_v1(token, message_id):
         if msg != None:
             break
     
-    for user_dm in user['dms']:
-        for dm_ in dms:
-            if user_dm['dm_id'] == dm_['dm_id']:
-                dm = dm_
-        msg = next((msg for msg in dm['messages'] if int(message_id) == msg['message_id']), None)
-        if msg != None:
-            break
+    if not msg:
+        ch = None
+        for user_dm in user['dms']:
+            for dm_ in dms:
+                if user_dm['dm_id'] == dm_['dm_id']:
+                    dm = dm_
+            msg = next((msg for msg in dm['messages'] if int(message_id) == msg['message_id']), None)
+            if msg != None:
+                break
     
     if not msg:
         raise InputError(description='Invalid message id')

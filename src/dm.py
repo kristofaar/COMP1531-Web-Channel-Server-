@@ -157,12 +157,12 @@ def dm_remove_v1(token, dm_id):
             'num_dms_joined': len(curr_user['dms']),
             'time_stamp': get_time()
         })
+    dms.remove(curr_dm)
     #stats
     storage['workspace_stats']['dms_exist'].append({
         'num_dms_exist': len(dms),
         'time_stamp': get_time()
     })
-    dms.remove(curr_dm)
     data_store.set(storage)
     return{}
 
@@ -252,13 +252,12 @@ def dm_leave_v1(token, dm_id):
         if user_id == user['id']:
             curr_user = user
     curr_user['dms'].remove({'dm_id' : curr_dm['dm_id'], 'name' : curr_dm['name']})
-    curr_dm['members'].remove(user_id)
-
     #stats
     curr_user['user_stats']['dms_joined'].append({
         'num_dms_joined': len(curr_user['dms']),
         'time_stamp': get_time()
     })
+    curr_dm['members'].remove(user_id)
 
     data_store.set(storage)
     return{}

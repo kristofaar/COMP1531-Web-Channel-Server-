@@ -220,7 +220,7 @@ def user_profile_sethandle_v1(token, handle_str):
     data_store.set(store)
     return {}
 
-#functions to change: dmcreate, dmremove, dmleave, messageshare, messagesendlater, messagesendlaterdm, standup
+#functions to change: messageshare, messagesendlater, messagesendlaterdm, standup
 def user_stats_v1(token):
     '''
     Fetches the required statistics about this user's use of UNSW Seams.
@@ -271,7 +271,6 @@ def user_stats_v1(token):
     
     if user['user_stats']['involvement_rate'] > 1:
         user['user_stats']['involvement_rate'] = 1
-
     data_store.set(store)
     return user['user_stats']
 
