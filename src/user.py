@@ -220,7 +220,7 @@ def user_profile_sethandle_v1(token, handle_str):
     data_store.set(store)
     return {}
 
-#functions to change: authregister, channelcreate, channeljoin, channelinvite, channelleave, messagesend, dmcreate, dmremove, dmleave, senddm, messageshare, messagesendlater, messagesendlaterdm, standup
+#functions to change: messagesendeditremovedm, dmcreate, dmremove, dmleave, messageshare, messagesendlater, messagesendlaterdm, standup
 def user_stats_v1(token):
     '''
     Fetches the required statistics about this user's use of UNSW Seams.

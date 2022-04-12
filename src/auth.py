@@ -1,6 +1,6 @@
 from multiprocessing import dummy
 from src.data_store import data_store
-from src.other import generate_new_session_id, check_if_valid
+from src.other import generate_new_session_id, check_if_valid, get_time
 from src.error import InputError, AccessError
 import re, hashlib, jwt, random
 
@@ -119,9 +119,25 @@ def auth_register_v1(email, password, name_first, name_last):
     
     session_id = generate_new_session_id()
 
+    init_user_stats = {
+        'channels_joined': [{
+            'num_channels_joined': 0,
+            'time_stamp': get_time()
+        }],
+        'dms_joined': [{
+            'num_dms_joined': 0,
+            'time_stamp': get_time()
+        }],
+        'messages_sent': [{
+            'num_messages_sent': 0,
+            'time_stamp': get_time()
+        }],
+        'involvement_rate': 0
+    }
+
     storage['users'].append({'id': new_id, 'email': email, 'name_first': name_first, 'name_last': name_last, 'handle': handle, 
                             'channels' : [],'dms':[], 'global_owner': is_first, 'password': hashlib.sha256(password.encode()).hexdigest(), 'session_list': [session_id],
-                            'reset_code': None})
+                            'reset_code': None, 'user_stats': init_user_stats})
     
     data_store.set(storage)
     return {

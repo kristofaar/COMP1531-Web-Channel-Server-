@@ -23,6 +23,7 @@ Example usage:
     print(store) # Prints { 'names': ['Emily', 'Hayden', 'Jake', 'Nick'] }
     data_store.set(store)
 '''
+from src.other import get_time
 
 # YOU SHOULD MODIFY THIS OBJECT BELOW
 initial_object = {
@@ -33,7 +34,22 @@ initial_object = {
     'dms': [],
     'no_users': True,
     'session_id': 0,
-    'removed_users': []
+    'removed_users': [],
+    'workspace_stats': {
+        'channels_exist': [{
+            'num_channels_exist': 0,
+            'time_stamp': get_time()
+        }],
+        'dms_exist': [{
+            'num_dms_exist': 0,
+            'time_stamp': get_time()
+        }],
+        'messages_exist': [{
+            'num_messages_exist': 0,
+            'time_stamp': get_time()
+        }],
+        'utilization_rate': 0
+    }
 }
 # YOU SHOULD MODIFY THIS OBJECT ABOVE
 

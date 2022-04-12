@@ -361,7 +361,7 @@ def test_users_stats_working(reg_two_users):
     assert resp.status_code == OK
     resp = requests.delete(config.url + "message/remove/v1", json={"token": reg_two_users['token1'], "message_id": msg_id1})
     assert resp.status_code == OK
-    resp = requests.delete(config.url + "message/remove/v1", json={"token": reg_two_users['token1'], "message_id": msg_id2})
+    resp = requests.put(config.url + "message/edit/v1", json={"token": reg_two_users['token1'], "message_id": msg_id2, 'message': ""})
     assert resp.status_code == OK
     resp = requests.get(config.url + "users/stats/v1", json={"token": reg_two_users['token1']})
     assert resp.status_code == OK

@@ -1,9 +1,7 @@
 from src.data_store import data_store
 from src.error import InputError
 from src.error import AccessError
-from src.other import read_token, check_if_valid, generate_new_session_id, owner_perms
-from datetime import timezone
-import datetime
+from src.other import read_token, check_if_valid, generate_new_session_id, owner_perms, get_time
 import hashlib, jwt
 
 SECRET = 'heheHAHA111'
@@ -55,12 +53,7 @@ def message_send_v1(token, channel_id, message):
     if not 1 <= len(message) <= 1000:
         raise InputError(description="Invalid message length")
 
-    # Getting the current date
-    # and time
-    datet = datetime.datetime.now(timezone.utc)
-
-    time = datet.replace(tzinfo=timezone.utc)
-    time_sent = time.timestamp()
+    time_sent = get_time()
 
     #using session id generator to create unique message id
     message_id = generate_new_session_id()
@@ -286,12 +279,6 @@ def message_senddm_v1(token, dm_id, message):
     if not 1 <= len(message) <= 1000:
         raise InputError(description="Invalid message length")
 
-    # Getting the current date
-    # and time
-    datet = datetime.datetime.now(timezone.utc)
-
-    time = datet.replace(tzinfo=timezone.utc)
-    time_sent = time.timestamp()
 
     #using session id generator to create unique message id
     message_id = generate_new_session_id()
@@ -301,7 +288,7 @@ def message_senddm_v1(token, dm_id, message):
         'message_id': message_id,
         'u_id': auth_user_id,
         'message': message,
-        'time_sent': time_sent,
+        'time_sent': get_time(),
     }
     dm['messages'].insert(0, message_dict)
     data_store.set(storage)

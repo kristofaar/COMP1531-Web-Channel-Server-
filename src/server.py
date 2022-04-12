@@ -54,6 +54,7 @@ try:
     storage['dms'] = datas['dms']
     storage['session_id'] = datas['session_id']
     storage['removed_users'] = datas['removed_users']
+    storage['workspace_stats'] = datas['workspace_stats']
     data_store.set(storage)
 except Exception:
     pass
@@ -62,7 +63,8 @@ def save():
     '''For persistence, saves current data_store into datastore.p'''
     storage = data_store.get()
     data = {'users': storage['users'], 'channels': storage['channels'], 'no_users': storage['no_users'], 
-            'dms': storage['dms'], 'session_id': storage['session_id'], 'removed_users': storage['removed_users']}
+            'dms': storage['dms'], 'session_id': storage['session_id'], 'removed_users': storage['removed_users'],
+            'workspace_stats': storage['workspace_stats']}
     with open('datastore.p', 'wb+') as FILE:
         pickle.dump(data, FILE)
 
