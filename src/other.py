@@ -95,4 +95,4 @@ def get_time():
 
     time = datet.replace(tzinfo=timezone.utc)
     time_sent = time.timestamp()
-    return time_sent
+    return round(time_sent)

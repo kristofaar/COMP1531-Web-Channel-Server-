@@ -220,7 +220,7 @@ def user_profile_sethandle_v1(token, handle_str):
     data_store.set(store)
     return {}
 
-#functions to change: messagesendeditremovedm, dmcreate, dmremove, dmleave, messageshare, messagesendlater, messagesendlaterdm, standup
+#functions to change: dmcreate, dmremove, dmleave, messageshare, messagesendlater, messagesendlaterdm, standup
 def user_stats_v1(token):
     '''
     Fetches the required statistics about this user's use of UNSW Seams.
@@ -273,9 +273,7 @@ def user_stats_v1(token):
         user['user_stats']['involvement_rate'] = 1
 
     data_store.set(store)
-    return {
-        'user_stats': user['user_stats']
-    }
+    return user['user_stats']
 
 def users_stats_v1(token):
     '''
@@ -311,6 +309,4 @@ def users_stats_v1(token):
     workspace_stats['utilization_rate'] = num_users_who_have_joined_at_least_one_channel_or_dm / len(users)
 
     data_store.set(store)
-    return {
-        'workspace_stats': workspace_stats
-    }
+    return workspace_stats

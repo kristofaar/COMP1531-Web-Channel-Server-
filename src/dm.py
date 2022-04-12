@@ -1,7 +1,7 @@
 from src.data_store import data_store
 from src.error import InputError
 from src.error import AccessError
-from src.other import read_token, check_if_valid
+from src.other import read_token, check_if_valid, get_time
 import hashlib, jwt
 
 def dm_create_v1(token, u_ids):
@@ -62,6 +62,16 @@ def dm_create_v1(token, u_ids):
             if u_id == user['id']:
                 curr_user = user
         curr_user['dms'].append({'dm_id' : dm_id, 'name' : name})
+        #stats
+        curr_user['user_stats']['dms_joined'].append({
+            'num_dms_joined': len(curr_user['dms']),
+            'time_stamp': get_time()
+        })
+    #stats
+    storage['workspace_stats']['dms_exist'].append({
+        'num_dms_exist': len(dm),
+        'time_stamp': get_time()
+    })
     data_store.set(storage)
     return{
         'dm_id' : dm_id
@@ -142,6 +152,16 @@ def dm_remove_v1(token, dm_id):
             if members == user['id']:
                 curr_user = user
         curr_user['dms'].remove({'dm_id': curr_dm['dm_id'], 'name': curr_dm['name']})
+        #stats
+        curr_user['user_stats']['dms_joined'].append({
+            'num_dms_joined': len(curr_user['dms']),
+            'time_stamp': get_time()
+        })
+    #stats
+    storage['workspace_stats']['dms_exist'].append({
+        'num_dms_exist': len(dms),
+        'time_stamp': get_time()
+    })
     dms.remove(curr_dm)
     data_store.set(storage)
     return{}
@@ -233,6 +253,13 @@ def dm_leave_v1(token, dm_id):
             curr_user = user
     curr_user['dms'].remove({'dm_id' : curr_dm['dm_id'], 'name' : curr_dm['name']})
     curr_dm['members'].remove(user_id)
+
+    #stats
+    curr_user['user_stats']['dms_joined'].append({
+        'num_dms_joined': len(curr_user['dms']),
+        'time_stamp': get_time()
+    })
+
     data_store.set(storage)
     return{}
 

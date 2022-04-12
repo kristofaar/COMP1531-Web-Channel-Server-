@@ -30,7 +30,7 @@ def message_send_v1(token, channel_id, message):
     '''
 
     if not check_if_valid(token):
-        raise AccessError
+        raise AccessError(description="Invalid Token")
     
     #staging variables
     storage = data_store.get()
@@ -66,6 +66,19 @@ def message_send_v1(token, channel_id, message):
         'time_sent': time_sent,
     }
     ch['messages'].insert(0, message_dict)
+
+    #stats
+    for user in storage['users']:
+        if user['id'] == auth_user_id:
+            user['user_stats']['messages_sent'].append({
+                'num_messages_sent': user['user_stats']['messages_sent'][len(user['user_stats']['messages_sent']) - 1]['num_messages_sent'] + 1,
+                'time_stamp': get_time()
+            })
+    storage['workspace_stats']['messages_exist'].append({
+        'num_messages_exist': storage['workspace_stats']['messages_exist'][len(storage['workspace_stats']['messages_exist']) - 1]['num_messages_exist'] + 1,
+        'time_stamp': get_time()
+    })
+            
     data_store.set(storage)
     return {
         'message_id': message_id
@@ -96,7 +109,7 @@ def message_edit_v1(token, message_id, message):
     '''
 
     if not check_if_valid(token):
-        raise AccessError
+        raise AccessError(description="Invalid Token")
     
     #staging variables
     storage = data_store.get()
@@ -148,6 +161,11 @@ def message_edit_v1(token, message_id, message):
             ch['messages'].remove(msg)
         else:
             dm['messages'].remove(msg)
+        #stats
+        storage['workspace_stats']['messages_exist'].append({
+            'num_messages_exist': storage['workspace_stats']['messages_exist'][len(storage['workspace_stats']['messages_exist']) - 1]['num_messages_exist'] - 1,
+            'time_stamp': get_time()
+        })
     else:
         msg['message'] = message
     data_store.set(storage)
@@ -178,7 +196,7 @@ def message_remove_v1(token, message_id):
     '''
 
     if not check_if_valid(token):
-        raise AccessError
+        raise AccessError(description="Invalid Token")
     
     #staging variables
     storage = data_store.get()
@@ -226,6 +244,11 @@ def message_remove_v1(token, message_id):
         ch['messages'].remove(msg)
     else:
         dm['messages'].remove(msg)
+    #stats
+    storage['workspace_stats']['messages_exist'].append({
+        'num_messages_exist': storage['workspace_stats']['messages_exist'][len(storage['workspace_stats']['messages_exist']) - 1]['num_messages_exist'] - 1,
+        'time_stamp': get_time()
+    })
     data_store.set(storage)
     return {}
 
@@ -256,7 +279,7 @@ def message_senddm_v1(token, dm_id, message):
     '''
 
     if not check_if_valid(token):
-        raise AccessError
+        raise AccessError(description="Invalid Token")
     
     #staging variables
     storage = data_store.get()
@@ -291,6 +314,18 @@ def message_senddm_v1(token, dm_id, message):
         'time_sent': get_time(),
     }
     dm['messages'].insert(0, message_dict)
+
+    #stats
+    for user in storage['users']:
+        if user['id'] == auth_user_id:
+            user['user_stats']['messages_sent'].append({
+                'num_messages_sent': user['user_stats']['messages_sent'][len(user['user_stats']['messages_sent']) - 1]['num_messages_sent'] + 1,
+                'time_stamp': get_time()
+            })
+    storage['workspace_stats']['messages_exist'].append({
+        'num_messages_exist': storage['workspace_stats']['messages_exist'][len(storage['workspace_stats']['messages_exist']) - 1]['num_messages_exist'] + 1,
+        'time_stamp': get_time()
+    })
     data_store.set(storage)
     return {
         'message_id': message_id
