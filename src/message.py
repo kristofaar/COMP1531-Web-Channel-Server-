@@ -4,10 +4,12 @@ from src.error import AccessError
 from src.other import read_token, check_if_valid, generate_new_session_id, owner_perms
 from datetime import timezone
 import datetime
-import hashlib, jwt
+import hashlib
+import jwt
 import threading
 
 SECRET = 'heheHAHA111'
+
 
 def message_send_v1(token, channel_id, message):
     '''
@@ -34,21 +36,23 @@ def message_send_v1(token, channel_id, message):
 
     if not check_if_valid(token):
         raise AccessError
-    
-    #staging variables
+
+    # staging variables
     storage = data_store.get()
     auth_user_id = read_token(token)
 
     channels = storage['channels']
-    
-    #search through channels by id until id is matched
-    ch = next((channel for channel in channels if int(channel_id) == channel['channel_id_and_name']['channel_id']), None)
+
+    # search through channels by id until id is matched
+    ch = next((channel for channel in channels if int(channel_id) ==
+              channel['channel_id_and_name']['channel_id']), None)
     if ch == None:
         raise InputError(description="Invalid Channel Id")
 
-    #check if auth_user_id is a member of the channel queried
+    # check if auth_user_id is a member of the channel queried
     if auth_user_id not in ch['members']:
-        raise AccessError(description="Unauthorised User: User is not in channel")
+        raise AccessError(
+            description="Unauthorised User: User is not in channel")
 
     if not 1 <= len(message) <= 1000:
         raise InputError(description="Invalid message length")
@@ -60,10 +64,10 @@ def message_send_v1(token, channel_id, message):
     time = datet.replace(tzinfo=timezone.utc)
     time_sent = time.timestamp()
 
-    #using session id generator to create unique message id
+    # using session id generator to create unique message id
     message_id = generate_new_session_id()
 
-    #inserting message
+    # inserting message
     message_dict = {
         'message_id': message_id,
         'u_id': auth_user_id,
@@ -76,6 +80,7 @@ def message_send_v1(token, channel_id, message):
         'message_id': message_id
     }
 
+
 def message_edit_v1(token, message_id, message):
     '''
     Given a message, update its text with new text. If the new message is an empty string, the message is deleted.
@@ -87,12 +92,12 @@ def message_edit_v1(token, message_id, message):
 
     Exceptions:
         InputError when any of:
-      
+
             length of message is over 1000 characters
             message_id does not refer to a valid message within a channel/DM that the authorised user has joined
-        
+
         AccessError when message_id refers to a valid message in a joined channel/DM and none of the following are true:
-        
+
             the message was sent by the authorised user making this request
             the authorised user has owner permissions in the channel/DM
 
@@ -102,8 +107,8 @@ def message_edit_v1(token, message_id, message):
 
     if not check_if_valid(token):
         raise AccessError
-    
-    #staging variables
+
+    # staging variables
     storage = data_store.get()
     auth_user_id = read_token(token)
 
@@ -111,31 +116,34 @@ def message_edit_v1(token, message_id, message):
     channels = storage['channels']
     user = next((user for user in users if auth_user_id == user['id']), None)
 
-    #search through channels by id until id is matched
+    # search through channels by id until id is matched
     msg = None
     ch = None
     for user_channel in user['channels']:
-        ch = next((channel for channel in channels if user_channel['channel_id'] == channel['channel_id_and_name']['channel_id']), None)
-        msg = next((msg for msg in ch['messages'] if int(message_id) == msg['message_id']), None)
+        ch = next(
+            (channel for channel in channels if user_channel['channel_id'] == channel['channel_id_and_name']['channel_id']), None)
+        msg = next((msg for msg in ch['messages'] if int(
+            message_id) == msg['message_id']), None)
         if msg != None:
             break
-    
+
     if not msg:
         raise InputError(description='Invalid message id')
-    
+
     if msg['u_id'] != auth_user_id and not owner_perms(auth_user_id, ch['channel_id_and_name']['channel_id']):
         raise AccessError(description="Unauthorised editor")
 
     if len(message) > 1000:
         raise InputError(description="Invalid message length")
 
-    #editing message
+    # editing message
     if len(message) == 0:
         ch['messages'].remove(msg)
     else:
         msg['message'] = message
     data_store.set(storage)
     return {}
+
 
 def message_remove_v1(token, message_id):
     '''
@@ -148,12 +156,12 @@ def message_remove_v1(token, message_id):
 
     Exceptions:
         InputError when any of:
-      
+
             length of message is over 1000 characters
             message_id does not refer to a valid message within a channel/DM that the authorised user has joined
-        
+
         AccessError when message_id refers to a valid message in a joined channel/DM and none of the following are true:
-        
+
             the message was sent by the authorised user making this request
             the authorised user has owner permissions in the channel/DM
 
@@ -163,8 +171,8 @@ def message_remove_v1(token, message_id):
 
     if not check_if_valid(token):
         raise AccessError
-    
-    #staging variables
+
+    # staging variables
     storage = data_store.get()
     auth_user_id = read_token(token)
 
@@ -172,32 +180,35 @@ def message_remove_v1(token, message_id):
     channels = storage['channels']
     user = next(user for user in users if auth_user_id == user['id'])
 
-    #search through channels by id until id is matched
+    # search through channels by id until id is matched
     msg = None
     ch = None
     for user_channel in user['channels']:
-        ch = next((channel for channel in channels if user_channel['channel_id'] == channel['channel_id_and_name']['channel_id']), None)
-        msg = next((msg for msg in ch['messages'] if int(message_id) == msg['message_id']), None)
+        ch = next(
+            (channel for channel in channels if user_channel['channel_id'] == channel['channel_id_and_name']['channel_id']), None)
+        msg = next((msg for msg in ch['messages'] if int(
+            message_id) == msg['message_id']), None)
         if msg != None:
             break
-    
+
     if not msg:
         raise InputError(description='Invalid message id')
-    
+
     if msg['u_id'] != auth_user_id and not owner_perms(auth_user_id, ch['channel_id_and_name']['channel_id']):
         raise AccessError(description="Unauthorised editor")
 
-    #deleting message
+    # deleting message
     ch['messages'].remove(msg)
     data_store.set(storage)
     return {}
+
 
 def message_senddm_v1(token, dm_id, message):
     '''
     Send a message from authorised_user to the DM specified by dm_id. 
     Note: Each message should have it's own unique ID, i.e. no messages should share an 
     ID with another message, even if that other message is in a different channel or DM.
-    
+
 
     Arguments:
         token (String)        - passes in the unique session token of whoever ran the funtion
@@ -206,12 +217,12 @@ def message_senddm_v1(token, dm_id, message):
 
     Exceptions:
         InputError when any of:
-      
+
             dm_id does not refer to a valid DM
             length of message is less than 1 or over 1000 characters
-      
+
         AccessError when:
-      
+
             dm_id is valid and the authorised user is not a member of the DM
 
     Return Value:
@@ -220,21 +231,22 @@ def message_senddm_v1(token, dm_id, message):
 
     if not check_if_valid(token):
         raise AccessError
-    
-    #staging variables
+
+    # staging variables
     storage = data_store.get()
     auth_user_id = read_token(token)
 
     dms = storage['dms']
-    
-    #search through channels by id until id is matched
+
+    # search through channels by id until id is matched
     dm = next((dm for dm in dms if int(dm_id) == dm['dm_id']), None)
     if dm == None:
         raise InputError(description="Invalid Channel Id")
 
-    #check if auth_user_id is a member of the channel queried
+    # check if auth_user_id is a member of the channel queried
     if auth_user_id not in dm['members']:
-        raise AccessError(description="Unauthorised User: User is not in channel")
+        raise AccessError(
+            description="Unauthorised User: User is not in channel")
 
     if not 1 <= len(message) <= 1000:
         raise InputError(description="Invalid message length")
@@ -246,10 +258,10 @@ def message_senddm_v1(token, dm_id, message):
     time = datet.replace(tzinfo=timezone.utc)
     time_sent = time.timestamp()
 
-    #using session id generator to create unique message id
+    # using session id generator to create unique message id
     message_id = generate_new_session_id()
 
-    #inserting message
+    # inserting message
     message_dict = {
         'message_id': message_id,
         'u_id': auth_user_id,
@@ -262,6 +274,7 @@ def message_senddm_v1(token, dm_id, message):
         'message_id': message_id
     }
 
+
 def msg_send(message_dict, storage, channel):
     '''
     Given the appropriate parameters, create a message dictionary with the parameters
@@ -273,16 +286,7 @@ def msg_send(message_dict, storage, channel):
     Return:
         Nothing
     '''
-
-    # Getting the current date
-    # and time
-    datet = datetime.datetime.now(timezone.utc)
-
-    time = datet.replace(tzinfo=timezone.utc)
-    time_now = time.timestamp()
-
     # inserting message
-    message_dict['time_sent'] = time_now
     channel['messages'].insert(0, message_dict)
     data_store.set(storage)
 
@@ -331,7 +335,7 @@ def message_sendlater_v1(token, channel_id, message, time_sent):
         raise InputError(description="Invalid Channel Id")
 
     # check if auth_user_id is a member of the channel queried
-    if auth_user_id not in channels['members']:
+    if auth_user_id not in channel['members']:
         raise AccessError(
             description="Unauthorised User: User is not in channel")
 
@@ -363,7 +367,7 @@ def message_sendlater_v1(token, channel_id, message, time_sent):
         raise InputError(description='Time in the past')
 
     # Threading
-    t = threading(time_diff, msg_send, [message_dict, storage, channel])
+    t = threading.Timer(time_diff, msg_send(message_dict, storage, channel))
     t.start()
 
     return {
