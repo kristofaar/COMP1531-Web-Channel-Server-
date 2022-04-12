@@ -2,32 +2,41 @@ import pytest
 import requests
 import json
 from src import config
+from datetime import timedelta, timezone
+import datetime
 
 A_ERR = 403
 I_ERR = 400
 OK = 200
 
+
 @pytest.fixture
 def reg_two_users_and_create_two_channels():
     clear_resp = requests.delete(config.url + 'clear/v1')
     assert clear_resp.status_code == OK
-    resp1 = requests.post(config.url + 'auth/register/v2', json={'email': 'teast@test.test', 'password': 'testtesttest', 'name_first': 'test', 'name_last': 'test'})
+    resp1 = requests.post(config.url + 'auth/register/v2', json={
+                          'email': 'teast@test.test', 'password': 'testtesttest', 'name_first': 'test', 'name_last': 'test'})
     assert resp1.status_code == OK
-    resp2 = requests.post(config.url + 'auth/register/v2', json={'email': 'lol@lol.lol', 'password': '123abc123abc', 'name_first': 'Jane', 'name_last': 'Austen'})
+    resp2 = requests.post(config.url + 'auth/register/v2', json={
+                          'email': 'lol@lol.lol', 'password': '123abc123abc', 'name_first': 'Jane', 'name_last': 'Austen'})
     assert resp2.status_code == OK
     resp1_data = resp1.json()
     resp2_data = resp2.json()
-    resp3 = requests.post(config.url + 'channels/create/v2', json={'token': resp1_data['token'], 'name': 'CoolChannelName', 'is_public': True})
+    resp3 = requests.post(config.url + 'channels/create/v2', json={
+                          'token': resp1_data['token'], 'name': 'CoolChannelName', 'is_public': True})
     assert resp3.status_code == OK
-    resp4 = requests.post(config.url + 'channels/create/v2', json={'token': resp2_data['token'], 'name': 'NiceChannel', 'is_public': False})
+    resp4 = requests.post(config.url + 'channels/create/v2', json={
+                          'token': resp2_data['token'], 'name': 'NiceChannel', 'is_public': False})
     assert resp4.status_code == OK
     resp3_data = resp3.json()
     resp4_data = resp4.json()
     return {'token1': resp1_data['token'], 'token2': resp2_data['token'], 'u_id1': resp1_data['auth_user_id'], 'u_id2': resp2_data['auth_user_id'], 'ch_id1': resp3_data['channel_id'], 'ch_id2': resp4_data['channel_id']}
 
+
+"""
 #send errors
 def test_message_send_invalid_token(reg_two_users_and_create_two_channels):
-    resp = requests.post(config.url + 'message/send/v1', json={'token': 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6MjEzODcsInNlc3Npb25faWQiOjF9.XFf0uaLmhPnqIW231NDjAsTFJnhSSbdayu2j5JNEnos', 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'message': 'hi'})
+    resp = requests.post(config.url + 'message/send/v1', json={'token': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c', 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'message': 'hi'})
     assert resp.status_code == A_ERR
 
 def test_message_send_expired_token(reg_two_users_and_create_two_channels):
@@ -99,7 +108,7 @@ def test_two_users_one_message(reg_two_users_and_create_two_channels):
 
 #edit errors
 def test_message_edit_invalid_token(reg_two_users_and_create_two_channels):
-    resp = requests.put(config.url + 'message/edit/v1', json={'token': 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzZXNzaW9uX2lkIjoyfQ.qrzphrWzd35ouH9TDO5M8IhyOju6uMpqe__PPTxHQBg', 'message_id': 0, 'message': 'hi'})
+    resp = requests.put(config.url + 'message/edit/v1', json={'token': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c', 'message_id': 0, 'message': 'hi'})
     assert resp.status_code == A_ERR
 
 def test_message_edit_expired_token(reg_two_users_and_create_two_channels):
@@ -137,13 +146,6 @@ def test_message_edit_bad_length(reg_two_users_and_create_two_channels):
         msg += 'a'
     resp2 = requests.put(config.url + 'message/edit/v1', json={'token': reg_two_users_and_create_two_channels['token1'], 'message_id': resp1_data['message_id'], 'message': msg})
     assert resp2.status_code == I_ERR
-    resp3 = requests.put(config.url + 'message/edit/v1', json={'token': reg_two_users_and_create_two_channels['token1'], 'message_id': resp1_data['message_id'], 'message': ''})
-    assert resp3.status_code == OK
-    resp4 = requests.get(config.url + 'channel/messages/v2', params={'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'start': 0})
-    assert resp4.status_code == OK
-    resp_data = resp4.json()
-    assert resp_data['messages'] == []
-
 
 #edit working
 def test_message_edit_basic(reg_two_users_and_create_two_channels):
@@ -251,42 +253,55 @@ def test_message_remove_global_owner(reg_two_users_and_create_two_channels):
     assert resp3.status_code == OK
     resp_data = resp3.json()
     assert len(resp_data['messages']) == 0
-    
-#dms
+ """
+# dms
+
+
 @pytest.fixture
 def reg_two_users_and_create_dm():
     clear_resp = requests.delete(config.url + 'clear/v1')
     assert clear_resp.status_code == OK
-    resp1 = requests.post(config.url + 'auth/register/v2', json={'email': '1@test.test', 'password': '1testtest', 'name_first': 'first_test', 'name_last': 'first_test'})
+    resp1 = requests.post(config.url + 'auth/register/v2', json={
+                          'email': '1@test.test', 'password': '1testtest', 'name_first': 'first_test', 'name_last': 'first_test'})
     assert resp1.status_code == OK
-    resp2 = requests.post(config.url + 'auth/register/v2', json={'email': '2@lol.lol', 'password': '2abcabc', 'name_first': 'Second_Jane', 'name_last': 'Second_Austen'})
+    resp2 = requests.post(config.url + 'auth/register/v2', json={
+                          'email': '2@lol.lol', 'password': '2abcabc', 'name_first': 'Second_Jane', 'name_last': 'Second_Austen'})
     assert resp2.status_code == OK
     resp1_data = resp1.json()
     resp2_data = resp2.json()
-    resp3 = requests.post(config.url + 'dm/create/v1', json={'token': resp1_data['token'], 'u_ids': [resp2_data['auth_user_id']]})
+    resp3 = requests.post(config.url + 'dm/create/v1', json={
+                          'token': resp1_data['token'], 'u_ids': [resp2_data['auth_user_id']]})
     assert resp3.status_code == OK
     resp3_data = resp3.json()
-    return {'token1': resp1_data['token'], 'token2': resp2_data['token'], 
-    'u_id1': resp1_data['auth_user_id'], 'u_id2': resp2_data['auth_user_id'], 
-    'dm_id': resp3_data['dm_id']}
+    return {'token1': resp1_data['token'], 'token2': resp2_data['token'],
+            'u_id1': resp1_data['auth_user_id'], 'u_id2': resp2_data['auth_user_id'],
+            'dm_id': resp3_data['dm_id']}
+
+
 @pytest.fixture
 def reg_another_two_users_and_dm():
-    
-    reg1 = requests.post(config.url + 'auth/register/v2', json={'email': '3@test.test', 'password': '3testtest', 'name_first': 'third_name', 'name_last': 'third_last_name'})
+
+    reg1 = requests.post(config.url + 'auth/register/v2', json={
+                         'email': '3@test.test', 'password': '3testtest', 'name_first': 'third_name', 'name_last': 'third_last_name'})
     assert reg1.status_code == OK
-    reg2 = requests.post(config.url + 'auth/register/v2', json={'email': '4@lol.lol', 'password': '4abcabc', 'name_first': 'Fourth_boi', 'name_last': 'Fourth_last'})
+    reg2 = requests.post(config.url + 'auth/register/v2', json={
+                         'email': '4@lol.lol', 'password': '4abcabc', 'name_first': 'Fourth_boi', 'name_last': 'Fourth_last'})
     assert reg2.status_code == OK
     reg1_data = reg1.json()
     reg2_data = reg2.json()
-    dmcreate = requests.post(config.url + 'dm/create/v1', json={'token': reg1_data['token'], 'u_ids': [reg2_data['auth_user_id']]})
+    dmcreate = requests.post(config.url + 'dm/create/v1', json={
+                             'token': reg1_data['token'], 'u_ids': [reg2_data['auth_user_id']]})
     assert dmcreate.status_code == OK
     dmcreate_data = dmcreate.json()
-    dmdet = requests.get(config.url + 'dm/details/v1', params={'token': reg1_data['token'], 'dm_id': dmcreate_data['dm_id']})
+    dmdet = requests.get(config.url + 'dm/details/v1',
+                         params={'token': reg1_data['token'], 'dm_id': dmcreate_data['dm_id']})
     dmdet_data = dmdet.json()
-    return {'token1': reg1_data['token'], 'token2': reg2_data['token'], 
-    'u_id1': reg1_data['auth_user_id'], 'u_id2': reg2_data['auth_user_id'], 
-    'dm_id': dmcreate_data['dm_id'], 'dm_name': dmdet_data['name']}
+    return {'token1': reg1_data['token'], 'token2': reg2_data['token'],
+            'u_id1': reg1_data['auth_user_id'], 'u_id2': reg2_data['auth_user_id'],
+            'dm_id': dmcreate_data['dm_id'], 'dm_name': dmdet_data['name']}
 
+
+"""
 #send errors
 def test_message_senddm_invalid_token(reg_two_users_and_create_dm):
     resp = requests.post(config.url + 'message/senddm/v1', json={'token': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c', 'dm_id': reg_two_users_and_create_dm['dm_id'], 'message': 'hi'})
@@ -315,6 +330,93 @@ def test_message_senddm_bad_length(reg_two_users_and_create_dm):
     resp2 = requests.post(config.url + 'message/senddm/v1', json={'token': reg_two_users_and_create_dm['token1'], 'dm_id': reg_two_users_and_create_dm['dm_id'], 'message': msg})
     assert resp2.status_code == I_ERR
 
+#sendlater errors
+def test_sendlater_invalid_token(reg_two_users_and_create_two_channels):
+    datet = datetime.datetime.now(timezone.utc)
+    datet += timedelta(seconds=5)
+    time = datet.replace(tzinfo=timezone.utc)
+    time_later = time.timestamp()
+    resp = requests.post(config.url + 'message/sendlater/v1', json={'token': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c', 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'message': 'hi', 'time_sent': time_later})
+    assert resp.status_code == A_ERR
+
+def test_sendlater_expired_token(reg_two_users_and_create_two_channels):
+    resp1 = requests.post(config.url + 'auth/logout/v1', json={'token': reg_two_users_and_create_two_channels['token1']})
+    assert resp1.status_code == OK
+    datet = datetime.datetime.now(timezone.utc)
+    datet += timedelta(seconds=5)
+    time = datet.replace(tzinfo=timezone.utc)
+    time_later = time.timestamp()
+    resp = requests.post(config.url + 'message/sendlater/v1', json={'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'message': 'hi', 'time_sent': time_later})
+    assert resp.status_code == A_ERR
+"""
+
+
+def test_sendlater_unauthorised(reg_two_users_and_create_two_channels):
+    datet = datetime.datetime.now(timezone.utc)
+    datet += timedelta(seconds=5)
+    time = datet.replace(tzinfo=timezone.utc)
+    time_later = time.timestamp()
+    resp = requests.post(config.url + 'message/sendlater/v1', json={
+                         'token': reg_two_users_and_create_two_channels['token2'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'message': 'hi', 'time_sent': time_later})
+    assert resp.status_code == A_ERR
+
+
+"""
+def test_sendlater_msg_length(reg_two_users_and_create_two_channels):
+    datet = datetime.datetime.now(timezone.utc)
+    datet += timedelta(seconds=5)
+    time = datet.replace(tzinfo=timezone.utc)
+    time_later = time.timestamp()
+
+    resp1 = requests.post(config.url + 'message/sendlater/v1', json={'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'message': '', 'time_sent': time_later})
+    assert resp1.status_code == I_ERR
+    msg = 'a'
+    for _ in range(1000):
+        msg += 'a'
+    resp2 = requests.post(config.url + 'message/sendlater/v1', json={'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'message': msg, 'time_sent': time_later})
+    assert resp2.status_code == I_ERR
+
+
+def test_sendlater_invalid_channel(reg_two_users_and_create_two_channels):
+    datet = datetime.datetime.now(timezone.utc)
+    datet += timedelta(seconds=5)
+    time = datet.replace(tzinfo=timezone.utc)
+    time_later = time.timestamp()
+    
+    resp = requests.post(config.url + 'message/sendlater/v1', json={'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': 123423, 'message': 'hi', 'time_sent': time_later})
+    assert resp.status_code == I_ERR
+
+def test_sendlater_timepast(reg_two_users_and_create_two_channels):
+    datet = datetime.datetime.now(timezone.utc)
+    datet -= timedelta(seconds=5)
+    time = datet.replace(tzinfo=timezone.utc)
+    time_before = time.timestamp()
+    
+    resp = requests.post(config.url + 'message/sendlater/v1', json={'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'message': 'hi', 'time_sent': time_before})
+    assert resp.status_code == I_ERR
+
+# test sendlater working
+def test_sendlater_timefuture(reg_two_users_and_create_two_channels):
+    datet = datetime.datetime.now(timezone.utc)
+    datet -= timedelta(seconds=5)
+    time = datet.replace(tzinfo=timezone.utc)
+    time_before = time.timestamp()
+    
+    resp = requests.post(config.url + 'message/sendlater/v1', json={'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'message': 'hi', 'time_sent': time_before})
+    assert resp.status_code == OK
+    message_id = resp.json()['message_id']
+"""
+
+
+""" 
+datet = datetime.datetime.now(timezone.utc)
+time = datet.replace(tzinfo=timezone.utc)
+time_now = time.timestamp()
+assert time_now - time_before < 1 
+"""
+
+
+'''
 #send working
 def test_one_user_two_dms(reg_two_users_and_create_dm):
     resp1 = requests.post(config.url + 'message/senddm/v1', json={'token': reg_two_users_and_create_dm['token1'], 'dm_id': reg_two_users_and_create_dm['dm_id'], 'message': 'hi'})
@@ -347,12 +449,15 @@ def test_two_users_one_dm(reg_two_users_and_create_dm):
     resp3_data = resp3.json()
     resp4 = requests.get(config.url + 'dm/messages/v1', params={'token': reg_two_users_and_create_dm['token2'], 'dm_id': reg_two_users_and_create_dm['dm_id'], 'start': 0})
     assert resp4.status_code == OK
+    resp4_data = resp4.json()
     assert resp3_data['start'] == 0
     assert resp3_data['end'] == -1
-    assert resp3_data['messages'][0]['message_id'] != resp3_data['messages'][1]['message_id']
-    assert resp3_data['messages'][0]['u_id'] == reg_two_users_and_create_dm['u_id2']
-    assert resp3_data['messages'][1]['u_id'] == reg_two_users_and_create_dm['u_id1']
-    assert resp3_data['messages'][0]['message'] == 'cool'
-    assert resp3_data['messages'][1]['message'] == 'hi'
-    assert resp3_data['messages'][0]['time_sent'] >= resp3_data['messages'][1]['time_sent']
-    
+    assert resp4_data['start'] == 0
+    assert resp4_data['end'] == -1
+    assert resp3_data['messages'][0]['message_id'] != resp4_data['messages'][0]['message_id']
+    assert resp3_data['messages'][0]['u_id'] == reg_two_users_and_create_dm['u_id1']
+    assert resp4_data['messages'][0]['u_id'] == reg_two_users_and_create_dm['u_id2']
+    assert resp4_data['messages'][0]['message'] == 'cool'
+    assert resp3_data['messages'][0]['message'] == 'hi'
+    assert resp4_data['messages'][0]['time_sent'] >= resp3_data['messages'][0]['time_sent']
+    '''
