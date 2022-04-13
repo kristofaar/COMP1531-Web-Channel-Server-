@@ -34,7 +34,6 @@ def standup_start(token, channel_id, length):
     auth_user_id = read_token(token)
 
     channels = storage['channels']
-    users = storage['users']
 
     # search through channels by id until id is matched
     ch = next((channel for channel in channels if int(channel_id) ==
