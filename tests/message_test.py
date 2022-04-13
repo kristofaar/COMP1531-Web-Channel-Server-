@@ -404,26 +404,27 @@ def test_sendlater_timefuture(reg_two_users_and_create_two_channels):
     datet += timedelta(seconds=3)
     time1 = datet.replace(tzinfo=timezone.utc)
     time_before = time1.timestamp()
-    """
+
     resp = requests.post(config.url + 'message/sendlater/v1', json={
                          'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'message': 'hi', 'time_sent': time_before})
     assert resp.status_code == OK
     message_id = resp.json()['message_id']
     time.sleep(1)
-    """
+
     resp = requests.get(config.url + 'channel/messages/v2', params={
                         'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'start': 0})
     assert resp.status_code == OK
     messages = resp.json()['messages']
     assert messages == []
-    """
-    time.sleep(3)
+
+    time.sleep(2)
     resp = requests.get(config.url + 'channel/messages/v2', params={
                         'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'start': 0})
     assert resp.status_code == OK
     messages = resp.json()['messages']
     assert messages[0]['message_id'] == message_id
-    """
+
+
 """
 def test_sendlater_multiple(reg_two_users_and_create_two_channels):
     datet = datetime.datetime.now(timezone.utc)
