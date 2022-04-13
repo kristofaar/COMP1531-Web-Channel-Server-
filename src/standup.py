@@ -45,7 +45,7 @@ def standup_start(token, channel_id, length):
     if int(length) < 0:
         raise InputError(description="Length is a negative number")
 
-    if standup_active(token, channel_id):
+    if standup_active(token, channel_id)['is_active']:
         raise InputError(description="An active standup is currently running in this channel")
 
     if auth_user_id not in ch["members"]:
@@ -56,18 +56,19 @@ def standup_start(token, channel_id, length):
     utc_time = dt.replace(tzinfo=timezone.utc)
     utc_timestamp = utc_time.timestamp()
 
+    time_finish = utc_timestamp + int(length)
+    ch['standup_time'] = time_finish
+    data_store.set(storage)
+
     def thread_standup(channel_id, length):
         time.sleep(length)
-        for message in ch["standup_messages"]:
-            message_send_v1(token, channel_id, message)
+        message_send_v1(token, channel_id, ch['standup_message'])
         ch["standup_time"] = 0
-        ch["standup_messages"] = []
+        ch["standup_message"] = ""
         data_store.set(storage)
 
     x = threading.Thread(target=thread_standup, args=(channel_id, length,))
     x.start()
-
-    time_finish = utc_timestamp + int(length)
 
     return {"time_finish": time_finish}
 
@@ -88,7 +89,7 @@ def standup_active(token, channel_id):
     '''
     #staging variables
     storage = data_store.get()
-    
+
     if not check_if_valid(token):
         raise AccessError(description="Invalid token")
     auth_user_id = read_token(token)
@@ -145,6 +146,12 @@ def standup_send(token, channel_id, message):
     channels = storage['channels']
     users = storage['users']
 
+    # find auth_user
+    a_user = None
+    for usa in users:
+        if usa['id'] == auth_user_id:
+            a_user = usa
+
     # search through channels by id until id is matched
     ch = next((channel for channel in channels if int(channel_id) ==
               channel['channel_id_and_name']['channel_id']), None)
@@ -163,6 +170,6 @@ def standup_send(token, channel_id, message):
     if ch["standup_time"] == 0:
         raise InputError("An active standup is not currently running in the channel")
 
-    ch["standup_messages"].append(message)
+    ch["standup_messages"] += (a_user["handle"]+message+"\n")
     data_store.set(storage)
     return {}
