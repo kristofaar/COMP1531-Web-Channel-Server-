@@ -15,6 +15,7 @@ from src.other import clear_v1
 from src.message import message_send_v1, message_edit_v1, message_remove_v1, message_senddm_v1
 from src.user import users_all_v1, user_profile_v1, user_profile_setname_v1, user_profile_setemail_v1, user_profile_sethandle_v1
 from src.admin import admin_user_remove_v1, admin_userpermission_change_v1
+from src.standup import standup_start, standup_send, standup_active
 import pickle
 
 
@@ -339,6 +340,28 @@ def admin_perm_change():
     admin_userpermission_change_v1(data['token'], data['u_id'], data['permission_id'])
     save()
     return dumps({})
+
+#STANDUP FUNCTION WRAPPERS
+@APP.route('/standup/start/v1', methods=['POST'])
+def start_standup():
+    data = request.get_json()
+    time_finish = standup_start(data['token'], data['channel_id'], data['length'])
+    save()
+    return dumps({'time_finish': time_finish})
+
+@APP.route('/standup/active/v1', methods=['GET'])
+def active_standup():
+    data = request.get_json()
+    standup_details = standup_active(data['token'], data['channel_id'])
+    return dumps({'is_active': standup_details['is_active'], 'time_finish': standup_details['time_finish']})
+
+@APP.route('/standup/send/v1', methods=['POST'])
+def send_standup():
+    data = request.get_json()
+    standup_send(data['token'], data['channel_id'], data['message'])
+    return dumps({})
+
+
 # NO NEED TO MODIFY BELOW THIS POINT
 
 if __name__ == "__main__":
