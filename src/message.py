@@ -275,22 +275,6 @@ def message_senddm_v1(token, dm_id, message):
     }
 
 
-def msg_send(message_dict, storage, channel):
-    '''
-    Given the appropriate parameters, create a message dictionary with the parameters
-    and append it into the data (sends the message)
-    Parameters:
-        message_dict    (dict)  - Message to be appended
-        storage         (dict)  - Datastore to save in
-        channel         (dict)  - Channel appending message
-    Return:
-        Nothing
-    '''
-    # inserting message
-    channel['messages'].insert(0, message_dict)
-    data_store.set(storage)
-
-
 def message_sendlater_v1(token, channel_id, message, time_sent):
     '''
     Send a message from authorised_user to the DM specified by dm_id. 
@@ -354,6 +338,21 @@ def message_sendlater_v1(token, channel_id, message, time_sent):
         'time_sent': time_sent,
     }
 
+    def msg_send(message_dict, storage, channel):
+        '''
+        Given the appropriate parameters, create a message dictionary with the parameters
+        and append it into the data (sends the message)
+        Parameters:
+            message_dict    (dict)  - Message to be appended
+            storage         (dict)  - Datastore to save in
+            channel         (dict)  - Channel appending message
+        Return:
+            Nothing
+        '''
+        # inserting message
+        channel['messages'].insert(0, message_dict)
+        data_store.set(storage)
+
     # Getting the current date
     # and time
     datet = datetime.datetime.now(timezone.utc)
@@ -362,10 +361,15 @@ def message_sendlater_v1(token, channel_id, message, time_sent):
     time_now = time.timestamp()
 
     # Time check and Threading
-    time_diff = time_sent - time_now
     if time_now > time_sent:
         raise InputError(description='Time in the past')
-    print(time_diff)
+
+    # converting timestamp
+    time_sent = datetime.datetime.fromtimestamp(time_sent)
+    time_now = datetime.datetime.fromtimestamp(time_now)
+    time_diff = time_sent - time_now
+    time_diff = time_diff.total_seconds()
+
     # Threading
     t = threading.Timer(time_diff, msg_send(message_dict, storage, channel))
     t.start()
