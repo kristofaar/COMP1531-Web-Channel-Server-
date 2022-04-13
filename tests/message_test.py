@@ -403,10 +403,10 @@ def test_sendlater_timefuture(reg_two_users_and_create_two_channels):
     datet = datetime.datetime.now(timezone.utc)
     datet += timedelta(seconds=3)
     time1 = datet.replace(tzinfo=timezone.utc)
-    time_before = time1.timestamp()
+    time_future = time1.timestamp()
 
     resp = requests.post(config.url + 'message/sendlater/v1', json={
-                         'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'message': 'hi', 'time_sent': time_before})
+                         'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'message': 'hi', 'time_sent': time_future})
     assert resp.status_code == OK
     message_id = resp.json()['message_id']
     time.sleep(1)
@@ -417,7 +417,7 @@ def test_sendlater_timefuture(reg_two_users_and_create_two_channels):
     messages = resp.json()['messages']
     assert messages == []
 
-    time.sleep(2)
+    time.sleep(3)
     resp = requests.get(config.url + 'channel/messages/v2', params={
                         'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'start': 0})
     assert resp.status_code == OK
@@ -425,7 +425,6 @@ def test_sendlater_timefuture(reg_two_users_and_create_two_channels):
     assert messages[0]['message_id'] == message_id
 
 
-"""
 def test_sendlater_multiple(reg_two_users_and_create_two_channels):
     datet = datetime.datetime.now(timezone.utc)
     datet += timedelta(seconds=2)
@@ -488,17 +487,173 @@ def test_sendlater_edit_delete_react(reg_two_users_and_create_two_channels):
                          'token': reg_two_users_and_create_two_channels['token2'], 'message_id': message_id1, 'message': ''})
     assert resp3.status_code == I_ERR
 
-
     # add request for message/react, should return I_ERR
 
-"""
+# sendlaterdm errors
 
-""" 
-datet = datetime.datetime.now(timezone.utc)
-time = datet.replace(tzinfo=timezone.utc)
-time_now = time.timestamp()
-assert time_now - time_before < 1 
-"""
+
+def test_sendlaterdm_invalid_token(reg_two_users_and_create_dm):
+    datet = datetime.datetime.now(timezone.utc)
+    datet += timedelta(seconds=5)
+    time = datet.replace(tzinfo=timezone.utc)
+    time_later = time.timestamp()
+    resp = requests.post(config.url + 'message/sendlaterdm/v1', json={'token': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c',
+                         'channel_id': reg_two_users_and_create_dm['dm_id'], 'message': 'hi', 'time_sent': time_later})
+    assert resp.status_code == A_ERR
+
+
+def test_sendlaterdm_expired_token(reg_two_users_and_create_dm):
+    resp1 = requests.post(config.url + 'auth/logout/v1',
+                          json={'token': reg_two_users_and_create_dm['token1']})
+    assert resp1.status_code == OK
+    datet = datetime.datetime.now(timezone.utc)
+    datet += timedelta(seconds=5)
+    time = datet.replace(tzinfo=timezone.utc)
+    time_later = time.timestamp()
+    resp = requests.post(config.url + 'message/sendlaterdm/v1', json={
+                         'token': reg_two_users_and_create_dm['token1'], 'channel_id': reg_two_users_and_create_dm['dm_id'], 'message': 'hi', 'time_sent': time_later})
+    assert resp.status_code == A_ERR
+
+
+def test_sendlaterdm_unauthorised(reg_two_users_and_create_dm):
+    datet = datetime.datetime.now(timezone.utc)
+    datet += timedelta(seconds=5)
+    time = datet.replace(tzinfo=timezone.utc)
+    time_later = time.timestamp()
+    resp = requests.post(config.url + 'message/sendlaterdm/v1', json={
+                         'token': reg_two_users_and_create_dm['token2'], 'dm_id': reg_two_users_and_create_dm['dm_id'], 'message': 'hi', 'time_sent': time_later})
+    assert resp.status_code == A_ERR
+
+
+def test_sendlaterdm_msg_length(reg_two_users_and_create_dm):
+    datet = datetime.datetime.now(timezone.utc)
+    datet += timedelta(seconds=5)
+    time = datet.replace(tzinfo=timezone.utc)
+    time_later = time.timestamp()
+
+    resp1 = requests.post(config.url + 'message/sendlaterdm/v1', json={
+                          'token': reg_two_users_and_create_dm['token1'], 'channel_id': reg_two_users_and_create_dm['dm_id'], 'message': '', 'time_sent': time_later})
+    assert resp1.status_code == I_ERR
+    msg = 'a'
+    for _ in range(1000):
+        msg += 'a'
+    resp2 = requests.post(config.url + 'message/sendlaterdm/v1', json={
+                          'token': reg_two_users_and_create_dm['token1'], 'channel_id': reg_two_users_and_create_dm['dm_id'], 'message': msg, 'time_sent': time_later})
+    assert resp2.status_code == I_ERR
+
+
+def test_sendlaterdm_invalid_channel(reg_two_users_and_create_dm):
+    datet = datetime.datetime.now(timezone.utc)
+    datet += timedelta(seconds=5)
+    time = datet.replace(tzinfo=timezone.utc)
+    time_later = time.timestamp()
+
+    resp = requests.post(config.url + 'message/sendlaterdm/v1', json={
+                         'token': reg_two_users_and_create_dm['token1'], 'channel_id': 123423, 'message': 'hi', 'time_sent': time_later})
+    assert resp.status_code == I_ERR
+
+
+def test_sendlaterdm_timepast(reg_two_users_and_create_dm):
+    datet = datetime.datetime.now(timezone.utc)
+    datet -= timedelta(seconds=5)
+    time1 = datet.replace(tzinfo=timezone.utc)
+    time_before = time1.timestamp()
+
+    resp = requests.post(config.url + 'message/sendlaterdm/v1', json={
+                         'token': reg_two_users_and_create_dm['token1'], 'channel_id': reg_two_users_and_create_dm['dm_id'], 'message': 'hi', 'time_sent': time_before})
+    assert resp.status_code == I_ERR
+
+# test sendlaterdm working
+
+
+def test_sendlaterdm_timefuture(reg_two_users_and_create_dm):
+    datet = datetime.datetime.now(timezone.utc)
+    datet += timedelta(seconds=1)
+    time1 = datet.replace(tzinfo=timezone.utc)
+    time_before = time1.timestamp()
+
+    resp = requests.post(config.url + 'message/sendlaterdm/v1', json={
+                         'token': reg_two_users_and_create_dm['token1'], 'dm_id': reg_two_users_and_create_dm['dm_id'], 'message': 'hi', 'time_sent': time_before})
+    assert resp.status_code == OK
+    message_id = resp.json()['message_id']
+
+    resp = requests.get(config.url + 'dm/messages/v1', params={
+        'token': reg_two_users_and_create_dm['token1'], 'dm_id': reg_two_users_and_create_dm['dm_id'], 'start': 0})
+    assert resp.status_code == OK
+    messages = resp.json()['messages']
+    assert messages == []
+
+    time.sleep(2)
+    resp = requests.get(config.url + 'dm/messages/v1', params={
+        'token': reg_two_users_and_create_dm['token1'], 'dm_id': reg_two_users_and_create_dm['dm_id'], 'start': 0})
+    assert resp.status_code == OK
+    messages = resp.json()['messages']
+    assert messages[0]['message_id'] == message_id
+
+
+def test_sendlaterdm_multiple(reg_two_users_and_create_dm):
+    datet = datetime.datetime.now(timezone.utc)
+    datet += timedelta(seconds=2)
+    time1 = datet.replace(tzinfo=timezone.utc)
+    time_before = time1.timestamp()
+
+    resp = requests.post(config.url + 'message/sendlaterdm/v1', json={
+                         'token': reg_two_users_and_create_dm['token1'], 'dm_id': reg_two_users_and_create_dm['dm_id'], 'message': 'hi', 'time_sent': time_before})
+    assert resp.status_code == OK
+    message_id1 = resp.json()['message_id']
+
+    datet = datetime.datetime.now(timezone.utc)
+    datet += timedelta(seconds=1)
+    time1 = datet.replace(tzinfo=timezone.utc)
+    time_before = time1.timestamp()
+
+    resp = requests.post(config.url + 'message/sendlaterdm/v1', json={
+                         'token': reg_two_users_and_create_dm['token1'], 'dm_id': reg_two_users_and_create_dm['dm_id'], 'message': 'hi', 'time_sent': time_before})
+    assert resp.status_code == OK
+    message_id2 = resp.json()['message_id']
+
+    resp = requests.get(config.url + 'dm/messages/v1', params={
+                        'token': reg_two_users_and_create_dm['token1'], 'dm_id': reg_two_users_and_create_dm['dm_id'], 'start': 0})
+    assert resp.status_code == OK
+    messages = resp.json()['messages']
+    assert messages == []
+
+    time.sleep(1)
+    resp = requests.get(config.url + 'dm/messages/v1', params={
+                        'token': reg_two_users_and_create_dm['token1'], 'dm_id': reg_two_users_and_create_dm['dm_id'], 'start': 0})
+    assert resp.status_code == OK
+    messages = resp.json()['messages']
+    assert messages[0]['message_id'] == message_id2
+
+    time.sleep(1)
+    resp = requests.get(config.url + 'dm/messages/v1', params={
+                        'token': reg_two_users_and_create_dm['token1'], 'dm_id': reg_two_users_and_create_dm['dm_id'], 'start': 0})
+    assert resp.status_code == OK
+    messages = resp.json()['messages']
+    assert messages[0]['message_id'] == message_id1
+    assert messages[1]['message_id'] == message_id2
+
+
+def test_sendlaterdm_edit_delete_react(reg_two_users_and_create_two_channels):
+    datet = datetime.datetime.now(timezone.utc)
+    datet += timedelta(seconds=2)
+    time1 = datet.replace(tzinfo=timezone.utc)
+    time_before = time1.timestamp()
+
+    resp = requests.post(config.url + 'message/sendlaterdm/v1', json={
+                         'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'message': 'hi', 'time_sent': time_before})
+    assert resp.status_code == OK
+    message_id1 = resp.json()['message_id']
+
+    resp3 = requests.put(config.url + 'message/edit/v1', json={
+                         'token': reg_two_users_and_create_two_channels['token2'], 'message_id': message_id1, 'message': 'hi1'})
+    assert resp3.status_code == I_ERR
+
+    resp3 = requests.put(config.url + 'message/edit/v1', json={
+                         'token': reg_two_users_and_create_two_channels['token2'], 'message_id': message_id1, 'message': ''})
+    assert resp3.status_code == I_ERR
+
+    # add request for message/react, should return I_ERR
 
 
 '''
