@@ -362,10 +362,10 @@ def message_sendlater_v1(token, channel_id, message, time_sent):
     time_now = time.timestamp()
 
     # Time check and Threading
-    time_diff = time_now - time_sent
+    time_diff = time_sent - time_now
     if time_now > time_sent:
         raise InputError(description='Time in the past')
-
+    print(time_diff)
     # Threading
     t = threading.Timer(time_diff, msg_send(message_dict, storage, channel))
     t.start()
