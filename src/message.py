@@ -1,9 +1,7 @@
 from src.data_store import data_store
 from src.error import InputError
 from src.error import AccessError
-from src.other import read_token, check_if_valid, generate_new_session_id, owner_perms
-from datetime import timezone
-import datetime
+from src.other import read_token, check_if_valid, generate_new_session_id, owner_perms, get_time
 import hashlib, jwt
 
 SECRET = 'heheHAHA111'
@@ -32,7 +30,7 @@ def message_send_v1(token, channel_id, message):
     '''
 
     if not check_if_valid(token):
-        raise AccessError
+        raise AccessError(description="Invalid Token")
     
     #staging variables
     storage = data_store.get()
@@ -55,12 +53,7 @@ def message_send_v1(token, channel_id, message):
     if not 1 <= len(message) <= 1000:
         raise InputError(description="Invalid message length")
 
-    # Getting the current date
-    # and time
-    datet = datetime.datetime.now(timezone.utc)
-
-    time = datet.replace(tzinfo=timezone.utc)
-    time_sent = time.timestamp()
+    time_sent = get_time()
 
     #using session id generator to create unique message id
     message_id = generate_new_session_id()
@@ -73,6 +66,19 @@ def message_send_v1(token, channel_id, message):
         'time_sent': time_sent,
     }
     ch['messages'].insert(0, message_dict)
+
+    #stats
+    for user in storage['users']:
+        if user['id'] == auth_user_id:
+            user['user_stats']['messages_sent'].append({
+                'num_messages_sent': user['user_stats']['messages_sent'][len(user['user_stats']['messages_sent']) - 1]['num_messages_sent'] + 1,
+                'time_stamp': get_time()
+            })
+    storage['workspace_stats']['messages_exist'].append({
+        'num_messages_exist': storage['workspace_stats']['messages_exist'][len(storage['workspace_stats']['messages_exist']) - 1]['num_messages_exist'] + 1,
+        'time_stamp': get_time()
+    })
+            
     data_store.set(storage)
     return {
         'message_id': message_id
@@ -103,7 +109,7 @@ def message_edit_v1(token, message_id, message):
     '''
 
     if not check_if_valid(token):
-        raise AccessError
+        raise AccessError(description="Invalid Token")
     
     #staging variables
     storage = data_store.get()
@@ -129,13 +135,15 @@ def message_edit_v1(token, message_id, message):
         if msg != None:
             break
 
-    for user_dm in user['dms']:
-        for dm_ in dms:
-            if user_dm['dm_id'] == dm_['dm_id']:
-                dm = dm_
-        msg = next((msg for msg in dm['messages'] if int(message_id) == msg['message_id']), None)
-        if msg != None:
-            break
+    if not msg:
+        ch = None
+        for user_dm in user['dms']:
+            for dm_ in dms:
+                if user_dm['dm_id'] == dm_['dm_id']:
+                    dm = dm_
+            msg = next((msg for msg in dm['messages'] if int(message_id) == msg['message_id']), None)
+            if msg != None:
+                break
 
     if not msg:
         raise InputError(description='Invalid message id')
@@ -155,6 +163,11 @@ def message_edit_v1(token, message_id, message):
             ch['messages'].remove(msg)
         else:
             dm['messages'].remove(msg)
+        #stats
+        storage['workspace_stats']['messages_exist'].append({
+            'num_messages_exist': storage['workspace_stats']['messages_exist'][len(storage['workspace_stats']['messages_exist']) - 1]['num_messages_exist'] - 1,
+            'time_stamp': get_time()
+        })
     else:
         msg['message'] = message
     data_store.set(storage)
@@ -185,7 +198,7 @@ def message_remove_v1(token, message_id):
     '''
 
     if not check_if_valid(token):
-        raise AccessError
+        raise AccessError(description="Invalid Token")
     
     #staging variables
     storage = data_store.get()
@@ -211,13 +224,15 @@ def message_remove_v1(token, message_id):
         if msg != None:
             break
     
-    for user_dm in user['dms']:
-        for dm_ in dms:
-            if user_dm['dm_id'] == dm_['dm_id']:
-                dm = dm_
-        msg = next((msg for msg in dm['messages'] if int(message_id) == msg['message_id']), None)
-        if msg != None:
-            break
+    if not msg:
+        ch = None
+        for user_dm in user['dms']:
+            for dm_ in dms:
+                if user_dm['dm_id'] == dm_['dm_id']:
+                    dm = dm_
+            msg = next((msg for msg in dm['messages'] if int(message_id) == msg['message_id']), None)
+            if msg != None:
+                break
     
     if not msg:
         raise InputError(description='Invalid message id')
@@ -233,6 +248,11 @@ def message_remove_v1(token, message_id):
         ch['messages'].remove(msg)
     else:
         dm['messages'].remove(msg)
+    #stats
+    storage['workspace_stats']['messages_exist'].append({
+        'num_messages_exist': storage['workspace_stats']['messages_exist'][len(storage['workspace_stats']['messages_exist']) - 1]['num_messages_exist'] - 1,
+        'time_stamp': get_time()
+    })
     data_store.set(storage)
     return {}
 
@@ -263,7 +283,7 @@ def message_senddm_v1(token, dm_id, message):
     '''
 
     if not check_if_valid(token):
-        raise AccessError
+        raise AccessError(description="Invalid Token")
     
     #staging variables
     storage = data_store.get()
@@ -286,12 +306,6 @@ def message_senddm_v1(token, dm_id, message):
     if not 1 <= len(message) <= 1000:
         raise InputError(description="Invalid message length")
 
-    # Getting the current date
-    # and time
-    datet = datetime.datetime.now(timezone.utc)
-
-    time = datet.replace(tzinfo=timezone.utc)
-    time_sent = time.timestamp()
 
     #using session id generator to create unique message id
     message_id = generate_new_session_id()
@@ -301,9 +315,21 @@ def message_senddm_v1(token, dm_id, message):
         'message_id': message_id,
         'u_id': auth_user_id,
         'message': message,
-        'time_sent': time_sent,
+        'time_sent': get_time(),
     }
     dm['messages'].insert(0, message_dict)
+
+    #stats
+    for user in storage['users']:
+        if user['id'] == auth_user_id:
+            user['user_stats']['messages_sent'].append({
+                'num_messages_sent': user['user_stats']['messages_sent'][len(user['user_stats']['messages_sent']) - 1]['num_messages_sent'] + 1,
+                'time_stamp': get_time()
+            })
+    storage['workspace_stats']['messages_exist'].append({
+        'num_messages_exist': storage['workspace_stats']['messages_exist'][len(storage['workspace_stats']['messages_exist']) - 1]['num_messages_exist'] + 1,
+        'time_stamp': get_time()
+    })
     data_store.set(storage)
     return {
         'message_id': message_id

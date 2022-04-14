@@ -1,4 +1,6 @@
 from src.data_store import data_store
+from datetime import timezone
+import datetime
 import re, hashlib, jwt
 SECRET = 'heheHAHA111'
 
@@ -11,6 +13,21 @@ def clear_v1():
     store['no_users'] = True
     store['session_id'] = 0
     store['removed_users'] = []
+    store['workspace_stats'] = {
+        'channels_exist': [{
+            'num_channels_exist': 0,
+            'time_stamp': get_time()
+        }],
+        'dms_exist': [{
+            'num_dms_exist': 0,
+            'time_stamp': get_time()
+        }],
+        'messages_exist': [{
+            'num_messages_exist': 0,
+            'time_stamp': get_time()
+        }],
+        'utilization_rate': 0
+    }
     data_store.set(store)
     return {
     }
@@ -70,3 +87,12 @@ def check_if_valid(token):
 def read_token(token):
     return jwt.decode(token, SECRET, algorithms=["HS256"])['id']
 
+#gets current timestamp
+def get_time():
+    # Getting the current date
+    # and time
+    datet = datetime.datetime.now(timezone.utc)
+
+    time = datet.replace(tzinfo=timezone.utc)
+    time_sent = time.timestamp()
+    return round(time_sent)

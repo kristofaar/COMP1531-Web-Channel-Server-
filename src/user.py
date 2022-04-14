@@ -219,3 +219,93 @@ def user_profile_sethandle_v1(token, handle_str):
             user["handle"] = handle_str
     data_store.set(store)
     return {}
+
+#functions to change: messageshare, messagesendlater, messagesendlaterdm, standup
+def user_stats_v1(token):
+    '''
+    Fetches the required statistics about this user's use of UNSW Seams.
+
+    Arguments:
+        token (str)       - The user's session token.
+
+    Exceptions:
+        AccessError - Occurs when token does not refer to a valid session.
+
+    Return Value:
+        user_stats        - Dictionary of shape {
+                            channels_joined: [{num_channels_joined, time_stamp}],
+                            dms_joined: [{num_dms_joined, time_stamp}], 
+                            messages_sent: [{num_messages_sent, time_stamp}], 
+                            involvement_rate 
+                            }.
+    '''
+    store = data_store.get()
+    users = store["users"]
+    channels = store['channels']
+    dms = store['dms']
+
+    # Check valid token
+    if not check_if_valid(token):
+        raise AccessError(description="Invalid token")
+
+    # Get user ID from token
+    u_id = read_token(token)
+
+    user = None
+    for usa in users:
+        if usa['id'] == u_id:
+            user = usa
+    
+    ch_joined = user['user_stats']['channels_joined'][len(user['user_stats']['channels_joined']) - 1]['num_channels_joined']
+    dm_joined = user['user_stats']['dms_joined'][len(user['user_stats']['dms_joined']) - 1]['num_dms_joined']
+    msg_sent = user['user_stats']['messages_sent'][len(user['user_stats']['messages_sent']) - 1]['num_messages_sent']
+    tot_msg_sent = 0
+    for channel in channels:
+        tot_msg_sent += len(channel['messages'])
+    for dm in dms:
+        tot_msg_sent += len(dm['messages'])
+    if len(channels) + len(dms) + tot_msg_sent == 0:
+        user['user_stats']['involvement_rate'] = 0
+    else:
+        user['user_stats']['involvement_rate'] = (ch_joined + dm_joined + msg_sent) / (len(channels) + len(dms) + tot_msg_sent)
+    
+    if user['user_stats']['involvement_rate'] > 1:
+        user['user_stats']['involvement_rate'] = 1
+    data_store.set(store)
+    return user['user_stats']
+
+def users_stats_v1(token):
+    '''
+    Fetches the required statistics about the use of UNSW Seams.
+
+    Arguments:
+        token (str)       - The user's session token.
+
+    Exceptions:
+        AccessError - Occurs when token does not refer to a valid session.
+
+    Return Value:
+        workspace_stats     - Dictionary of shape Dictionary of shape {
+                              channels_exist: [{num_channels_exist, time_stamp}], 
+                              dms_exist: [{num_dms_exist, time_stamp}], 
+                              messages_exist: [{num_messages_exist, time_stamp}], 
+                              utilization_rate 
+                              }
+    '''
+    store = data_store.get()
+    users = store["users"]
+    workspace_stats = store['workspace_stats']
+
+    # Check valid token
+    if not check_if_valid(token):
+        raise AccessError(description="Invalid token")
+    
+    num_users_who_have_joined_at_least_one_channel_or_dm = 0
+    for user in users:
+        if user['channels'] != [] or user['dms'] != []:
+            num_users_who_have_joined_at_least_one_channel_or_dm += 1
+    
+    workspace_stats['utilization_rate'] = num_users_who_have_joined_at_least_one_channel_or_dm / len(users)
+
+    data_store.set(store)
+    return workspace_stats
