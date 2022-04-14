@@ -2,7 +2,7 @@ from multiprocessing import dummy
 from src.data_store import data_store
 from src.error import InputError
 from src.error import AccessError
-from src.other import read_token, check_if_valid
+from src.other import read_token, check_if_valid, get_time
 
 def channels_list_v1(token):
     '''
@@ -104,9 +104,11 @@ def channels_create_v1(token, name, is_public):
     #updating the data store
     channels.append({'channel_id_and_name' :{'channel_id' : ch_id, 'name' : name}, 'is_public' : is_public, 
     'owner' : [user_id], 'members' : [user_id], 'messages' : []})
+    storage['workspace_stats']['channels_exist'].append({'num_channels_exist': len(channels), 'time_stamp': get_time()})
 
     #updating user
     curr_user['channels'].append({'channel_id' : ch_id, 'name' : name})
+    curr_user['user_stats']['channels_joined'].append({'num_channels_joined': len(curr_user['channels']), 'time_stamp': get_time()})
     data_store.set(storage)
     return{
         'channel_id' : ch_id

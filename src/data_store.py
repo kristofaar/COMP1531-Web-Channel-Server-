@@ -24,6 +24,7 @@ Example usage:
     data_store.set(store)
 '''
 
+
 # YOU SHOULD MODIFY THIS OBJECT BELOW
 initial_object = {
     # users will contain a list of dictionaries containing in order:
@@ -33,7 +34,8 @@ initial_object = {
     'dms': [],
     'no_users': True,
     'session_id': 0,
-    'removed_users': []
+    'removed_users': [],
+    'workspace_stats': {}
 }
 # YOU SHOULD MODIFY THIS OBJECT ABOVE
 

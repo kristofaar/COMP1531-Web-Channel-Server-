@@ -273,7 +273,6 @@ def reg_two_users_and_create_dm():
     'dm_id': resp3_data['dm_id']}
 @pytest.fixture
 def reg_another_two_users_and_dm():
-    
     reg1 = requests.post(config.url + 'auth/register/v2', json={'email': '3@test.test', 'password': '3testtest', 'name_first': 'third_name', 'name_last': 'third_last_name'})
     assert reg1.status_code == OK
     reg2 = requests.post(config.url + 'auth/register/v2', json={'email': '4@lol.lol', 'password': '4abcabc', 'name_first': 'Fourth_boi', 'name_last': 'Fourth_last'})

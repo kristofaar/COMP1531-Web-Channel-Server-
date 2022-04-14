@@ -13,7 +13,7 @@ from src.channel import channel_details_v1, channel_invite_v1, channel_join_v1, 
 from src.dm import dm_create_v1, dm_list_v1, dm_remove_v1, dm_details_v1, dm_leave_v1, dm_messages_v1
 from src.other import clear_v1
 from src.message import message_send_v1, message_edit_v1, message_remove_v1, message_senddm_v1
-from src.user import users_all_v1, user_profile_v1, user_profile_setname_v1, user_profile_setemail_v1, user_profile_sethandle_v1
+from src.user import users_all_v1, user_profile_v1, user_profile_setname_v1, user_profile_setemail_v1, user_profile_sethandle_v1, user_stats_v1, users_stats_v1
 from src.admin import admin_user_remove_v1, admin_userpermission_change_v1
 import pickle
 
@@ -54,6 +54,7 @@ try:
     storage['dms'] = datas['dms']
     storage['session_id'] = datas['session_id']
     storage['removed_users'] = datas['removed_users']
+    storage['workspace_stats'] = datas['workspace_stats']
     data_store.set(storage)
 except Exception:
     pass
@@ -62,7 +63,8 @@ def save():
     '''For persistence, saves current data_store into datastore.p'''
     storage = data_store.get()
     data = {'users': storage['users'], 'channels': storage['channels'], 'no_users': storage['no_users'], 
-            'dms': storage['dms'], 'session_id': storage['session_id'], 'removed_users': storage['removed_users']}
+            'dms': storage['dms'], 'session_id': storage['session_id'], 'removed_users': storage['removed_users'],
+            'workspace_stats': storage['workspace_stats']}
     with open('datastore.p', 'wb+') as FILE:
         pickle.dump(data, FILE)
 
@@ -323,6 +325,19 @@ def user_sethandle():
     user_profile_sethandle_v1(data['token'], data['handle_str'])
     save()
     return dumps({})
+
+@APP.route("/user/stats/v1", methods=["GET"])
+def user_stats():
+    return dumps({
+        'user_stats': user_stats_v1(request.args.get("token"))
+    })
+
+@APP.route("/users/stats/v1", methods=["GET"])
+def users_stats():
+    return dumps({
+        'workspace_stats': users_stats_v1(request.args.get("token"))
+    })
+
 
 
 #ADMIN WRAPPER FUNCTIONS
