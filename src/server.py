@@ -345,14 +345,13 @@ def admin_perm_change():
 @APP.route('/standup/start/v1', methods=['POST'])
 def start_standup():
     data = request.get_json()
-    time_finish = standup_start(data['token'], data['channel_id'], data['length'])
+    time_finish = standup_start(data['token'], data['channel_id'], data['length'])['time_finish']
     save()
     return dumps({'time_finish': time_finish})
 
 @APP.route('/standup/active/v1', methods=['GET'])
 def active_standup():
-    data = request.get_json()
-    standup_details = standup_active(data['token'], data['channel_id'])
+    standup_details = standup_active(request.args.get('token'), request.args.get('channel_id'))
     return dumps({'is_active': standup_details['is_active'], 'time_finish': standup_details['time_finish']})
 
 @APP.route('/standup/send/v1', methods=['POST'])
