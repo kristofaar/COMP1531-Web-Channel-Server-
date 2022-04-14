@@ -31,7 +31,6 @@ def standup_start(token, channel_id, length):
     
     if not check_if_valid(token):
         raise AccessError(description="Invalid token")
-    auth_user_id = read_token(token)
 
     channels = storage['channels']
 
