@@ -47,28 +47,28 @@ def standup_start(token, channel_id, length):
     if standup_active(token, channel_id)['is_active']:
         raise InputError(description="An active standup is currently running in this channel")
 
-    if auth_user_id not in ch["members"]:
-        raise AccessError(description="Authorised user is not a member of the channel")
-
     #fetch current time
     dt = datetime.datetime.now(timezone.utc)
     utc_time = dt.replace(tzinfo=timezone.utc)
     utc_timestamp = int(utc_time.timestamp())
-
+    
     time_finish = utc_timestamp + int(length)
     ch['standup_time'] = time_finish
     data_store.set(storage)
 
     def thread_standup(channel_id, length):
         time.sleep(length)
-        message_send_v1(token, channel_id, ch['standup_message'])
+        #print(ch['standup_message'])
+        if ch['standup_message']:
+            message_send_v1(token, channel_id, ch['standup_message'])
+        #print(ch["messages"])
         ch["standup_time"] = 0
         ch["standup_message"] = ""
         data_store.set(storage)
 
     x = threading.Thread(target=thread_standup, args=(channel_id, length,))
     x.start()
-
+    
     return {"time_finish": time_finish}
 
 def standup_active(token, channel_id):
@@ -165,10 +165,7 @@ def standup_send(token, channel_id, message):
 
     if auth_user_id not in ch["members"]:
         raise AccessError(description="Authorised user is not a member of the channel")
-        
-    if ch["standup_time"] == 0:
-        raise InputError("An active standup is not currently running in the channel")
-
-    ch["standup_messages"] += (a_user["handle"]+message+"\n")
+    
+    ch["standup_message"] += (a_user["handle"]+": "+message+"\n")
     data_store.set(storage)
     return {}
