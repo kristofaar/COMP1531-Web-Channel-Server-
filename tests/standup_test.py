@@ -36,7 +36,7 @@ def reg_two_users_and_create_two_channels():
 def test_standup_active(reg_two_users_and_create_two_channels):
     dt = datetime.datetime.now(timezone.utc)
     utc_time = dt.replace(tzinfo=timezone.utc)
-    utc_timestamp = utc_time.timestamp()
+    utc_timestamp = int(utc_time.timestamp())
     utc_timestamp += 3
     resp = requests.post(config.url + 'standup/start/v1', json={'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'length': 3})
     assert resp.status_code == OK
@@ -44,5 +44,5 @@ def test_standup_active(reg_two_users_and_create_two_channels):
     assert resp2.status_code == OK
     resp2_data = resp2.json()
     assert resp2_data['is_active'] == True
-    assert round(resp2_data['time_finish']) == round(utc_timestamp)
+    assert resp2_data['time_finish'] == utc_timestamp
 

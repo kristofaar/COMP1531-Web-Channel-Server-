@@ -53,7 +53,7 @@ def standup_start(token, channel_id, length):
     #fetch current time
     dt = datetime.datetime.now(timezone.utc)
     utc_time = dt.replace(tzinfo=timezone.utc)
-    utc_timestamp = utc_time.timestamp()
+    utc_timestamp = int(utc_time.timestamp())
 
     time_finish = utc_timestamp + int(length)
     ch['standup_time'] = time_finish
