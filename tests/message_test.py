@@ -395,21 +395,17 @@ def test_sendlater_timepast(reg_two_users_and_create_two_channels):
     
     resp = requests.post(config.url + 'message/sendlater/v1', json={'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'message': 'hi', 'time_sent': time_before})
     assert resp.status_code == I_ERR
-"""
+
 # test sendlater working
 
 
 def test_sendlater_timefuture(reg_two_users_and_create_two_channels):
-    datet = datetime.datetime.now(timezone.utc)
-    datet += timedelta(seconds=3)
-    time1 = datet.replace(tzinfo=timezone.utc)
-    time_future = time1.timestamp()
+    time_future = int(time.time() + 2) 
 
     resp = requests.post(config.url + 'message/sendlater/v1', json={
                          'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'message': 'hi', 'time_sent': time_future})
     assert resp.status_code == OK
     message_id = resp.json()['message_id']
-    time.sleep(1)
 
     resp = requests.get(config.url + 'channel/messages/v2', params={
                         'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'start': 0})
@@ -417,30 +413,24 @@ def test_sendlater_timefuture(reg_two_users_and_create_two_channels):
     messages = resp.json()['messages']
     assert messages == []
 
-    time.sleep(3)
+    time.sleep(2)
     resp = requests.get(config.url + 'channel/messages/v2', params={
                         'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'start': 0})
     assert resp.status_code == OK
     messages = resp.json()['messages']
     assert messages[0]['message_id'] == message_id
+"""
 
 
 def test_sendlater_multiple(reg_two_users_and_create_two_channels):
-    datet = datetime.datetime.now(timezone.utc)
-    datet += timedelta(seconds=2)
-    time1 = datet.replace(tzinfo=timezone.utc)
-    time_before = time1.timestamp()
+    time_before = int(time.time() + 2)
 
     resp = requests.post(config.url + 'message/sendlater/v1', json={
                          'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'message': 'hi', 'time_sent': time_before})
     assert resp.status_code == OK
     message_id1 = resp.json()['message_id']
 
-    datet = datetime.datetime.now(timezone.utc)
-    datet += timedelta(seconds=1)
-    time1 = datet.replace(tzinfo=timezone.utc)
-    time_before = time1.timestamp()
-
+    time_before = int(time.time() + 1)
     resp = requests.post(config.url + 'message/sendlater/v1', json={
                          'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'message': 'hi', 'time_sent': time_before})
     assert resp.status_code == OK
@@ -468,11 +458,8 @@ def test_sendlater_multiple(reg_two_users_and_create_two_channels):
     assert messages[1]['message_id'] == message_id2
 
 
-def test_sendlater_edit_delete_react(reg_two_users_and_create_two_channels):
-    datet = datetime.datetime.now(timezone.utc)
-    datet += timedelta(seconds=2)
-    time1 = datet.replace(tzinfo=timezone.utc)
-    time_before = time1.timestamp()
+def test_sendlater_edit(reg_two_users_and_create_two_channels):
+    time_before = int(time.time() + 1)
 
     resp = requests.post(config.url + 'message/sendlater/v1', json={
                          'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'message': 'hi', 'time_sent': time_before})
@@ -480,18 +467,70 @@ def test_sendlater_edit_delete_react(reg_two_users_and_create_two_channels):
     message_id1 = resp.json()['message_id']
 
     resp3 = requests.put(config.url + 'message/edit/v1', json={
-                         'token': reg_two_users_and_create_two_channels['token2'], 'message_id': message_id1, 'message': 'hi1'})
+                         'token': reg_two_users_and_create_two_channels['token1'], 'message_id': message_id1, 'message': 'hi1'})
     assert resp3.status_code == I_ERR
 
+    time.sleep(2)
     resp3 = requests.put(config.url + 'message/edit/v1', json={
-                         'token': reg_two_users_and_create_two_channels['token2'], 'message_id': message_id1, 'message': ''})
+                         'token': reg_two_users_and_create_two_channels['token1'], 'message_id': message_id1, 'message': 'hii'})
+    assert resp3.status_code == OK
+    resp = requests.get(config.url + 'channel/messages/v2', params={
+                        'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'start': 0})
+    assert resp.status_code == OK
+    messages = resp.json()['messages']
+    assert messages[0]['message'] == 'hii'
+
+
+def test_sendlater_delete(reg_two_users_and_create_two_channels):
+    time_before = int(time.time() + 1)
+
+    resp = requests.post(config.url + 'message/sendlater/v1', json={
+                         'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'message': 'hi', 'time_sent': time_before})
+    assert resp.status_code == OK
+    message_id1 = resp.json()['message_id']
+    resp3 = requests.put(config.url + 'message/edit/v1', json={
+                         'token': reg_two_users_and_create_two_channels['token1'], 'message_id': message_id1, 'message': ''})
     assert resp3.status_code == I_ERR
+
+    time.sleep(2)
+    resp3 = requests.put(config.url + 'message/edit/v1', json={
+                         'token': reg_two_users_and_create_two_channels['token1'], 'message_id': message_id1, 'message': ''})
+    assert resp3.status_code == OK
+    resp = requests.get(config.url + 'channel/messages/v2', params={
+                        'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'start': 0})
+    assert resp.status_code == OK
+    messages = resp.json()['messages']
+    assert messages == []
 
     # add request for message/react, should return I_ERR
+    pass
+
+
+def test_sendlater_react(reg_two_users_and_create_two_channels):
+    time_before = int(time.time() + 1)
+
+    resp = requests.post(config.url + 'message/sendlater/v1', json={
+                         'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'message': 'hi', 'time_sent': time_before})
+    assert resp.status_code == OK
+    message_id1 = resp.json()['message_id']
+    resp3 = requests.put(config.url + 'message/edit/v1', json={
+                         'token': reg_two_users_and_create_two_channels['token1'], 'message_id': message_id1, 'message': ''})
+    assert resp3.status_code == I_ERR
+
+    time.sleep(2)
+    resp3 = requests.put(config.url + 'message/edit/v1', json={
+                         'token': reg_two_users_and_create_two_channels['token1'], 'message_id': message_id1, 'message': ''})
+    assert resp3.status_code == OK
+    resp = requests.get(config.url + 'channel/messages/v2', params={
+                        'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'start': 0})
+    assert resp.status_code == OK
+    messages = resp.json()['messages']
+    assert messages == []
+
 
 # sendlaterdm errors
 
-
+"""
 def test_sendlaterdm_invalid_token(reg_two_users_and_create_dm):
     datet = datetime.datetime.now(timezone.utc)
     datet += timedelta(seconds=5)
@@ -654,7 +693,7 @@ def test_sendlaterdm_edit_delete_react(reg_two_users_and_create_two_channels):
     assert resp3.status_code == I_ERR
 
     # add request for message/react, should return I_ERR
-
+"""
 
 '''
 #send working
