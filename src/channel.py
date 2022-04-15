@@ -1,7 +1,7 @@
 from src.data_store import data_store
 from src.error import InputError
 from src.error import AccessError
-from src.other import read_token, check_if_valid
+from src.other import read_token, check_if_valid, get_time
 import hashlib
 import jwt
 
@@ -59,6 +59,11 @@ Exceptions:
     # update user
     add_user['channels'].append({'channel_id': ch['channel_id_and_name']
                                 ['channel_id'], 'name': ch['channel_id_and_name']['name']})
+    #stats
+    add_user['user_stats']['channels_joined'].append({
+        'num_channels_joined': len(add_user['channels']),
+        'time_stamp': get_time()
+    })
     data_store.set(storage)
     return {
     }
@@ -247,6 +252,11 @@ Return Value:
     # update user
     user['channels'].append({'channel_id': channel['channel_id_and_name']
                             ['channel_id'], 'name': channel['channel_id_and_name']['name']})
+    #stats
+    user['user_stats']['channels_joined'].append({
+        'num_channels_joined': len(user['channels']),
+        'time_stamp': get_time()
+    })
     data_store.set(storage)
 
     return {
@@ -312,7 +322,11 @@ def channel_leave_v1(token, channel_id):
     for u_channel in user['channels']:
         if u_channel['channel_id'] == channel_id:
             user['channels'].remove(u_channel)
-
+    #stats
+    user['user_stats']['channels_joined'].append({
+        'num_channels_joined': len(user['channels']),
+        'time_stamp': get_time()
+    })
     data_store.set(storage)
 
     return {
