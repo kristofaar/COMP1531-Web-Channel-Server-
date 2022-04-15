@@ -334,6 +334,7 @@ def test_message_senddm_bad_length(reg_two_users_and_create_dm):
     assert resp2.status_code == I_ERR
 """
 
+
 # sendlater errors
 
 
@@ -710,8 +711,151 @@ def test_sendlaterdm_react(reg_two_users_and_create_dm):
     assert resp.status_code == OK
     messages = resp.json()['messages']
     # assert messages[0]['reacts']['react_id'] ==
-    """
-"""
+
+
+# message share errors
+
+
+def test_messageshare_invalid_token(reg_two_users_and_create_dm):
+    resp1 = requests.post(config.url + 'message/senddm/v1', json={
+                          'token': reg_two_users_and_create_dm['token1'], 'dm_id': reg_two_users_and_create_dm['dm_id'], 'message': 'hi'})
+    assert resp1.status_code == OK
+    og_message_id = resp1.json()['message_id']
+    resp = requests.post(config.url + 'message/share/v1', json={'token': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c',
+                                                                'og_message_id': og_message_id, 'message': 'buddy', 'channel_id': -1, 'dm_id': reg_two_users_and_create_dm['dm_id']})
+    assert resp.status_code == A_ERR
+
+
+def test_messageshare_expired_token_dm(reg_two_users_and_create_dm):
+    resp1 = requests.post(config.url + 'message/senddm/v1', json={
+                          'token': reg_two_users_and_create_dm['token1'], 'dm_id': reg_two_users_and_create_dm['dm_id'], 'message': 'hi'})
+    assert resp1.status_code == OK
+    og_message_id = resp1.json()['message_id']
+    resp1 = requests.post(config.url + 'auth/logout/v1',
+                          json={'token': reg_two_users_and_create_dm['token1']})
+    assert resp1.status_code == OK
+    resp = requests.post(config.url + 'message/share/v1', json={'token': reg_two_users_and_create_dm['token1'],
+                                                                'og_message_id': og_message_id, 'message': 'buddy', 'channel_id': -1, 'dm_id': reg_two_users_and_create_dm['dm_id']})
+    assert resp.status_code == A_ERR
+
+
+def test_messageshare_unauthorised_dm(reg_two_users_and_create_dm, reg_another_two_users_and_dm):
+    resp1 = requests.post(config.url + 'message/senddm/v1', json={
+                          'token': reg_two_users_and_create_dm['token1'], 'dm_id': reg_two_users_and_create_dm['dm_id'], 'message': 'hi'})
+    assert resp1.status_code == OK
+    og_message_id = resp1.json()['message_id']
+    resp = requests.post(config.url + 'message/share/v1', json={'token': reg_another_two_users_and_dm['token1'],
+                                                                'og_message_id': og_message_id, 'message': 'buddy', 'channel_id': -1, 'dm_id': reg_two_users_and_create_dm['dm_id']})
+    assert resp.status_code == A_ERR
+
+
+def test_messageshare_unauthorised_channel(reg_two_users_and_create_two_channels):
+    resp1 = requests.post(config.url + 'message/send/v1', json={
+                          'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'message': 'hi'})
+    assert resp1.status_code == OK
+    og_message_id = resp1.json()['message_id']
+    resp = requests.post(config.url + 'message/share/v1', json={'token': reg_two_users_and_create_two_channels['token2'],
+                                                                'og_message_id': og_message_id, 'message': 'buddy', 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'dm_id': -1})
+    assert resp.status_code == A_ERR
+
+
+def test_messageshare_msg_length_dm(reg_two_users_and_create_dm):
+    resp1 = requests.post(config.url + 'message/senddm/v1', json={
+                          'token': reg_two_users_and_create_dm['token1'], 'dm_id': reg_two_users_and_create_dm['dm_id'], 'message': 'hi'})
+    assert resp1.status_code == OK
+    og_message_id = resp1.json()['message_id']
+    msg = 'a'
+    for _ in range(1000):
+        msg += 'a'
+    resp = requests.post(config.url + 'message/share/v1', json={'token': reg_two_users_and_create_dm['token1'],
+                                                                'og_message_id': og_message_id, 'message': msg, 'channel_id': -1, 'dm_id': reg_two_users_and_create_dm['dm_id']})
+    assert resp.status_code == I_ERR
+
+
+def test_messageshare_invalid_dm(reg_two_users_and_create_dm):
+    resp1 = requests.post(config.url + 'message/senddm/v1', json={
+                          'token': reg_two_users_and_create_dm['token1'], 'dm_id': reg_two_users_and_create_dm['dm_id'], 'message': 'hi'})
+    assert resp1.status_code == OK
+    og_message_id = resp1.json()['message_id']
+    resp = requests.post(config.url + 'message/share/v1', json={'token': reg_two_users_and_create_dm['token1'],
+                                                                'og_message_id': og_message_id, 'message': 'buddy', 'channel_id': -1, 'dm_id': 123423})
+    assert resp.status_code == I_ERR
+
+
+def test_messageshare_both_negative_one(reg_two_users_and_create_dm):
+    resp1 = requests.post(config.url + 'message/senddm/v1', json={
+                          'token': reg_two_users_and_create_dm['token1'], 'dm_id': reg_two_users_and_create_dm['dm_id'], 'message': 'hi'})
+    assert resp1.status_code == OK
+    og_message_id = resp1.json()['message_id']
+    resp = requests.post(config.url + 'message/share/v1', json={'token': reg_two_users_and_create_dm['token1'],
+                                                                'og_message_id': og_message_id, 'message': 'buddy', 'channel_id': -1, 'dm_id': -1})
+    assert resp.status_code == I_ERR
+
+
+def test_messageshare_neither_negative_one(reg_two_users_and_create_dm):
+    resp1 = requests.post(config.url + 'message/senddm/v1', json={
+                          'token': reg_two_users_and_create_dm['token1'], 'dm_id': reg_two_users_and_create_dm['dm_id'], 'message': 'hi'})
+    assert resp1.status_code == OK
+    og_message_id = resp1.json()['message_id']
+    resp = requests.post(config.url + 'message/share/v1', json={'token': reg_two_users_and_create_dm['token1'],
+                                                                'og_message_id': og_message_id, 'message': 'buddy', 'channel_id': -3, 'dm_id': -4})
+    assert resp.status_code == I_ERR
+
+
+def test_messageshare_neither_negative_one(reg_two_users_and_create_dm):
+    resp1 = requests.post(config.url + 'message/senddm/v1', json={
+                          'token': reg_two_users_and_create_dm['token1'], 'dm_id': reg_two_users_and_create_dm['dm_id'], 'message': 'hi'})
+    assert resp1.status_code == OK
+    og_message_id = resp1.json()['message_id']
+    resp = requests.post(config.url + 'message/share/v1', json={'token': reg_two_users_and_create_dm['token1'],
+                                                                'og_message_id': og_message_id, 'message': 'buddy', 'channel_id': -3, 'dm_id': -4})
+    assert resp.status_code == I_ERR
+
+
+def test_messageshare_invalid_msg_id(reg_two_users_and_create_dm):
+    resp1 = requests.post(config.url + 'message/senddm/v1', json={
+                          'token': reg_two_users_and_create_dm['token1'], 'dm_id': reg_two_users_and_create_dm['dm_id'], 'message': 'hi'})
+    assert resp1.status_code == OK
+    og_message_id = resp1.json()['message_id']
+    resp = requests.post(config.url + 'message/share/v1', json={'token': reg_two_users_and_create_dm['token1'],
+                                                                'og_message_id': 4293095, 'message': 'buddy', 'channel_id': -1, 'dm_id': reg_two_users_and_create_dm['dm_id']})
+    assert resp.status_code == I_ERR
+
+# message share working
+
+
+def test_messageshare_working_channel(reg_two_users_and_create_two_channels):
+    resp1 = requests.post(config.url + 'message/send/v1', json={
+                          'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'message': 'hi'})
+    assert resp1.status_code == OK
+    og_message_id = resp1.json()['message_id']
+    resp = requests.post(config.url + 'message/share/v1', json={'token': reg_two_users_and_create_two_channels['token1'],
+                                                                'og_message_id': og_message_id, 'message': 'buddy', 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'dm_id': -1})
+    assert resp.status_code == OK
+    shared_message_id = resp.json()['shared_message_id']
+    resp3 = requests.get(config.url + 'channel/messages/v2', params={
+                         'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'start': 0})
+    assert resp3.status_code == OK
+    messages = resp3.json()['messages']
+    assert messages[0]['message'] == 'hibuddy'
+    assert messages[0]['message_id'] == shared_message_id
+
+
+def test_messageshare_working_dm(reg_two_users_and_create_dm):
+    resp1 = requests.post(config.url + 'message/senddm/v1', json={
+                          'token': reg_two_users_and_create_dm['token1'], 'dm_id': reg_two_users_and_create_dm['dm_id'], 'message': 'hi'})
+    assert resp1.status_code == OK
+    og_message_id = resp1.json()['message_id']
+    resp = requests.post(config.url + 'message/share/v1', json={'token': reg_two_users_and_create_dm['token1'],
+                                                                'og_message_id': og_message_id, 'message': 'buddy', 'channel_id': -1, 'dm_id': reg_two_users_and_create_dm['dm_id']})
+    assert resp.status_code == OK
+    shared_message_id = resp.json()['shared_message_id']
+    resp3 = requests.get(config.url + 'dm/messages/v1', params={
+                         'token': reg_two_users_and_create_dm['token1'], 'dm_id': reg_two_users_and_create_dm['dm_id'], 'start': 0})
+    assert resp3.status_code == OK
+    messages = resp3.json()['messages']
+    assert messages[0]['message'] == 'hibuddy'
+    assert messages[0]['message_id'] == shared_message_id
 
 
 """

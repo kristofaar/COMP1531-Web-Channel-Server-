@@ -547,24 +547,25 @@ def message_share_v1(token, og_message_id, message, channel_id, dm_id):
 
 
     Arguments:
-        token       (String)        - passes in the unique session token of whoever ran the funtion
-        channel_id  (int)           - passes in the unique id of the channel we are enquiring about
-        message     (String)        - message being sent
-        time_sent   (Integer)       - time message was sent     
-
+        token           (String)        - passes in the unique session token of whoever ran the funtion
+        og_message_id   (int)           - id original message
+        message         (String)        - message being sent
+        channel_id      (Integer)       - time message was sent     
+        dm_id           (Integer)       - id dm 
     Exceptions:
         InputError when any of:
 
-            channel_id does not refer to a valid channel
-            length of message is less than 1 or over 1000 characters
-            time_sent is a time in the past
+            both channel_id and dm_id are invalid
+            neither channel_id nor dm_id are -1
+            og_message_id does not refer to a valid message within a channel/DM that the authorised user has joined
+            length of message is more than 1000 characters
 
         AccessError when:
 
-            channel_id is valid and the authorised user is not a member of the channel they are trying to post to
+            the pair of channel_id and dm_id are valid (i.e. one is -1, the other is valid) and the authorised user has not joined the channel or DM they are trying to share the message to
 
     Return Value:
-        Returns unique message_id.
+        Returns shared_message_id
     '''
     if not check_if_valid(token):
         raise AccessError
@@ -574,14 +575,66 @@ def message_share_v1(token, og_message_id, message, channel_id, dm_id):
     auth_user_id = read_token(token)
 
     channels = storage['channels']
+    dms = storage['dms']
 
-    # search through channels by id until id is matched
-    dm = next((channel for channel in channels if int(
-        dm_id) == channel['channel_id_and_name']['channel_id']), None)
-    if dm == None:
-        raise InputError(description="Invalid Channel Id")
+    channel = None
 
-    # check if auth_user_id is a member of the channel queried
-    if auth_user_id not in dm['members']:
+    if channel_id != -1 and dm_id != -1:
+        raise InputError(description='neither channel_id nor dm_id are -1')
+    elif dm_id == -1 and channel_id != -1:
+        # search through channels by id until id is matched
+        channel = next((channel for channel in channels if int(
+            channel_id) == channel['channel_id_and_name']['channel_id']), None)
+        if channel == None:
+            raise InputError(description="Invalid Channel Id")
+    elif channel_id == -1 and dm_id != -1:
+        channel = next((channel for channel in dms if int(
+            dm_id) == channel['dm_id']), None)
+        if channel == None:
+            raise InputError(description="Invalid dm Id")
+    else:
+        raise InputError(description="Both channel and dm id are invalid")
+
+    # check if auth_user_id is a member of the dm queried
+    if auth_user_id not in channel['members']:
         raise AccessError(
-            description="Unauthorised User: User is not in channel")
+            description="Unauthorised User: User is not in channel or dm queried")
+
+    # check og message_id
+    msg = next((msg for msg in channel['messages'] if int(
+        og_message_id) == msg['message_id']), None)
+    if msg == None:
+        raise InputError(description='Invalid og_message_id')
+
+    # check message length
+    if not 1 <= len(message) <= 1000:
+        raise InputError(description="Invalid message length")
+
+    # using session id generator to create unique message id
+    message_id = generate_new_session_id()
+
+    # new message
+    if message == '':
+        message = msg['message']
+    else:
+        message = msg['message'] + message
+
+     # Getting the current date
+    # and time
+    time_sent = int(time.time())
+
+    # building message
+    message_dict = {
+        'message_id': message_id,
+        'u_id': auth_user_id,
+        'message': message,
+        'time_sent': time_sent,
+    }
+
+    # inserting message
+    channel['messages'].insert(0, message_dict)
+    data_store.set(storage)
+
+    return {
+        'shared_message_id': message_id
+    }
