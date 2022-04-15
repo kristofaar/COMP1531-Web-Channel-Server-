@@ -331,6 +331,7 @@ def test_message_senddm_bad_length(reg_two_users_and_create_dm):
     resp2 = requests.post(config.url + 'message/senddm/v1', json={'token': reg_two_users_and_create_dm['token1'], 'dm_id': reg_two_users_and_create_dm['dm_id'], 'message': msg})
     assert resp2.status_code == I_ERR
 """
+"""
 #sendlater errors
 def test_sendlater_invalid_token(reg_two_users_and_create_two_channels):
     datet = datetime.datetime.now(timezone.utc)
@@ -526,14 +527,11 @@ def test_sendlater_react(reg_two_users_and_create_two_channels):
 
 # sendlaterdm errors
 
-"""
+
 def test_sendlaterdm_invalid_token(reg_two_users_and_create_dm):
-    datet = datetime.datetime.now(timezone.utc)
-    datet += timedelta(seconds=5)
-    time = datet.replace(tzinfo=timezone.utc)
-    time_later = time.timestamp()
+    time_before = int(time.time() + 1)
     resp = requests.post(config.url + 'message/sendlaterdm/v1', json={'token': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c',
-                         'channel_id': reg_two_users_and_create_dm['dm_id'], 'message': 'hi', 'time_sent': time_later})
+                         'dm_id': reg_two_users_and_create_dm['dm_id'], 'message': 'hi', 'time_sent': time_before})
     assert resp.status_code == A_ERR
 
 
@@ -541,84 +539,64 @@ def test_sendlaterdm_expired_token(reg_two_users_and_create_dm):
     resp1 = requests.post(config.url + 'auth/logout/v1',
                           json={'token': reg_two_users_and_create_dm['token1']})
     assert resp1.status_code == OK
-    datet = datetime.datetime.now(timezone.utc)
-    datet += timedelta(seconds=5)
-    time = datet.replace(tzinfo=timezone.utc)
-    time_later = time.timestamp()
+    time_later = int(time.time() + 1)
     resp = requests.post(config.url + 'message/sendlaterdm/v1', json={
-                         'token': reg_two_users_and_create_dm['token1'], 'channel_id': reg_two_users_and_create_dm['dm_id'], 'message': 'hi', 'time_sent': time_later})
+                         'token': reg_two_users_and_create_dm['token1'], 'dm_id': reg_two_users_and_create_dm['dm_id'], 'message': 'hi', 'time_sent': time_later})
     assert resp.status_code == A_ERR
 
 
-def test_sendlaterdm_unauthorised(reg_two_users_and_create_dm):
-    datet = datetime.datetime.now(timezone.utc)
-    datet += timedelta(seconds=5)
-    time = datet.replace(tzinfo=timezone.utc)
-    time_later = time.timestamp()
+def test_sendlaterdm_unauthorised(reg_two_users_and_create_dm, reg_another_two_users_and_dm):
+    time_later = int(time.time() + 1)
     resp = requests.post(config.url + 'message/sendlaterdm/v1', json={
-                         'token': reg_two_users_and_create_dm['token2'], 'dm_id': reg_two_users_and_create_dm['dm_id'], 'message': 'hi', 'time_sent': time_later})
+                         'token': reg_another_two_users_and_dm['token1'], 'dm_id': reg_two_users_and_create_dm['dm_id'], 'message': 'hi', 'time_sent': time_later})
     assert resp.status_code == A_ERR
 
 
 def test_sendlaterdm_msg_length(reg_two_users_and_create_dm):
-    datet = datetime.datetime.now(timezone.utc)
-    datet += timedelta(seconds=5)
-    time = datet.replace(tzinfo=timezone.utc)
-    time_later = time.timestamp()
-
-    resp1 = requests.post(config.url + 'message/sendlaterdm/v1', json={
-                          'token': reg_two_users_and_create_dm['token1'], 'channel_id': reg_two_users_and_create_dm['dm_id'], 'message': '', 'time_sent': time_later})
-    assert resp1.status_code == I_ERR
+    time_later = int(time.time() + 1)
+    time.sleep(2)
     msg = 'a'
     for _ in range(1000):
         msg += 'a'
     resp2 = requests.post(config.url + 'message/sendlaterdm/v1', json={
-                          'token': reg_two_users_and_create_dm['token1'], 'channel_id': reg_two_users_and_create_dm['dm_id'], 'message': msg, 'time_sent': time_later})
+                          'token': reg_two_users_and_create_dm['token1'], 'dm_id': reg_two_users_and_create_dm['dm_id'], 'message': msg, 'time_sent': time_later})
     assert resp2.status_code == I_ERR
 
 
 def test_sendlaterdm_invalid_channel(reg_two_users_and_create_dm):
-    datet = datetime.datetime.now(timezone.utc)
-    datet += timedelta(seconds=5)
-    time = datet.replace(tzinfo=timezone.utc)
-    time_later = time.timestamp()
-
+    time_later = int(time.time() + 1)
+    time.sleep(2)
     resp = requests.post(config.url + 'message/sendlaterdm/v1', json={
-                         'token': reg_two_users_and_create_dm['token1'], 'channel_id': 123423, 'message': 'hi', 'time_sent': time_later})
+                         'token': reg_two_users_and_create_dm['token1'], 'dm_id': 123423, 'message': 'hi', 'time_sent': time_later})
     assert resp.status_code == I_ERR
 
 
 def test_sendlaterdm_timepast(reg_two_users_and_create_dm):
-    datet = datetime.datetime.now(timezone.utc)
-    datet -= timedelta(seconds=5)
-    time1 = datet.replace(tzinfo=timezone.utc)
-    time_before = time1.timestamp()
+    time_later = int(time.time() - 1)
+    time.sleep(1)
 
     resp = requests.post(config.url + 'message/sendlaterdm/v1', json={
-                         'token': reg_two_users_and_create_dm['token1'], 'channel_id': reg_two_users_and_create_dm['dm_id'], 'message': 'hi', 'time_sent': time_before})
+                         'token': reg_two_users_and_create_dm['token1'], 'dm_id': reg_two_users_and_create_dm['dm_id'], 'message': 'hi', 'time_sent': time_later})
     assert resp.status_code == I_ERR
 
 # test sendlaterdm working
+"""
 
 
 def test_sendlaterdm_timefuture(reg_two_users_and_create_dm):
-    datet = datetime.datetime.now(timezone.utc)
-    datet += timedelta(seconds=1)
-    time1 = datet.replace(tzinfo=timezone.utc)
-    time_before = time1.timestamp()
-
+    time_later = int(time.time() + 2)
     resp = requests.post(config.url + 'message/sendlaterdm/v1', json={
-                         'token': reg_two_users_and_create_dm['token1'], 'dm_id': reg_two_users_and_create_dm['dm_id'], 'message': 'hi', 'time_sent': time_before})
+                         'token': reg_two_users_and_create_dm['token1'], 'dm_id': reg_two_users_and_create_dm['dm_id'], 'message': 'hi', 'time_sent': time_later})
     assert resp.status_code == OK
     message_id = resp.json()['message_id']
-
+    time.sleep(1)
     resp = requests.get(config.url + 'dm/messages/v1', params={
         'token': reg_two_users_and_create_dm['token1'], 'dm_id': reg_two_users_and_create_dm['dm_id'], 'start': 0})
     assert resp.status_code == OK
     messages = resp.json()['messages']
     assert messages == []
 
-    time.sleep(2)
+    time.sleep(1)
     resp = requests.get(config.url + 'dm/messages/v1', params={
         'token': reg_two_users_and_create_dm['token1'], 'dm_id': reg_two_users_and_create_dm['dm_id'], 'start': 0})
     assert resp.status_code == OK
@@ -627,23 +605,17 @@ def test_sendlaterdm_timefuture(reg_two_users_and_create_dm):
 
 
 def test_sendlaterdm_multiple(reg_two_users_and_create_dm):
-    datet = datetime.datetime.now(timezone.utc)
-    datet += timedelta(seconds=2)
-    time1 = datet.replace(tzinfo=timezone.utc)
-    time_before = time1.timestamp()
+    time_before = int(time.time() + 2)
 
     resp = requests.post(config.url + 'message/sendlaterdm/v1', json={
                          'token': reg_two_users_and_create_dm['token1'], 'dm_id': reg_two_users_and_create_dm['dm_id'], 'message': 'hi', 'time_sent': time_before})
     assert resp.status_code == OK
     message_id1 = resp.json()['message_id']
 
-    datet = datetime.datetime.now(timezone.utc)
-    datet += timedelta(seconds=1)
-    time1 = datet.replace(tzinfo=timezone.utc)
-    time_before = time1.timestamp()
+    time_before = int(time.time() + 1)
 
     resp = requests.post(config.url + 'message/sendlaterdm/v1', json={
-                         'token': reg_two_users_and_create_dm['token1'], 'dm_id': reg_two_users_and_create_dm['dm_id'], 'message': 'hi', 'time_sent': time_before})
+                         'token': reg_two_users_and_create_dm['token2'], 'dm_id': reg_two_users_and_create_dm['dm_id'], 'message': 'hie', 'time_sent': time_before})
     assert resp.status_code == OK
     message_id2 = resp.json()['message_id']
 
@@ -669,27 +641,69 @@ def test_sendlaterdm_multiple(reg_two_users_and_create_dm):
     assert messages[1]['message_id'] == message_id2
 
 
-def test_sendlaterdm_edit_delete_react(reg_two_users_and_create_two_channels):
-    datet = datetime.datetime.now(timezone.utc)
-    datet += timedelta(seconds=2)
-    time1 = datet.replace(tzinfo=timezone.utc)
-    time_before = time1.timestamp()
+def test_sendlaterdm_edit(reg_two_users_and_create_dm):
+    time_before = int(time.time() + 1)
 
     resp = requests.post(config.url + 'message/sendlaterdm/v1', json={
-                         'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'message': 'hi', 'time_sent': time_before})
+                         'token': reg_two_users_and_create_dm['token1'], 'dm_id': reg_two_users_and_create_dm['dm_id'], 'message': 'hi', 'time_sent': time_before})
     assert resp.status_code == OK
     message_id1 = resp.json()['message_id']
 
     resp3 = requests.put(config.url + 'message/edit/v1', json={
-                         'token': reg_two_users_and_create_two_channels['token2'], 'message_id': message_id1, 'message': 'hi1'})
+                         'token': reg_two_users_and_create_dm['token1'], 'message_id': message_id1, 'message': 'hii'})
     assert resp3.status_code == I_ERR
+    time.sleep(1)
+    resp3 = requests.put(config.url + 'message/edit/v1', json={
+                         'token': reg_two_users_and_create_dm['token1'], 'message_id': message_id1, 'message': 'hii'})
+    assert resp3.status_code == OK
+    resp = requests.get(config.url + 'dm/messages/v1', params={
+                        'token': reg_two_users_and_create_dm['token1'], 'dm_id': reg_two_users_and_create_dm['dm_id'], 'start': 0})
+    assert resp.status_code == OK
+    messages = resp.json()['messages']
+    assert messages[0]['message'] == 'hii'
+
+
+def test_sendlaterdm_delete(reg_two_users_and_create_dm):
+    time_before = int(time.time() + 1)
+
+    resp = requests.post(config.url + 'message/sendlaterdm/v1', json={
+                         'token': reg_two_users_and_create_dm['token1'], 'dm_id': reg_two_users_and_create_dm['dm_id'], 'message': 'hi', 'time_sent': time_before})
+    assert resp.status_code == OK
+    message_id1 = resp.json()['message_id']
 
     resp3 = requests.put(config.url + 'message/edit/v1', json={
-                         'token': reg_two_users_and_create_two_channels['token2'], 'message_id': message_id1, 'message': ''})
+                         'token': reg_two_users_and_create_dm['token1'], 'message_id': message_id1, 'message': ''})
     assert resp3.status_code == I_ERR
+    time.sleep(1)
+    resp3 = requests.put(config.url + 'message/edit/v1', json={
+                         'token': reg_two_users_and_create_dm['token1'], 'message_id': message_id1, 'message': ''})
+    assert resp3.status_code == OK
+    resp = requests.get(config.url + 'dm/messages/v1', params={
+                        'token': reg_two_users_and_create_dm['token1'], 'dm_id': reg_two_users_and_create_dm['dm_id'], 'start': 0})
+    assert resp.status_code == OK
+    messages = resp.json()['messages']
+    assert messages == []
 
-    # add request for message/react, should return I_ERR
+
+def test_sendlaterdm_react(reg_two_users_and_create_dm):
+    time_before = int(time.time() + 1)
+
+    resp = requests.post(config.url + 'message/sendlaterdm/v1', json={
+                         'token': reg_two_users_and_create_dm['token1'], 'dm_id': reg_two_users_and_create_dm['dm_id'], 'message': 'hi', 'time_sent': time_before})
+    assert resp.status_code == OK
+    message_id1 = resp.json()['message_id']
+    # msg react request error
+
+    time.sleep(2)
+    # msg react request OK
+    resp = requests.get(config.url + 'dm/messages/v1', params={
+                        'token': reg_two_users_and_create_dm['token1'], 'dm_id': reg_two_users_and_create_dm['dm_id'], 'start': 0})
+    assert resp.status_code == OK
+    messages = resp.json()['messages']
+    # assert messages[0]['reacts']['react_id'] ==
+    """
 """
+
 
 '''
 #send working
