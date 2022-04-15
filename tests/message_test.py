@@ -513,19 +513,15 @@ def test_sendlater_react(reg_two_users_and_create_two_channels):
                          'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'message': 'hi', 'time_sent': time_before})
     assert resp.status_code == OK
     message_id1 = resp.json()['message_id']
-    resp3 = requests.put(config.url + 'message/edit/v1', json={
-                         'token': reg_two_users_and_create_two_channels['token1'], 'message_id': message_id1, 'message': ''})
-    assert resp3.status_code == I_ERR
+    # msg react request error
 
     time.sleep(2)
-    resp3 = requests.put(config.url + 'message/edit/v1', json={
-                         'token': reg_two_users_and_create_two_channels['token1'], 'message_id': message_id1, 'message': ''})
-    assert resp3.status_code == OK
+    # msg react request OK
     resp = requests.get(config.url + 'channel/messages/v2', params={
                         'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'start': 0})
     assert resp.status_code == OK
     messages = resp.json()['messages']
-    assert messages == []
+    # assert messages[0]['reacts']['react_id'] == 
 
 
 # sendlaterdm errors
