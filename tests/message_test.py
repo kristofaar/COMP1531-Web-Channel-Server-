@@ -333,26 +333,31 @@ def test_message_senddm_bad_length(reg_two_users_and_create_dm):
     resp2 = requests.post(config.url + 'message/senddm/v1', json={'token': reg_two_users_and_create_dm['token1'], 'dm_id': reg_two_users_and_create_dm['dm_id'], 'message': msg})
     assert resp2.status_code == I_ERR
 """
-"""
-#sendlater errors
+
+# sendlater errors
+
+
 def test_sendlater_invalid_token(reg_two_users_and_create_two_channels):
     datet = datetime.datetime.now(timezone.utc)
     datet += timedelta(seconds=5)
     time = datet.replace(tzinfo=timezone.utc)
     time_later = time.timestamp()
-    resp = requests.post(config.url + 'message/sendlater/v1', json={'token': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c', 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'message': 'hi', 'time_sent': time_later})
+    resp = requests.post(config.url + 'message/sendlater/v1', json={'token': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c',
+                         'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'message': 'hi', 'time_sent': time_later})
     assert resp.status_code == A_ERR
 
+
 def test_sendlater_expired_token(reg_two_users_and_create_two_channels):
-    resp1 = requests.post(config.url + 'auth/logout/v1', json={'token': reg_two_users_and_create_two_channels['token1']})
+    resp1 = requests.post(config.url + 'auth/logout/v1',
+                          json={'token': reg_two_users_and_create_two_channels['token1']})
     assert resp1.status_code == OK
     datet = datetime.datetime.now(timezone.utc)
     datet += timedelta(seconds=5)
     time = datet.replace(tzinfo=timezone.utc)
     time_later = time.timestamp()
-    resp = requests.post(config.url + 'message/sendlater/v1', json={'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'message': 'hi', 'time_sent': time_later})
+    resp = requests.post(config.url + 'message/sendlater/v1', json={
+                         'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'message': 'hi', 'time_sent': time_later})
     assert resp.status_code == A_ERR
-
 
 
 def test_sendlater_unauthorised(reg_two_users_and_create_two_channels):
@@ -365,19 +370,20 @@ def test_sendlater_unauthorised(reg_two_users_and_create_two_channels):
     assert resp.status_code == A_ERR
 
 
-
 def test_sendlater_msg_length(reg_two_users_and_create_two_channels):
     datet = datetime.datetime.now(timezone.utc)
     datet += timedelta(seconds=5)
     time = datet.replace(tzinfo=timezone.utc)
     time_later = time.timestamp()
 
-    resp1 = requests.post(config.url + 'message/sendlater/v1', json={'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'message': '', 'time_sent': time_later})
+    resp1 = requests.post(config.url + 'message/sendlater/v1', json={
+                          'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'message': '', 'time_sent': time_later})
     assert resp1.status_code == I_ERR
     msg = 'a'
     for _ in range(1000):
         msg += 'a'
-    resp2 = requests.post(config.url + 'message/sendlater/v1', json={'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'message': msg, 'time_sent': time_later})
+    resp2 = requests.post(config.url + 'message/sendlater/v1', json={
+                          'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'message': msg, 'time_sent': time_later})
     assert resp2.status_code == I_ERR
 
 
@@ -386,24 +392,27 @@ def test_sendlater_invalid_channel(reg_two_users_and_create_two_channels):
     datet += timedelta(seconds=5)
     time = datet.replace(tzinfo=timezone.utc)
     time_later = time.timestamp()
-    
-    resp = requests.post(config.url + 'message/sendlater/v1', json={'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': 123423, 'message': 'hi', 'time_sent': time_later})
+
+    resp = requests.post(config.url + 'message/sendlater/v1', json={
+                         'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': 123423, 'message': 'hi', 'time_sent': time_later})
     assert resp.status_code == I_ERR
+
 
 def test_sendlater_timepast(reg_two_users_and_create_two_channels):
     datet = datetime.datetime.now(timezone.utc)
     datet -= timedelta(seconds=5)
     time1 = datet.replace(tzinfo=timezone.utc)
     time_before = time1.timestamp()
-    
-    resp = requests.post(config.url + 'message/sendlater/v1', json={'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'message': 'hi', 'time_sent': time_before})
+
+    resp = requests.post(config.url + 'message/sendlater/v1', json={
+                         'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'message': 'hi', 'time_sent': time_before})
     assert resp.status_code == I_ERR
 
 # test sendlater working
 
 
 def test_sendlater_timefuture(reg_two_users_and_create_two_channels):
-    time_future = int(time.time() + 2) 
+    time_future = int(time.time() + 2)
 
     resp = requests.post(config.url + 'message/sendlater/v1', json={
                          'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'message': 'hi', 'time_sent': time_future})
@@ -422,7 +431,6 @@ def test_sendlater_timefuture(reg_two_users_and_create_two_channels):
     assert resp.status_code == OK
     messages = resp.json()['messages']
     assert messages[0]['message_id'] == message_id
-
 
 
 def test_sendlater_multiple(reg_two_users_and_create_two_channels):
@@ -524,7 +532,7 @@ def test_sendlater_react(reg_two_users_and_create_two_channels):
                         'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'start': 0})
     assert resp.status_code == OK
     messages = resp.json()['messages']
-    # assert messages[0]['reacts']['react_id'] == 
+    # assert messages[0]['reacts']['react_id'] ==
 
 
 # sendlaterdm errors
@@ -582,7 +590,6 @@ def test_sendlaterdm_timepast(reg_two_users_and_create_dm):
     assert resp.status_code == I_ERR
 
 # test sendlaterdm working
-"""
 
 
 def test_sendlaterdm_timefuture(reg_two_users_and_create_dm):
