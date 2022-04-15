@@ -330,7 +330,7 @@ def test_message_senddm_bad_length(reg_two_users_and_create_dm):
         msg += 'a'
     resp2 = requests.post(config.url + 'message/senddm/v1', json={'token': reg_two_users_and_create_dm['token1'], 'dm_id': reg_two_users_and_create_dm['dm_id'], 'message': msg})
     assert resp2.status_code == I_ERR
-
+"""
 #sendlater errors
 def test_sendlater_invalid_token(reg_two_users_and_create_two_channels):
     datet = datetime.datetime.now(timezone.utc)
@@ -419,7 +419,7 @@ def test_sendlater_timefuture(reg_two_users_and_create_two_channels):
     assert resp.status_code == OK
     messages = resp.json()['messages']
     assert messages[0]['message_id'] == message_id
-"""
+
 
 
 def test_sendlater_multiple(reg_two_users_and_create_two_channels):
