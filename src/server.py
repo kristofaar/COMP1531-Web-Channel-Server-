@@ -44,7 +44,7 @@ APP.register_error_handler(Exception, defaultHandler)
 
 # NO NEED TO MODIFY ABOVE THIS POINT, EXCEPT IMPORTS
 
-#Persistence data gathering
+# Persistence data gathering
 datas = []
 try:
     datas = pickle.load(open("datastore.p", "rb"))
@@ -60,16 +60,18 @@ try:
 except Exception:
     pass
 
+
 def save():
     '''For persistence, saves current data_store into datastore.p'''
     storage = data_store.get()
-    data = {'users': storage['users'], 'channels': storage['channels'], 'no_users': storage['no_users'], 
+    data = {'users': storage['users'], 'channels': storage['channels'], 'no_users': storage['no_users'],
             'dms': storage['dms'], 'session_id': storage['session_id'], 'removed_users': storage['removed_users'],
             'workspace_stats': storage['workspace_stats']}
     with open('datastore.p', 'wb+') as FILE:
         pickle.dump(data, FILE)
 
-#For email for password reset
+
+# For email for password reset
 APP.config['MAIL_SERVER'] = 'smtp.gmail.com'
 APP.config['MAIL_PORT'] = 465
 APP.config['MAIL_USERNAME'] = 'comp1531f11b.ant@gmail.com'
@@ -112,16 +114,19 @@ def logout():
     save()
     return dumps({})
 
+
 @APP.route('/auth/passwordreset/request/v1', methods=['POST'])
 def resetrequest():
     data = request.get_json()
     code = str(auth_passwordreset_request_v1(data['email']))
     if code != None:
-        msg = Message("Password reset", sender='comp1531f11b.ant@gmail.com', recipients=[data['email']])
+        msg = Message(
+            "Password reset", sender='comp1531f11b.ant@gmail.com', recipients=[data['email']])
         msg.body = f"Hi, your code is: {code}"
         mail.send(msg)
     save()
     return dumps({})
+
 
 @APP.route('/auth/passwordreset/reset/v1', methods=['POST'])
 def resetpass():
@@ -173,6 +178,7 @@ def invite():
     channel_invite_v1(data['token'], data['channel_id'], data['u_id'])
     save()
     return dumps({})
+
 
 @APP.route("/channel/messages/v2", methods=['GET'])
 def messages():
@@ -306,6 +312,7 @@ def sendlaterdm():
         'message_id': details['message_id']
     })
 
+
 @APP.route("/message/share/v1", methods=['POST'])
 def share():
     data = request.get_json()
@@ -316,6 +323,7 @@ def share():
         'shared_message_id': details['shared_message_id']
     })
 
+
 @APP.route("/clear/v1", methods=['DELETE'])
 def clear():
     clear_v1()
@@ -323,7 +331,7 @@ def clear():
     return dumps({})
 
 
-#USER FUNCTION WRAPPERS
+# USER FUNCTION WRAPPERS
 @APP.route('/users/all/v1', methods=['GET'])
 def users_all():
     users = users_all_v1(request.args.get("token"))['users']
@@ -331,9 +339,11 @@ def users_all():
         'users': users
     })
 
+
 @APP.route("/user/profile/v1", methods=["GET"])
 def user_profile():
-    user = user_profile_v1(request.args.get("token"), request.args.get("u_id"))['user']
+    user = user_profile_v1(request.args.get(
+        "token"), request.args.get("u_id"))['user']
     return dumps({
         'user': user
     })
@@ -342,9 +352,11 @@ def user_profile():
 @APP.route("/user/profile/setname/v1", methods=["PUT"])
 def user_setname():
     data = request.get_json()
-    user_profile_setname_v1(data['token'], data['name_first'], data['name_last'])
+    user_profile_setname_v1(
+        data['token'], data['name_first'], data['name_last'])
     save()
     return dumps({})
+
 
 @APP.route("/user/profile/setemail/v1", methods=["PUT"])
 def user_setemail():
@@ -353,6 +365,7 @@ def user_setemail():
     save()
     return dumps({})
 
+
 @APP.route("/user/profile/sethandle/v1", methods=["PUT"])
 def user_sethandle():
     data = request.get_json()
@@ -360,11 +373,13 @@ def user_sethandle():
     save()
     return dumps({})
 
+
 @APP.route("/user/stats/v1", methods=["GET"])
 def user_stats():
     return dumps({
         'user_stats': user_stats_v1(request.args.get("token"))
     })
+
 
 @APP.route("/users/stats/v1", methods=["GET"])
 def users_stats():
@@ -373,8 +388,7 @@ def users_stats():
     })
 
 
-
-#ADMIN WRAPPER FUNCTIONS
+# ADMIN WRAPPER FUNCTIONS
 @APP.route('/admin/user/remove/v1', methods=['DELETE'])
 def admin_remove():
     data = request.get_json()
@@ -382,25 +396,33 @@ def admin_remove():
     save()
     return dumps({})
 
+
 @APP.route('/admin/userpermission/change/v1', methods=['POST'])
 def admin_perm_change():
     data = request.get_json()
-    admin_userpermission_change_v1(data['token'], data['u_id'], data['permission_id'])
+    admin_userpermission_change_v1(
+        data['token'], data['u_id'], data['permission_id'])
     save()
     return dumps({})
 
-#STANDUP FUNCTION WRAPPERS
+# STANDUP FUNCTION WRAPPERS
+
+
 @APP.route('/standup/start/v1', methods=['POST'])
 def start_standup():
     data = request.get_json()
-    time_finish = standup_start(data['token'], data['channel_id'], data['length'])['time_finish']
+    time_finish = standup_start(data['token'], data['channel_id'], data['length'])[
+        'time_finish']
     save()
     return dumps({'time_finish': time_finish})
 
+
 @APP.route('/standup/active/v1', methods=['GET'])
 def active_standup():
-    standup_details = standup_active(request.args.get('token'), request.args.get('channel_id'))
+    standup_details = standup_active(request.args.get(
+        'token'), request.args.get('channel_id'))
     return dumps({'is_active': standup_details['is_active'], 'time_finish': standup_details['time_finish']})
+
 
 @APP.route('/standup/send/v1', methods=['POST'])
 def send_standup():
@@ -413,4 +435,4 @@ def send_standup():
 
 if __name__ == "__main__":
     signal.signal(signal.SIGINT, quit_gracefully)  # For coverage
-    APP.run(port=config.port, debug=True)  # Do not edit this port
+    APP.run(port=config.port)  # Do not edit this port
