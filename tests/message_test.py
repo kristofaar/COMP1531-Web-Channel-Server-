@@ -432,3 +432,112 @@ def test_one_user_two_dms_remove(reg_two_users_and_create_dm, reg_another_two_us
     assert resp3.status_code == OK
     resp3_data = resp3.json()
     assert resp3_data['messages'] == []
+
+#React/Unreact errors
+def test_react_invalid_message(reg_two_users_and_create_two_channels):
+    message1 = requests.post(config.url + 'message/send/v1', json={'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'message': 'hi'})
+    assert message1.status_code == OK
+    message1_data = message1.json()
+
+    react = requests.post(config.url + 'message/react/v1', json={'token': reg_two_users_and_create_two_channels['token1'], 'message_id': -993129, 'react_id': 1})
+    assert react.status_code == I_ERR
+
+def test_react_invalid_react(reg_two_users_and_create_two_channels):
+    message1 = requests.post(config.url + 'message/send/v1', json={'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'message': 'hi'})
+    assert message1.status_code == OK
+    message1_data = message1.json()
+
+    react = requests.post(config.url + 'message/react/v1', json={'token': reg_two_users_and_create_two_channels['token1'], 'message_id': 'message_id': message1['message_id'], 'react_id': -9123})
+    assert react.status_code == I_ERR
+
+def test_duplicate_react(reg_two_users_and_create_two_channels):    
+    message1 = requests.post(config.url + 'message/send/v1', json={'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'message': 'hi'})
+    assert message1.status_code == OK
+    message1_data = message1.json()
+
+    react = requests.post(config.url + 'message/react/v1', json={'token': reg_two_users_and_create_two_channels['token1'], 'message_id': message1['message_id'], 'react_id': 1})
+    assert react.status_code == OK
+
+    react = requests.post(config.url + 'message/react/v1', json={'token': reg_two_users_and_create_two_channels['token1'], 'message_id': message1['message_id'], 'react_id': 1})
+    assert react.status_code == I_ERR
+
+def test_unreact_invalid_message(reg_two_users_and_create_two_channels):
+    message1 = requests.post(config.url + 'message/send/v1', json={'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'message': 'hi'})
+    assert message1.status_code == OK
+    message1_data = message1.json()
+
+    unreact = requests.post(config.url + 'message/unreact/v1', json={'token': reg_two_users_and_create_two_channels['token1'], 'message_id': -993129, 'react_id': 1})
+    assert unreact.status_code == I_ERR
+
+def test_unreact_invalid_react(reg_two_users_and_create_two_channels):
+    message1 = requests.post(config.url + 'message/send/v1', json={'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'message': 'hi'})
+    assert message1.status_code == OK
+    message1_data = message1.json()
+
+    unreact = requests.post(config.url + 'message/unreact/v1', json={'token': reg_two_users_and_create_two_channels['token1'], 'message_id': 'message_id': message1['message_id'], 'react_id': -9123})
+    assert unreact.status_code == I_ERR
+
+def test_unreact_no_react_on_message(reg_two_users_and_create_two_channels):
+    message1 = requests.post(config.url + 'message/send/v1', json={'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'message': 'hi'})
+    assert message1.status_code == OK
+    message1_data = message1.json()
+
+    unreact = requests.post(config.url + 'message/unreact/v1', json={'token': reg_two_users_and_create_two_channels['token1'], 'message_id': message1['message_id'], 'react_id': 1})
+    assert unreact.status_code == I_ERR
+
+#React/Unreact Tests Working
+def test_react_message(reg_two_users_and_create_two_channels):
+    message1 = requests.post(config.url + 'message/send/v1', json={'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'message': 'hi'})
+    assert message1.status_code == OK
+
+    message1_data = message1.json()
+    react = requests.post(config.url + 'message/react/v1', json={'token': reg_two_users_and_create_two_channels['token1'], 'message_id': message1['message_id'], 'react_id': 1})
+    assert react.status_code == OK
+    #need condition to check if react works
+
+def test_unreact_no_react_on_message(reg_two_users_and_create_two_channels):
+    message1 = requests.post(config.url + 'message/send/v1', json={'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'message': 'hi'})
+    assert message1.status_code == OK
+    message1_data = message1.json()
+
+    react = requests.post(config.url + 'message/react/v1', json={'token': reg_two_users_and_create_two_channels['token1'], 'message_id': message1['message_id'], 'react_id': 1})
+    assert react.status_code == OK
+
+    unreact = requests.post(config.url + 'message/unreact/v1', json={'token': reg_two_users_and_create_two_channels['token1'], 'message_id': message1['message_id'], 'react_id': 1})
+    assert unreact.status_code == OK
+
+#Pin/Unpin errors
+def test_pin_invalid_message(reg_two_users_and_create_two_channels):
+    message1 = requests.post(config.url + 'message/send/v1', json={'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'message': 'hi'})
+    assert message1.status_code == OK
+    message1_data = message1.json()
+
+    pin = requests.post(config.url + 'message/pin/v1', json={'token': reg_two_users_and_create_two_channels['token1'], 'message_id': -993129})
+    assert pin.status_code == I_ERR
+
+def test_double_pin_invalid_message(reg_two_users_and_create_two_channels):
+    message1 = requests.post(config.url + 'message/send/v1', json={'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'message': 'hi'})
+    assert message1.status_code == OK
+    message1_data = message1.json()
+
+    pin = requests.post(config.url + 'message/pin/v1', json={'token': reg_two_users_and_create_two_channels['token1'], 'message_id': message1_data["message_id"]})
+    assert pin.status_code == OK
+
+    pin1 = requests.post(config.url + 'message/pin/v1', json={'token': reg_two_users_and_create_two_channels['token1'], 'message_id': message1_data["message_id"]})
+    assert pin1.status_code == I_ERR
+
+def test_pin_no_permissions(reg_two_users_and_create_two_channels):
+    message1 = requests.post(config.url + 'message/send/v1', json={'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'message': 'hi'})
+    assert message1.status_code == OK
+    message1_data = message1.json()
+
+    pin = requests.post(config.url + 'message/pin/v1', json={'token': reg_two_users_and_create_two_channels['token2'], 'message_id': message1_data["message_id"]})
+    assert pin.status_code == A_ERR
+#React/Unreact Tests Working
+def test_pin_invalid_message(reg_two_users_and_create_two_channels):
+    message1 = requests.post(config.url + 'message/send/v1', json={'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'message': 'hi'})
+    assert message1.status_code == OK
+    message1_data = message1.json()
+
+    pin = requests.post(config.url + 'message/pin/v1', json={'token': reg_two_users_and_create_two_channels['token1'], 'message_id': message1['message_id'])
+    assert pin.status_code == OK

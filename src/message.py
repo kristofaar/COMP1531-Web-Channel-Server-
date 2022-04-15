@@ -308,3 +308,15 @@ def message_senddm_v1(token, dm_id, message):
     return {
         'message_id': message_id
     }
+
+def message_react_v1(token, message_id, react_id):
+    pass
+
+def message_unreact_v1(token, message_id, react_id):
+    pass
+
+def message_pin_v1(token, message_id):
+    pass
+
+def message_unpin_v1(token, message_id):
+    pass

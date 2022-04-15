@@ -12,7 +12,7 @@ from src.channels import channels_create_v1, channels_listall_v1, channels_list_
 from src.channel import channel_details_v1, channel_invite_v1, channel_join_v1, channel_messages_v1, channel_leave_v1, channel_addowner_v1, channel_removeowner_v1
 from src.dm import dm_create_v1, dm_list_v1, dm_remove_v1, dm_details_v1, dm_leave_v1, dm_messages_v1
 from src.other import clear_v1
-from src.message import message_send_v1, message_edit_v1, message_remove_v1, message_senddm_v1
+from src.message import message_send_v1, message_edit_v1, message_remove_v1, message_senddm_v1, message_react_v1, message_unreact_v1, message_pin_v1, message_unpin_v1
 from src.user import users_all_v1, user_profile_v1, user_profile_setname_v1, user_profile_setemail_v1, user_profile_sethandle_v1
 from src.admin import admin_user_remove_v1, admin_userpermission_change_v1
 import pickle
@@ -86,7 +86,6 @@ def login():
         'auth_user_id': details['auth_user_id']
     })
 
-
 @APP.route("/auth/register/v2", methods=['POST'])
 def register():
     data = request.get_json()
@@ -126,8 +125,6 @@ def resetpass():
     return dumps({})
 
 # CHANNEL FUNCTION WRAPPERS
-
-
 @APP.route('/channels/create/v2', methods=['POST'])
 def create():
     data = request.get_json()
@@ -138,21 +135,17 @@ def create():
         'channel_id': details['channel_id']
     })
 
-
 @APP.route('/channels/list/v2', methods=['GET'])
 def channel_list():
     return channels_list_v1(request.args.get("token"))
-
 
 @APP.route('/channels/listall/v2', methods=['GET'])
 def channel_listall():
     return channels_listall_v1(request.args.get("token"))
 
-
 @APP.route('/channel/details/v2', methods=['GET'])
 def details():
     return channel_details_v1(request.args.get("token"), request.args.get("channel_id"))
-
 
 @APP.route('/channel/join/v2', methods=['POST'])
 def join():
@@ -161,18 +154,15 @@ def join():
     save()
     return dumps({})
 
-
 @APP.route('/channel/invite/v2', methods=['POST'])
 def invite():
     data = request.get_json()
     channel_invite_v1(data['token'], data['channel_id'], data['u_id'])
     save()
     return dumps({})
-
 @APP.route("/channel/messages/v2", methods=['GET'])
 def messages():
     return dumps(channel_messages_v1(request.args.get('token'), request.args.get('channel_id'), request.args.get('start')))
-
 
 @APP.route("/channel/leave/v1", methods=['POST'])
 def leave():
@@ -181,14 +171,12 @@ def leave():
     save()
     return dumps({})
 
-
 @APP.route("/channel/addowner/v1", methods=['POST'])
 def addowner():
     data = request.get_json()
     channel_addowner_v1(data['token'], data['channel_id'], data['u_id'])
     save()
     return dumps({})
-
 
 @APP.route("/channel/removeowner/v1", methods=['POST'])
 def removeowner():
@@ -198,8 +186,6 @@ def removeowner():
     return dumps({})
 
 # DM FUNCTION WRAPPERS
-
-
 @APP.route('/dm/create/v1', methods=['POST'])
 def dm_create():
     data = request.get_json()
@@ -209,11 +195,9 @@ def dm_create():
         'dm_id': details['dm_id']
     })
 
-
 @APP.route('/dm/list/v1', methods=['GET'])
 def dm_list():
     return dm_list_v1(request.args.get("token"))
-
 
 @APP.route("/dm/remove/v1", methods=['DELETE'])
 def dm_remove():
@@ -222,11 +206,9 @@ def dm_remove():
     save()
     return dumps({})
 
-
 @APP.route('/dm/details/v1', methods=['GET'])
 def dm_details():
     return dm_details_v1(request.args.get("token"), request.args.get("dm_id"))
-
 
 @APP.route('/dm/leave/v1', methods=['POST'])
 def dm_leave():
@@ -235,14 +217,11 @@ def dm_leave():
     save()
     return dumps({})
 
-
 @APP.route("/dm/messages/v1", methods=['GET'])
 def dm_messages():
     return dumps(dm_messages_v1(request.args.get('token'), request.args.get('dm_id'), request.args.get('start')))
 
 # MESSAGES FUNCTION WRAPPERS
-
-
 @APP.route("/message/send/v1", methods=['POST'])
 def send_message():
     data = request.get_json()
@@ -279,13 +258,25 @@ def senddm():
         'message_id': details['message_id']
     })
 
+@APP.route("/message/react/v1", methods=['POST'])
+def react():
+    data = request.get_json()
+    return dumps(message_react_v1(data['token'], data['message_id'], data['react_id']))
 
-@APP.route("/clear/v1", methods=['DELETE'])
-def clear():
-    clear_v1()
-    save()
-    return dumps({})
+@APP.route("/message/unreact/v1", methods=['POST'])
+def unreact():
+    data = request.get_json()
+    return dumps(message_unreact_v1(data['token'], data['message_id'], data['react_id']))
 
+@APP.route("/message/pin/v1", methods=['POST'])
+def pin():
+    data = request.get_json()
+    return dumps(message_pin_v1(data['token'], data['message_id']))
+
+@APP.route("/message/unpin/v1", methods=['POST'])
+def unpin():
+    data = request.get_json()
+    return dumps(message_unpin_v1(data['token'], data['message_id']))
 
 #USER FUNCTION WRAPPERS
 @APP.route('/users/all/v1', methods=['GET'])
@@ -339,6 +330,13 @@ def admin_perm_change():
     admin_userpermission_change_v1(data['token'], data['u_id'], data['permission_id'])
     save()
     return dumps({})
+#CLEAR FUNCTION WRAPPER
+@APP.route("/clear/v1", methods=['DELETE'])
+def clear():
+    clear_v1()
+    save()
+    return dumps({})
+
 # NO NEED TO MODIFY BELOW THIS POINT
 
 if __name__ == "__main__":
