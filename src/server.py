@@ -2,17 +2,20 @@ import sys
 import signal
 from json import dumps
 from flask import Flask, request
+from flask_mail import Mail, Message
 from flask_cors import CORS
 from src.error import InputError
 from src import config
-from src.auth import auth_login_v1, auth_register_v1, auth_logout_v1
+from src.auth import auth_login_v1, auth_register_v1, auth_logout_v1, auth_passwordreset_request_v1, auth_passwordreset_reset_v1
 from src.data_store import data_store
 from src.channels import channels_create_v1, channels_listall_v1, channels_list_v1
 from src.channel import channel_details_v1, channel_invite_v1, channel_join_v1, channel_messages_v1, channel_leave_v1, channel_addowner_v1, channel_removeowner_v1
 from src.dm import dm_create_v1, dm_list_v1, dm_remove_v1, dm_details_v1, dm_leave_v1, dm_messages_v1
 from src.other import clear_v1
 from src.message import message_send_v1, message_edit_v1, message_remove_v1, message_senddm_v1, message_sendlater_v1, message_sendlaterdm_v1, message_share_v1
-from src.user import users_all_v1
+from src.user import users_all_v1, user_profile_v1, user_profile_setname_v1, user_profile_setemail_v1, user_profile_sethandle_v1, user_stats_v1, users_stats_v1
+from src.admin import admin_user_remove_v1, admin_userpermission_change_v1
+from src.standup import standup_start, standup_send, standup_active
 import pickle
 
 
@@ -41,6 +44,7 @@ APP.register_error_handler(Exception, defaultHandler)
 
 # NO NEED TO MODIFY ABOVE THIS POINT, EXCEPT IMPORTS
 
+#Persistence data gathering
 datas = []
 try:
     datas = pickle.load(open("datastore.p", "rb"))
@@ -50,19 +54,29 @@ try:
     storage['no_users'] = datas['no_users']
     storage['dms'] = datas['dms']
     storage['session_id'] = datas['session_id']
+    storage['removed_users'] = datas['removed_users']
+    storage['workspace_stats'] = datas['workspace_stats']
     data_store.set(storage)
 except Exception:
     pass
 
-# persistence
-
-
 def save():
+    '''For persistence, saves current data_store into datastore.p'''
     storage = data_store.get()
-    data = {'users': storage['users'], 'channels': storage['channels'],
-            'no_users': storage['no_users'], 'dms': storage['dms'], 'session_id': storage['session_id']}
+    data = {'users': storage['users'], 'channels': storage['channels'], 'no_users': storage['no_users'], 
+            'dms': storage['dms'], 'session_id': storage['session_id'], 'removed_users': storage['removed_users'],
+            'workspace_stats': storage['workspace_stats']}
     with open('datastore.p', 'wb+') as FILE:
         pickle.dump(data, FILE)
+
+#For email for password reset
+APP.config['MAIL_SERVER'] = 'smtp.gmail.com'
+APP.config['MAIL_PORT'] = 465
+APP.config['MAIL_USERNAME'] = 'comp1531f11b.ant@gmail.com'
+APP.config['MAIL_PASSWORD'] = 'Comppass123'
+APP.config['MAIL_USE_TLS'] = False
+APP.config['MAIL_USE_SSL'] = True
+mail = Mail(APP)
 
 # AUTH FUNCTION WRAPPERS
 
@@ -95,6 +109,24 @@ def register():
 def logout():
     data = request.get_json()
     auth_logout_v1(data['token'])
+    save()
+    return dumps({})
+
+@APP.route('/auth/passwordreset/request/v1', methods=['POST'])
+def resetrequest():
+    data = request.get_json()
+    code = str(auth_passwordreset_request_v1(data['email']))
+    if code != None:
+        msg = Message("Password reset", sender='comp1531f11b.ant@gmail.com', recipients=[data['email']])
+        msg.body = f"Hi, your code is: {code}"
+        mail.send(msg)
+    save()
+    return dumps({})
+
+@APP.route('/auth/passwordreset/reset/v1', methods=['POST'])
+def resetpass():
+    data = request.get_json()
+    auth_passwordreset_reset_v1(data['reset_code'], data['new_password'])
     save()
     return dumps({})
 
@@ -141,7 +173,6 @@ def invite():
     channel_invite_v1(data['token'], data['channel_id'], data['u_id'])
     save()
     return dumps({})
-
 
 @APP.route("/channel/messages/v2", methods=['GET'])
 def messages():
@@ -291,12 +322,91 @@ def clear():
     save()
     return dumps({})
 
-# USER FUNCTION WRAPPERS
 
-
+#USER FUNCTION WRAPPERS
 @APP.route('/users/all/v1', methods=['GET'])
 def users_all():
-    return users_all_v1(request.args.get("token"))
+    users = users_all_v1(request.args.get("token"))['users']
+    return dumps({
+        'users': users
+    })
+
+@APP.route("/user/profile/v1", methods=["GET"])
+def user_profile():
+    user = user_profile_v1(request.args.get("token"), request.args.get("u_id"))['user']
+    return dumps({
+        'user': user
+    })
+
+
+@APP.route("/user/profile/setname/v1", methods=["PUT"])
+def user_setname():
+    data = request.get_json()
+    user_profile_setname_v1(data['token'], data['name_first'], data['name_last'])
+    save()
+    return dumps({})
+
+@APP.route("/user/profile/setemail/v1", methods=["PUT"])
+def user_setemail():
+    data = request.get_json()
+    user_profile_setemail_v1(data['token'], data['email'])
+    save()
+    return dumps({})
+
+@APP.route("/user/profile/sethandle/v1", methods=["PUT"])
+def user_sethandle():
+    data = request.get_json()
+    user_profile_sethandle_v1(data['token'], data['handle_str'])
+    save()
+    return dumps({})
+
+@APP.route("/user/stats/v1", methods=["GET"])
+def user_stats():
+    return dumps({
+        'user_stats': user_stats_v1(request.args.get("token"))
+    })
+
+@APP.route("/users/stats/v1", methods=["GET"])
+def users_stats():
+    return dumps({
+        'workspace_stats': users_stats_v1(request.args.get("token"))
+    })
+
+
+
+#ADMIN WRAPPER FUNCTIONS
+@APP.route('/admin/user/remove/v1', methods=['DELETE'])
+def admin_remove():
+    data = request.get_json()
+    admin_user_remove_v1(data['token'], data['u_id'])
+    save()
+    return dumps({})
+
+@APP.route('/admin/userpermission/change/v1', methods=['POST'])
+def admin_perm_change():
+    data = request.get_json()
+    admin_userpermission_change_v1(data['token'], data['u_id'], data['permission_id'])
+    save()
+    return dumps({})
+
+#STANDUP FUNCTION WRAPPERS
+@APP.route('/standup/start/v1', methods=['POST'])
+def start_standup():
+    data = request.get_json()
+    time_finish = standup_start(data['token'], data['channel_id'], data['length'])['time_finish']
+    save()
+    return dumps({'time_finish': time_finish})
+
+@APP.route('/standup/active/v1', methods=['GET'])
+def active_standup():
+    standup_details = standup_active(request.args.get('token'), request.args.get('channel_id'))
+    return dumps({'is_active': standup_details['is_active'], 'time_finish': standup_details['time_finish']})
+
+@APP.route('/standup/send/v1', methods=['POST'])
+def send_standup():
+    data = request.get_json()
+    standup_send(data['token'], data['channel_id'], data['message'])
+    return dumps({})
 
 
 # NO NEED TO MODIFY BELOW THIS POINT

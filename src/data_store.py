@@ -24,18 +24,24 @@ Example usage:
     data_store.set(store)
 '''
 
-## YOU SHOULD MODIFY THIS OBJECT BELOW
+
+# YOU SHOULD MODIFY THIS OBJECT BELOW
 initial_object = {
-    #users will contain a list of dictionaries containing in order: id, email, name_first, name_last, handle
+    # users will contain a list of dictionaries containing in order:
+    # {id, email, name_first, name_last, handle, email, global_owner, }
     'users': [],
     'channels': [],
     'dms': [],
     'no_users': True,
     'session_id': 0,
+    'removed_users': [],
+    'workspace_stats': {}
 }
-## YOU SHOULD MODIFY THIS OBJECT ABOVE
+# YOU SHOULD MODIFY THIS OBJECT ABOVE
 
-## YOU ARE ALLOWED TO CHANGE THE BELOW IF YOU WISH
+# YOU ARE ALLOWED TO CHANGE THE BELOW IF YOU WISH
+
+
 class Datastore:
     def __init__(self):
         self.__store = initial_object
@@ -47,6 +53,7 @@ class Datastore:
         if not isinstance(store, dict):
             raise TypeError(description='store must be of type dictionary')
         self.__store = store
+
 
 print('Loading Datastore...')
 

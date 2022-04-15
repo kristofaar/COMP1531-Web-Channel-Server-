@@ -1,7 +1,7 @@
 from src.data_store import data_store
 from src.error import InputError
 from src.error import AccessError
-from src.other import read_token, check_if_valid
+from src.other import read_token, check_if_valid, get_time
 import hashlib, jwt
 
 def dm_create_v1(token, u_ids):
@@ -57,8 +57,21 @@ def dm_create_v1(token, u_ids):
     
     #updating users
     for u_id in u_ids:
-        curr_user = next((user for user in users if u_id == user['id']),None)
+        curr_user = None
+        for user in users:
+            if u_id == user['id']:
+                curr_user = user
         curr_user['dms'].append({'dm_id' : dm_id, 'name' : name})
+        #stats
+        curr_user['user_stats']['dms_joined'].append({
+            'num_dms_joined': len(curr_user['dms']),
+            'time_stamp': get_time()
+        })
+    #stats
+    storage['workspace_stats']['dms_exist'].append({
+        'num_dms_exist': len(dm),
+        'time_stamp': get_time()
+    })
     data_store.set(storage)
     return{
         'dm_id' : dm_id
@@ -85,7 +98,10 @@ def dm_list_v1(token):
     users = storage['users']
 
     #iterate through users until a user with the corresponding id is found
-    curr_user = next((user for user in users if user_id == user['id']), None)    
+    curr_user = None
+    for user in users:
+        if user_id == user['id']:
+            curr_user = user
     return {
         'dms': curr_user['dms']
     }
@@ -131,9 +147,22 @@ def dm_remove_v1(token, dm_id):
 
     #updating user and dms
     for members in curr_dm['members']:
-        curr_user = next((user for user in users if members == user['id']), None)
+        curr_user = None
+        for user in users:
+            if members == user['id']:
+                curr_user = user
         curr_user['dms'].remove({'dm_id': curr_dm['dm_id'], 'name': curr_dm['name']})
+        #stats
+        curr_user['user_stats']['dms_joined'].append({
+            'num_dms_joined': len(curr_user['dms']),
+            'time_stamp': get_time()
+        })
     dms.remove(curr_dm)
+    #stats
+    storage['workspace_stats']['dms_exist'].append({
+        'num_dms_exist': len(dms),
+        'time_stamp': get_time()
+    })
     data_store.set(storage)
     return{}
 
@@ -175,7 +204,10 @@ def dm_details_v1(token, dm_id):
     #generate lists of dm members
     dm_members = []
     for member in curr_dm['members']:
-        curr_user = next(user for user in users if member == user['id'])
+        curr_user = None
+        for user in users:
+            if member == user['id']:
+                curr_user = user
         dm_members.append({'u_id': curr_user['id'], 
                            'email': curr_user['email'], 
                            'name_first': curr_user['name_first'], 
@@ -215,9 +247,18 @@ def dm_leave_v1(token, dm_id):
     if int(user_id) not in curr_dm['members']:
         raise AccessError(description="Unauthorised User: User is not in dm")
 
-    curr_user = next((user for user in users if user_id == user['id']), None)
+    curr_user = None
+    for user in users:
+        if user_id == user['id']:
+            curr_user = user
     curr_user['dms'].remove({'dm_id' : curr_dm['dm_id'], 'name' : curr_dm['name']})
+    #stats
+    curr_user['user_stats']['dms_joined'].append({
+        'num_dms_joined': len(curr_user['dms']),
+        'time_stamp': get_time()
+    })
     curr_dm['members'].remove(user_id)
+
     data_store.set(storage)
     return{}
 

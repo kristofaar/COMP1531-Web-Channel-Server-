@@ -2,7 +2,7 @@ from multiprocessing import dummy
 from src.data_store import data_store
 from src.error import InputError
 from src.error import AccessError
-from src.other import read_token, check_if_valid
+from src.other import read_token, check_if_valid, get_time
 
 def channels_list_v1(token):
     '''
@@ -26,7 +26,10 @@ def channels_list_v1(token):
 
             
     #iterate through users until a user with the corresponding id is found
-    curr_user = next(user for user in users if user_id == user['id'])
+    curr_user = None
+    for user in users:
+        if user_id == user['id']:
+            curr_user = user
 
     return {
         'channels': curr_user['channels']
@@ -84,7 +87,10 @@ def channels_create_v1(token, name, is_public):
     channels = storage['channels']
    
     #look through users to see if the given id matches any of their ids
-    curr_user = next(user for user in users if user_id == user['id'])
+    curr_user = None
+    for user in users:
+        if user_id == user['id']:
+            curr_user = user
     if 1 > len(name):
         raise InputError(description="Channel Name Is Too Short")
     if len(name) > 20:
@@ -97,10 +103,12 @@ def channels_create_v1(token, name, is_public):
 
     #updating the data store
     channels.append({'channel_id_and_name' :{'channel_id' : ch_id, 'name' : name}, 'is_public' : is_public, 
-    'owner' : [user_id], 'members' : [user_id], 'messages' : []})
+    'owner' : [user_id], 'members' : [user_id], 'messages' : [], "standup_time": 0, "standup_message": ""})
+    storage['workspace_stats']['channels_exist'].append({'num_channels_exist': len(channels), 'time_stamp': get_time()})
 
     #updating user
     curr_user['channels'].append({'channel_id' : ch_id, 'name' : name})
+    curr_user['user_stats']['channels_joined'].append({'num_channels_joined': len(curr_user['channels']), 'time_stamp': get_time()})
     data_store.set(storage)
     return{
         'channel_id' : ch_id

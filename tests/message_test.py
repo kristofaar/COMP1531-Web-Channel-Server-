@@ -217,6 +217,7 @@ def test_message_remove_invalid_id(reg_two_users_and_create_two_channels):
     resp = requests.delete(config.url + 'message/remove/v1', json={'token': reg_two_users_and_create_two_channels['token1'], 'message_id': 123312321345})
     assert resp.status_code == I_ERR
 
+
 #remove working
 def test_message_remove_basic(reg_two_users_and_create_two_channels):
     resp1 = requests.post(config.url + 'message/send/v1', json={'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'message': 'hi'})
@@ -262,8 +263,10 @@ def test_message_remove_global_owner(reg_two_users_and_create_two_channels):
 def reg_two_users_and_create_dm():
     clear_resp = requests.delete(config.url + 'clear/v1')
     assert clear_resp.status_code == OK
-    resp1 = requests.post(config.url + 'auth/register/v2', json={
-                          'email': '1@test.test', 'password': '1testtest', 'name_first': 'first_test', 'name_last': 'first_test'})
+    requests.post(config.url + 'auth/register/v2', json={
+                  'email': '1@test.test', 'password': '1testtest', 'name_first': 'first_test', 'name_last': 'first_test'})
+    resp1 = requests.post(config.url + 'auth/login/v2',
+                          json={'email': '1@test.test', 'password': '1testtest'})
     assert resp1.status_code == OK
     resp2 = requests.post(config.url + 'auth/register/v2', json={
                           'email': '2@lol.lol', 'password': '2abcabc', 'name_first': 'Second_Jane', 'name_last': 'Second_Austen'})
@@ -281,7 +284,6 @@ def reg_two_users_and_create_dm():
 
 @pytest.fixture
 def reg_another_two_users_and_dm():
-
     reg1 = requests.post(config.url + 'auth/register/v2', json={
                          'email': '3@test.test', 'password': '3testtest', 'name_first': 'third_name', 'name_last': 'third_last_name'})
     assert reg1.status_code == OK
@@ -705,9 +707,9 @@ def test_sendlaterdm_react(reg_two_users_and_create_dm):
 """
 
 
-'''
+"""
 #send working
-def test_one_user_two_dms(reg_two_users_and_create_dm):
+def test_one_user_two_dms(reg_two_users_and_create_dm, ):
     resp1 = requests.post(config.url + 'message/senddm/v1', json={'token': reg_two_users_and_create_dm['token1'], 'dm_id': reg_two_users_and_create_dm['dm_id'], 'message': 'hi'})
     assert resp1.status_code == OK
     resp1_data = resp1.json()
@@ -741,12 +743,85 @@ def test_two_users_one_dm(reg_two_users_and_create_dm):
     resp4_data = resp4.json()
     assert resp3_data['start'] == 0
     assert resp3_data['end'] == -1
-    assert resp4_data['start'] == 0
-    assert resp4_data['end'] == -1
-    assert resp3_data['messages'][0]['message_id'] != resp4_data['messages'][0]['message_id']
-    assert resp3_data['messages'][0]['u_id'] == reg_two_users_and_create_dm['u_id1']
-    assert resp4_data['messages'][0]['u_id'] == reg_two_users_and_create_dm['u_id2']
-    assert resp4_data['messages'][0]['message'] == 'cool'
-    assert resp3_data['messages'][0]['message'] == 'hi'
-    assert resp4_data['messages'][0]['time_sent'] >= resp3_data['messages'][0]['time_sent']
-    '''
+    assert resp3_data['messages'][0]['message_id'] != resp3_data['messages'][1]['message_id']
+    assert resp3_data['messages'][0]['u_id'] == reg_two_users_and_create_dm['u_id2']
+    assert resp3_data['messages'][1]['u_id'] == reg_two_users_and_create_dm['u_id1']
+    assert resp3_data['messages'][0]['message'] == 'cool'
+    assert resp3_data['messages'][1]['message'] == 'hi'
+    assert resp3_data['messages'][0]['time_sent'] >= resp3_data['messages'][1]['time_sent']
+
+#edit and remove for dms errors
+def test_message_edit_dm_invalid_id(reg_two_users_and_create_dm):
+    resp = requests.put(config.url + 'message/edit/v1', json={'token': reg_two_users_and_create_dm['token1'], 'message_id': 123312321345, 'message': 'hi'})
+    assert resp.status_code == I_ERR
+
+def test_message_remove_dm_invalid_id(reg_two_users_and_create_dm):
+    resp = requests.delete(config.url + 'message/remove/v1', json={'token': reg_two_users_and_create_dm['token1'], 'message_id': 123312321345})
+    assert resp.status_code == I_ERR
+
+#edit and remove for dms working
+def test_one_user_two_dms_edit(reg_two_users_and_create_dm, reg_another_two_users_and_dm):
+    resp1 = requests.post(config.url + 'message/senddm/v1', json={'token': reg_two_users_and_create_dm['token1'], 'dm_id': reg_two_users_and_create_dm['dm_id'], 'message': 'hi'})
+    assert resp1.status_code == OK
+    resp1_data = resp1.json()
+    resp2 = requests.post(config.url + 'message/senddm/v1', json={'token': reg_two_users_and_create_dm['token2'], 'dm_id': reg_two_users_and_create_dm['dm_id'], 'message': 'cool'})
+    assert resp2.status_code == OK
+    resp2_data = resp2.json()
+    resp2 = requests.put(config.url + 'message/edit/v1', json={'token': reg_two_users_and_create_dm['token1'], 'message_id': resp2_data['message_id'], 'message': 'lol'})
+    assert resp2.status_code == OK
+    resp2 = requests.put(config.url + 'message/edit/v1', json={'token': reg_two_users_and_create_dm['token2'], 'message_id': resp1_data['message_id'], 'message': 'xxx'})
+    assert resp2.status_code == A_ERR
+    resp2 = requests.put(config.url + 'message/edit/v1', json={'token': reg_two_users_and_create_dm['token1'], 'message_id': resp1_data['message_id'], 'message': 'x'})
+    assert resp2.status_code == OK
+    resp3 = requests.get(config.url + 'dm/messages/v1', params={'token': reg_two_users_and_create_dm['token1'], 'dm_id': reg_two_users_and_create_dm['dm_id'], 'start': 0})
+    assert resp3.status_code == OK
+    resp3_data = resp3.json()
+    assert resp3_data['start'] == 0
+    assert resp3_data['end'] == -1
+    assert resp3_data['messages'][0]['message'] == 'lol'
+    assert resp3_data['messages'][1]['message'] == 'x'
+    resp2 = requests.put(config.url + 'message/edit/v1', json={'token': reg_two_users_and_create_dm['token2'], 'message_id': resp2_data['message_id'], 'message': 'aaa'})
+    assert resp2.status_code == OK
+    resp3 = requests.get(config.url + 'dm/messages/v1', params={'token': reg_two_users_and_create_dm['token1'], 'dm_id': reg_two_users_and_create_dm['dm_id'], 'start': 0})
+    assert resp3.status_code == OK
+    resp3_data = resp3.json()
+    assert resp3_data['start'] == 0
+    assert resp3_data['end'] == -1
+    assert resp3_data['messages'][0]['message'] == 'aaa'
+    assert resp3_data['messages'][1]['message'] == 'x'
+    resp2 = requests.put(config.url + 'message/edit/v1', json={'token': reg_two_users_and_create_dm['token2'], 'message_id': resp2_data['message_id'], 'message': ''})
+    assert resp2.status_code == OK
+    resp3 = requests.get(config.url + 'dm/messages/v1', params={'token': reg_two_users_and_create_dm['token1'], 'dm_id': reg_two_users_and_create_dm['dm_id'], 'start': 0})
+    assert resp3.status_code == OK
+    resp3_data = resp3.json()
+    assert resp3_data['start'] == 0
+    assert resp3_data['end'] == -1
+    assert resp3_data['messages'][0]['message'] == 'x'
+
+def test_one_user_two_dms_remove(reg_two_users_and_create_dm, reg_another_two_users_and_dm):
+    resp1 = requests.post(config.url + 'message/senddm/v1', json={'token': reg_two_users_and_create_dm['token1'], 'dm_id': reg_two_users_and_create_dm['dm_id'], 'message': 'hi'})
+    assert resp1.status_code == OK
+    resp1_data = resp1.json()
+    resp2 = requests.post(config.url + 'message/senddm/v1', json={'token': reg_two_users_and_create_dm['token2'], 'dm_id': reg_two_users_and_create_dm['dm_id'], 'message': 'cool'})
+    assert resp2.status_code == OK
+    resp2_data = resp2.json()
+    resp2 = requests.delete(config.url + 'message/remove/v1', json={'token': reg_two_users_and_create_dm['token1'], 'message_id': resp2_data['message_id']})
+    assert resp2.status_code == OK
+    resp2 = requests.delete(config.url + 'message/remove/v1', json={'token': reg_two_users_and_create_dm['token2'], 'message_id': resp1_data['message_id']})
+    assert resp2.status_code == A_ERR
+    resp2 = requests.delete(config.url + 'message/remove/v1', json={'token': reg_two_users_and_create_dm['token1'], 'message_id': resp1_data['message_id']})
+    assert resp2.status_code == OK
+    resp3 = requests.get(config.url + 'dm/messages/v1', params={'token': reg_two_users_and_create_dm['token1'], 'dm_id': reg_two_users_and_create_dm['dm_id'], 'start': 0})
+    assert resp3.status_code == OK
+    resp3_data = resp3.json()
+    assert resp3_data['messages'] == []
+    resp2 = requests.post(config.url + 'message/senddm/v1', json={'token': reg_two_users_and_create_dm['token2'], 'dm_id': reg_two_users_and_create_dm['dm_id'], 'message': 'cool'})
+    assert resp2.status_code == OK
+    resp2_data = resp2.json()
+    resp2 = requests.delete(config.url + 'message/remove/v1', json={'token': reg_two_users_and_create_dm['token2'], 'message_id': resp2_data['message_id']})
+    assert resp2.status_code == OK
+    resp3 = requests.get(config.url + 'dm/messages/v1', params={'token': reg_two_users_and_create_dm['token1'], 'dm_id': reg_two_users_and_create_dm['dm_id'], 'start': 0})
+    assert resp3.status_code == OK
+    resp3_data = resp3.json()
+    assert resp3_data['messages'] == []
+"""

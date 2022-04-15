@@ -1,8 +1,9 @@
 from multiprocessing import dummy
+from operator import is_
 from src.data_store import data_store
-from src.other import generate_new_session_id, check_if_valid
+from src.other import generate_new_session_id, check_if_valid, get_time
 from src.error import InputError, AccessError
-import re, hashlib, jwt
+import re, hashlib, jwt, random
 
 SECRET = 'heheHAHA111'
 
@@ -18,7 +19,7 @@ def auth_login_v1(email, password):
             -email entered does not belong to a user
             -password is not correct
     Return Value:
-        Returns auth_user_id always.
+        Returns auth_user_id and token always.
     '''
 
     storage = data_store.get()
@@ -118,9 +119,43 @@ def auth_register_v1(email, password, name_first, name_last):
         is_first = True
     
     session_id = generate_new_session_id()
+    #stats
+    init_user_stats = {
+        'channels_joined': [{
+            'num_channels_joined': 0,
+            'time_stamp': get_time()
+        }],
+        'dms_joined': [{
+            'num_dms_joined': 0,
+            'time_stamp': get_time()
+        }],
+        'messages_sent': [{
+            'num_messages_sent': 0,
+            'time_stamp': get_time()
+        }],
+        'involvement_rate': 0
+    }
+    
+    if is_first:
+        storage['workspace_stats'] = {
+            'channels_exist': [{
+                'num_channels_exist': 0,
+                'time_stamp': get_time()
+            }],
+            'dms_exist': [{
+                'num_dms_exist': 0,
+                'time_stamp': get_time()
+            }],
+            'messages_exist': [{
+                'num_messages_exist': 0,
+                'time_stamp': get_time()
+            }],
+            'utilization_rate': 0
+        }
 
     storage['users'].append({'id': new_id, 'email': email, 'name_first': name_first, 'name_last': name_last, 'handle': handle, 
-                            'channels' : [],'dms':[], 'global_owner': is_first, 'password': hashlib.sha256(password.encode()).hexdigest(), 'session_list': [session_id]})
+                            'channels' : [],'dms':[], 'global_owner': is_first, 'password': hashlib.sha256(password.encode()).hexdigest(), 'session_list': [session_id],
+                            'reset_code': None, 'user_stats': init_user_stats})
     
     data_store.set(storage)
     return {
@@ -148,5 +183,70 @@ def auth_logout_v1(token):
     for user in storage['users']:
         if (details['session_id'] in user['session_list']):
             user['session_list'].remove(details['session_id'])
+    data_store.set(storage)
+    return {}
+
+def auth_passwordreset_request_v1(email):
+    '''Sends a code through email to reset password.
+
+    Arguments:
+        email (String)         - A user's email. 
+
+    Return Value:
+        Nothing.
+    '''
+    storage = data_store.get()
+    users = storage['users']
+    user = next((user for user in users if user['email'] == email), None)
+    if not user:
+        return None
+    
+    #code will be a unique random 5 digit number
+    code = None
+    temp_user = user
+    while temp_user != None:
+        code = random.randint(10000, 99999)
+        temp_user = next((temp_user for temp_user in users if temp_user['reset_code'] == code), None)
+
+    #encoding the code :)
+    user['reset_code'] = hashlib.sha256(str(code).encode()).hexdigest()
+    #login user out everywhere
+    user['session_list'] = []
+
+    data_store.set(storage)
+    return code
+
+def auth_passwordreset_reset_v1(reset_code, new_password):
+    '''Resets a password for a user with the corresponding code.
+
+    Arguments:
+        reset_code (String)         - A reset code for password. 
+        new_password (String)       - New password
+    
+    Exceptions:
+        InputError when any of:
+            
+            reset_code is not a valid reset code
+            password entered is less than 6 characters long
+
+    Return Value:
+        Nothing.
+    '''
+
+    storage = data_store.get()
+    users = storage['users']
+    #finding the user who needs their account reset
+    user = next((user for user in users if user['reset_code'] == hashlib.sha256(str(reset_code).encode()).hexdigest()), None)
+
+    #errors
+    if len(new_password) < 6:
+        raise InputError(description="Invalid Password")
+    if not user:
+        raise InputError(description="Invalid Code")
+    
+
+    user['password'] = hashlib.sha256(new_password.encode()).hexdigest()
+    user['reset_code'] = None
+
     data_store.set(storage)
     return {}
