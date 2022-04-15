@@ -353,7 +353,7 @@ def message_senddm_v1(token, dm_id, message):
     }
 
 
-def msg_send(message_dict, storage, channel):  # helper function
+def msg_send(auth_user_id, message_dict, storage, channel):  # helper function
     '''
     Given the appropriate parameters, create a message dictionary with the parameters
     and append it into the data (sends the message)
@@ -367,6 +367,17 @@ def msg_send(message_dict, storage, channel):  # helper function
     print('msg_send printed', message_dict)
     # inserting message
     channel['messages'].insert(0, message_dict)
+    # stats
+    for user in storage['users']:
+        if user['id'] == auth_user_id:
+            user['user_stats']['messages_sent'].append({
+                'num_messages_sent': user['user_stats']['messages_sent'][len(user['user_stats']['messages_sent']) - 1]['num_messages_sent'] + 1,
+                'time_stamp': get_time()
+            })
+    storage['workspace_stats']['messages_exist'].append({
+        'num_messages_exist': storage['workspace_stats']['messages_exist'][len(storage['workspace_stats']['messages_exist']) - 1]['num_messages_exist'] + 1,
+        'time_stamp': get_time()
+    })
     data_store.set(storage)
 
 
@@ -447,7 +458,7 @@ def message_sendlater_v1(token, channel_id, message, time_sent):
 
     # Threading
     t = threading.Timer(time_diff, msg_send, args=[
-                        message_dict, storage, channel])
+                        auth_user_id, message_dict, storage, channel])
     t.start()
 
     return {
@@ -531,7 +542,7 @@ def message_sendlaterdm_v1(token, dm_id, message, time_sent):
 
     # Threading
     t = threading.Timer(time_diff, msg_send, args=[
-                        message_dict, storage, dm])
+                        auth_user_id, message_dict, storage, dm])
     t.start()
 
     return {
@@ -576,6 +587,7 @@ def message_share_v1(token, og_message_id, message, channel_id, dm_id):
 
     channels = storage['channels']
     dms = storage['dms']
+    users = storage['users']
 
     channel = None
 
@@ -600,14 +612,41 @@ def message_share_v1(token, og_message_id, message, channel_id, dm_id):
         raise AccessError(
             description="Unauthorised User: User is not in channel or dm queried")
 
+    user = None
+    for usa in users:
+        if auth_user_id == usa['id']:
+            user = usa
+
     # check og message_id
-    msg = next((msg for msg in channel['messages'] if int(
-        og_message_id) == msg['message_id']), None)
-    if msg == None:
-        raise InputError(description='Invalid og_message_id')
+    # search through channels by id until id is matched
+    msg = None
+    ch = None
+    dm = None
+    for user_channel in user['channels']:
+        for channel in channels:
+            if user_channel['channel_id'] == channel['channel_id_and_name']['channel_id']:
+                ch = channel
+        msg = next((msg for msg in ch['messages'] if int(
+            og_message_id) == msg['message_id']), None)
+        if msg != None:
+            break
+
+    if not msg:
+        ch = None
+        for user_dm in user['dms']:
+            for dm_ in dms:
+                if user_dm['dm_id'] == dm_['dm_id']:
+                    dm = dm_
+            msg = next((msg for msg in dm['messages'] if int(
+                og_message_id) == msg['message_id']), None)
+            if msg != None:
+                break
+
+    if not msg:
+        raise InputError(description='Invalid message id')
 
     # check message length
-    if not 1 <= len(message) <= 1000:
+    if not len(message) <= 1000:
         raise InputError(description="Invalid message length")
 
     # using session id generator to create unique message id
@@ -633,6 +672,18 @@ def message_share_v1(token, og_message_id, message, channel_id, dm_id):
 
     # inserting message
     channel['messages'].insert(0, message_dict)
+
+    # stats
+    for user in storage['users']:
+        if user['id'] == auth_user_id:
+            user['user_stats']['messages_sent'].append({
+                'num_messages_sent': user['user_stats']['messages_sent'][len(user['user_stats']['messages_sent']) - 1]['num_messages_sent'] + 1,
+                'time_stamp': get_time()
+            })
+    storage['workspace_stats']['messages_exist'].append({
+        'num_messages_exist': storage['workspace_stats']['messages_exist'][len(storage['workspace_stats']['messages_exist']) - 1]['num_messages_exist'] + 1,
+        'time_stamp': get_time()
+    })
     data_store.set(storage)
 
     return {

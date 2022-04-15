@@ -1,9 +1,9 @@
 import pytest
 import requests
 import json
-from datetime import timezone
 import datetime
-import time
+from datetime import timezone
+import time as t
 from src import config
 
 A_ERR = 403
@@ -234,7 +234,7 @@ def test_user_stats_dm_leave_remove(reg_two_users):
     resp_data = resp.json()
     assert resp_data['user_stats']['dms_joined'][3]['num_dms_joined'] == 1
     assert resp_data['user_stats']['dms_joined'][4]['num_dms_joined'] == 0
-'''
+
 def test_user_stats_message_share(reg_two_users):
     resp = requests.post(config.url + "dm/create/v1", json={"token": reg_two_users['token1'], "u_ids": [reg_two_users['u_id2']]})
     assert resp.status_code == OK
@@ -276,14 +276,13 @@ def test_user_stats_message_send_later(reg_two_users):
     assert resp.status_code == OK
     resp_data = resp.json()
     assert len(resp_data['user_stats']['messages_sent']) == 1
-    time.sleep(1)
+    t.sleep(1)
     resp = requests.get(config.url + "user/stats/v1", params={"token": reg_two_users['token1']})
     assert resp.status_code == OK
     resp_data = resp.json()
     assert resp_data['user_stats']['messages_sent'][1]['num_messages_sent'] == 1
     assert resp_data['user_stats']['messages_sent'][2]['num_messages_sent'] == 2
     assert resp_data['user_stats']['messages_sent'][3]['num_messages_sent'] == 3
-'''
 
 
 #tests for users_stats
@@ -408,7 +407,7 @@ def test_users_stats_dm_leave_remove(reg_two_users):
     resp_data = resp.json()
     assert resp_data['workspace_stats']['utilization_rate'] == 0.5
     assert resp_data['workspace_stats']['dms_exist'][3]['num_dms_exist'] == 1
-'''
+
 def test_users_stats_message_share(reg_two_users):
     resp = requests.post(config.url + "dm/create/v1", json={"token": reg_two_users['token1'], "u_ids": [reg_two_users['u_id2']]})
     assert resp.status_code == OK
@@ -450,9 +449,8 @@ def test_users_stats_message_send_later(reg_two_users):
     assert resp.status_code == OK
     resp_data = resp.json()
     assert len(resp_data['workspace_stats']['messages_exist']) == 1
-    time.sleep(1)
+    t.sleep(1)
     resp = requests.get(config.url + "users/stats/v1", params={"token": reg_two_users['token1']})
     assert resp.status_code == OK
     resp_data = resp.json()
     assert len(resp_data['workspace_stats']['messages_exist']) == 4
-'''
