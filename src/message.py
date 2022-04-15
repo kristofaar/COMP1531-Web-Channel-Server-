@@ -623,9 +623,9 @@ def message_share_v1(token, og_message_id, message, channel_id, dm_id):
     ch = None
     dm = None
     for user_channel in user['channels']:
-        for channel in channels:
-            if user_channel['channel_id'] == channel['channel_id_and_name']['channel_id']:
-                ch = channel
+        for channl in channels:
+            if user_channel['channel_id'] == channl['channel_id_and_name']['channel_id']:
+                ch = channl
         msg = next((msg for msg in ch['messages'] if int(
             og_message_id) == msg['message_id']), None)
         if msg != None:
