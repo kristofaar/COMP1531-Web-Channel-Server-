@@ -1224,13 +1224,19 @@ def test_pin_no_permissions(reg_two_users_and_create_two_channels):
     assert message1.status_code == OK
     message1_data = message1.json()
 
+    join = requests.post(config.url + 'channel/join/v2', json={
+                          'token': reg_two_users_and_create_two_channels['token2'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1']})
+    assert join.status_code == OK
+
     pin = requests.post(config.url + 'message/pin/v1', json={'token': reg_two_users_and_create_two_channels['token2'], 'message_id': message1_data["message_id"]})
     assert pin.status_code == A_ERR
+    
 #React/Unreact Tests Working
 def test_pin_message(reg_two_users_and_create_two_channels):
     message1 = requests.post(config.url + 'message/send/v1', json={'token': reg_two_users_and_create_two_channels['token1'], 'channel_id': reg_two_users_and_create_two_channels['ch_id1'], 'message': 'hi'})
     assert message1.status_code == OK
     message1_data = message1.json()
+    
 
     pin = requests.post(config.url + 'message/pin/v1', json={'token': reg_two_users_and_create_two_channels['token1'], 'message_id': message1_data['message_id']})
     assert pin.status_code == OK

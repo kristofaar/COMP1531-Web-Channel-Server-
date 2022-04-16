@@ -320,15 +320,6 @@ def share():
         'shared_message_id': details['shared_message_id']
     })
 
-
-@APP.route("/clear/v1", methods=['DELETE'])
-def clear():
-    clear_v1()
-    save()
-    return dumps({})
-
-
-
 # USER FUNCTION WRAPPERS
 @APP.route('/users/all/v1', methods=['GET'])
 def users_all():
@@ -385,12 +376,7 @@ def users_stats():
         'workspace_stats': users_stats_v1(request.args.get("token"))
     })
 
-<<<<<<< HEAD
-#ADMIN WRAPPER FUNCTIONS
-=======
-
 # ADMIN WRAPPER FUNCTIONS
->>>>>>> 95a90e37190c22b770cc982af242bda73b856af6
 @APP.route('/admin/user/remove/v1', methods=['DELETE'])
 def admin_remove():
     data = request.get_json()
