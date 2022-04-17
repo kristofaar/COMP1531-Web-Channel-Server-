@@ -74,6 +74,8 @@ def message_send_v1(token, channel_id, message):
         'u_id': auth_user_id,
         'message': message,
         'time_sent': time_sent,
+        'reacts': [{'react_id': 1, 'u_ids': []}],
+        'pinned': False,
     }
     ch['messages'].insert(0, message_dict)
 
@@ -333,6 +335,8 @@ def message_senddm_v1(token, dm_id, message):
         'u_id': auth_user_id,
         'message': message,
         'time_sent': get_time(),
+        'reacts': [{'react_id': 1, 'u_ids': []}],
+        'pinned': False,
     }
     dm['messages'].insert(0, message_dict)
 
@@ -347,11 +351,11 @@ def message_senddm_v1(token, dm_id, message):
         'num_messages_exist': storage['workspace_stats']['messages_exist'][len(storage['workspace_stats']['messages_exist']) - 1]['num_messages_exist'] + 1,
         'time_stamp': get_time()
     })
+
     data_store.set(storage)
     return {
         'message_id': message_id
     }
-
 
 def msg_send(auth_user_id, message_dict, storage, channel):  # helper function
     '''
@@ -364,7 +368,6 @@ def msg_send(auth_user_id, message_dict, storage, channel):  # helper function
     Return:
         Nothing
     '''
-    print('msg_send printed', message_dict)
     # inserting message
     channel['messages'].insert(0, message_dict)
     # stats
@@ -442,6 +445,8 @@ def message_sendlater_v1(token, channel_id, message, time_sent):
         'u_id': auth_user_id,
         'message': message,
         'time_sent': time_sent,
+        'reacts': [{'react_id': 1, 'u_ids': []}],
+        'pinned': False,
     }
 
     # Getting the current date
@@ -526,6 +531,8 @@ def message_sendlaterdm_v1(token, dm_id, message, time_sent):
         'u_id': auth_user_id,
         'message': message,
         'time_sent': time_sent,
+        'reacts': [{'react_id': 1, 'u_ids': []}],
+        'pinned': False,
     }
 
     # Getting the current date
@@ -668,6 +675,8 @@ def message_share_v1(token, og_message_id, message, channel_id, dm_id):
         'u_id': auth_user_id,
         'message': message,
         'time_sent': time_sent,
+        'reacts': [{'react_id': 1, 'u_ids': []}],
+        'pinned': False,
     }
 
     # inserting message
@@ -689,3 +698,280 @@ def message_share_v1(token, og_message_id, message, channel_id, dm_id):
     return {
         'shared_message_id': message_id
     }
+
+def message_react_v1(token, message_id, react_id):
+    '''
+    Given a message within a channel or DM the authorised user is part of, add a "react" to that particular message.
+
+    Arguments:
+        token     (string)  - passes in the unique user token of whoever ran the funtion.
+        message_id(int)     - passes in the unique id of the message.
+        react_id  (int)     - passes in the id for the react.
+    
+    Exceptions:
+        InputError - message_id is not a valid message within a channel or DM that the authorised user has joined
+        InputError - react_id is not a valid react ID - currently, the only valid react ID the frontend has is 1
+        InputError - the message already contains a react with ID react_id from the authorised user
+
+    Return Value:
+        NULL
+    '''
+    storage = data_store.get()
+    if not check_if_valid(token):
+        raise AccessError(description="Invalid token")
+    user_id = read_token(token)
+
+    users = storage['users']
+    dms = storage['dms']
+    channels = storage['channels']
+
+    for i in users:
+        if user_id == i['id']:
+            user = i
+
+    #check if the message_id is valid
+    msg = None
+    ch = None
+    dm = None
+    for user_channel in user['channels']:
+        for channel in channels:
+            if user_channel['channel_id'] == channel['channel_id_and_name']['channel_id']:
+                ch = channel
+        msg = next((msg for msg in ch['messages'] if int(message_id) == msg['message_id']), None)
+        if msg != None:
+            break
+    
+    if not msg:
+        ch = None
+        for user_dm in user['dms']:
+            for dm_ in dms:
+                if user_dm['dm_id'] == dm_['dm_id']:
+                    dm = dm_
+            msg = next((msg for msg in dm['messages'] if int(message_id) == msg['message_id']), None)
+            if msg != None:
+                break
+    
+    if not msg:
+        raise InputError(description='Invalid message id')   
+    
+    #check if the react_id is valid
+    if react_id != 1:
+        raise InputError(description="Invalid react_id")
+    
+    #check if user has already reacted
+    if user_id in msg['reacts'][react_id -1]['u_ids']:
+        raise InputError(description="User Has Already Reacted")
+    
+    msg['reacts'][react_id -1]['u_ids'].append(user_id)
+    
+    return {}
+    
+
+def message_unreact_v1(token, message_id, react_id):
+    '''
+    Given a message within a channel or DM the authorised user is part of, remove a "react" to that particular message.
+
+    Arguments:
+        token     (string)  - passes in the unique user token of whoever ran the funtion.
+        message_id(int)     - passes in the unique id of the message.
+        react_id  (int)     - passes in the id for the react.
+    
+    Exceptions:
+        InputError - message_id is not a valid message within a channel or DM that the authorised user has joined
+        InputError - react_id is not a valid react ID
+        InputError - the message does not contain a react with ID react_id from the authorised user
+
+    Return Value:
+        NULL
+    '''
+    storage = data_store.get()
+    if not check_if_valid(token):
+        raise AccessError(description="Invalid token")
+    user_id = read_token(token)
+
+    users = storage['users']
+    dms = storage['dms']
+    channels = storage['channels']
+
+    for i in users:
+        if user_id == i['id']:
+            user = i
+
+    #check if the message_id is valid
+    msg = None
+    ch = None
+    dm = None
+    for user_channel in user['channels']:
+        for channel in channels:
+            if user_channel['channel_id'] == channel['channel_id_and_name']['channel_id']:
+                ch = channel
+        msg = next((msg for msg in ch['messages'] if int(message_id) == msg['message_id']), None)
+        if msg != None:
+            break
+    
+    if not msg:
+        ch = None
+        for user_dm in user['dms']:
+            for dm_ in dms:
+                if user_dm['dm_id'] == dm_['dm_id']:
+                    dm = dm_
+            msg = next((msg for msg in dm['messages'] if int(message_id) == msg['message_id']), None)
+            if msg != None:
+                break
+    
+    if not msg:
+        raise InputError(description='Invalid message id')   
+    
+       #check if the react_id is valid
+    if react_id != 1:
+        raise InputError(description="Invalid react_id")
+    
+    #check if user has not reacted
+    if user_id not in msg['reacts'][react_id -1]['u_ids']:
+        raise InputError(description="User Has Not Reacted")
+    
+    msg['reacts'][react_id -1]['u_ids'].remove(user_id)
+    
+    return {}
+
+def message_pin_v1(token, message_id):
+    '''
+    Given a message within a channel or DM, mark it as "pinned".
+
+    Arguments:
+        token     (string)  - passes in the unique user token of whoever ran the funtion.
+        message_id(int)     - passes in the unique id of the message.
+    
+    Exceptions:
+        InputError - message_id is not a valid message within a channel or DM that the authorised user has joined
+        InputError - the message is already pinned
+        AccessError- message_id refers to a valid message in a joined channel/DM and the authorised user does not 
+                     have owner permissions in the channel/DM
+
+    Return Value:
+        NULL
+    '''
+    storage = data_store.get()
+    if not check_if_valid(token):
+        raise AccessError(description="Invalid token")
+    user_id = read_token(token)
+
+    users = storage['users']
+    dms = storage['dms']
+    channels = storage['channels']
+
+    for i in users:
+        if user_id == i['id']:
+            user = i
+
+    #check if the message_id is valid
+    msg = None
+    ch = None
+    dm = None
+    for user_channel in user['channels']:
+        for channel in channels:
+            if user_channel['channel_id'] == channel['channel_id_and_name']['channel_id']:
+                ch = channel
+        msg = next((msg for msg in ch['messages'] if int(message_id) == msg['message_id']), None)
+        if msg != None:
+            break
+    
+    if not msg:
+        ch = None
+        for user_dm in user['dms']:
+            for dm_ in dms:
+                if user_dm['dm_id'] == dm_['dm_id']:
+                    dm = dm_
+            msg = next((msg for msg in dm['messages'] if int(message_id) == msg['message_id']), None)
+            if msg != None:
+                break
+    
+    if not msg:
+        raise InputError(description='Invalid message id') 
+
+    #check if the user is admin
+    if ch != None and msg['u_id'] != user_id and not owner_perms(user_id, ch['channel_id_and_name']['channel_id']):
+        raise AccessError(description="Unauthorised editor")
+
+    if dm != None and msg['u_id'] != user_id and not user_id in dm['owner']:
+        raise AccessError(description="Unauthorised editor")  
+    
+    
+    #check if message is pinned 
+    if msg['pinned'] == True:
+        raise InputError(description="Message Has Already Been Pinned")
+    
+    msg['pinned'] = True
+    
+    return {}
+
+def message_unpin_v1(token, message_id):
+    '''
+    Given a message within a channel or DM, remove its mark as pinned.
+    
+    Arguments:
+        token     (string)  - passes in the unique user token of whoever ran the funtion.
+        message_id(int)     - passes in the unique id of the message.
+    
+    Exceptions:
+        InputError - message_id is not a valid message within a channel or DM that the authorised user has joined
+        InputError - the message is not already pinned
+        AccessError- message_id refers to a valid message in a joined channel/DM and the authorised user does not 
+                     have owner permissions in the channel/DM
+
+    Return Value:
+        NULL
+    '''
+    storage = data_store.get()
+    if not check_if_valid(token):
+        raise AccessError(description="Invalid token")
+    user_id = read_token(token)
+
+    users = storage['users']
+    dms = storage['dms']
+    channels = storage['channels']
+
+    for i in users:
+        if user_id == i['id']:
+            user = i
+
+    #check if the message_id is valid
+    msg = None
+    ch = None
+    dm = None
+    for user_channel in user['channels']:
+        for channel in channels:
+            if user_channel['channel_id'] == channel['channel_id_and_name']['channel_id']:
+                ch = channel
+        msg = next((msg for msg in ch['messages'] if int(message_id) == msg['message_id']), None)
+        if msg != None:
+            break
+    
+    if not msg:
+        ch = None
+        for user_dm in user['dms']:
+            for dm_ in dms:
+                if user_dm['dm_id'] == dm_['dm_id']:
+                    dm = dm_
+            msg = next((msg for msg in dm['messages'] if int(message_id) == msg['message_id']), None)
+            if msg != None:
+                break
+    
+    if not msg:
+        raise InputError(description='Invalid message id') 
+
+    #check if the user is admin
+    if ch != None and msg['u_id'] != user_id and not owner_perms(user_id, ch['channel_id_and_name']['channel_id']):
+        raise AccessError(description="Unauthorised editor")
+
+    if dm != None and msg['u_id'] != user_id and not user_id in dm['owner']:
+        raise AccessError(description="Unauthorised editor")  
+    
+    
+    #check if message is pinned 
+    if msg['pinned'] == False:
+        raise InputError(description="Message Is Not Pinned")
+    
+    msg['pinned'] = True
+    
+    return {}
