@@ -454,3 +454,8 @@ def test_users_stats_message_send_later(reg_two_users):
     assert resp.status_code == OK
     resp_data = resp.json()
     assert len(resp_data['workspace_stats']['messages_exist']) == 4
+
+# Tests for user/profile/uploadphoto/v1
+def test_uploadphoto_invalid_token(reg_user):
+    resp = requests.put(config.url + "user/profile/uploadphoto/v1", json={"token": "invalid", "name_first": "new_first", "name_last": "new_last"})
+    assert resp.status_code == A_ERR
