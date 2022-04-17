@@ -730,6 +730,9 @@ def message_react_v1(token, message_id, react_id):
             user = i
 
     #check if the message_id is valid
+    msg = None
+    ch = None
+    dm = None
     for user_channel in user['channels']:
         for channel in channels:
             if user_channel['channel_id'] == channel['channel_id_and_name']['channel_id']:
@@ -795,6 +798,9 @@ def message_unreact_v1(token, message_id, react_id):
             user = i
 
     #check if the message_id is valid
+    msg = None
+    ch = None
+    dm = None
     for user_channel in user['channels']:
         for channel in channels:
             if user_channel['channel_id'] == channel['channel_id_and_name']['channel_id']:
@@ -859,6 +865,7 @@ def message_pin_v1(token, message_id):
             user = i
 
     #check if the message_id is valid
+    msg = None
     ch = None
     dm = None
     for user_channel in user['channels']:
@@ -929,6 +936,7 @@ def message_unpin_v1(token, message_id):
             user = i
 
     #check if the message_id is valid
+    msg = None
     ch = None
     dm = None
     for user_channel in user['channels']:
