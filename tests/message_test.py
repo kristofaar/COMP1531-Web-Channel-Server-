@@ -1223,7 +1223,7 @@ def test_unreact_message_channel(reg_two_users_and_create_two_channels):
     unreact = requests.post(config.url + 'message/unreact/v1', json={'token': reg_two_users_and_create_two_channels['token1'], 'message_id': message1_data['message_id'], 'react_id': 1})
     assert unreact.status_code == OK
 
-def test_react_message_dm(reg_two_users_and_create_dm):
+def test_unreact_message_dm(reg_two_users_and_create_dm):
     message = requests.post(config.url + 'message/senddm/v1', json={
                           'token': reg_two_users_and_create_dm['token1'], 'dm_id': reg_two_users_and_create_dm['dm_id'], 'message': 'hi'})
     assert message.status_code == OK
