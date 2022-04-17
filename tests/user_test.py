@@ -456,6 +456,16 @@ def test_users_stats_message_send_later(reg_two_users):
     assert len(resp_data['workspace_stats']['messages_exist']) == 4
 
 # Tests for user/profile/uploadphoto/v1
+# TODO:
+'''
 def test_uploadphoto_invalid_token(reg_user):
-    resp = requests.put(config.url + "user/profile/uploadphoto/v1", json={"token": , "img_url": , "x_start": , "y_start": , "x_end": , "y_end":})
+    resp = requests.put(config.url + "user/profile/uploadphoto/v1", json={"token": "Invalid", "img_url": , "x_start": , "y_start": , "x_end": , "y_end":})
     assert resp.status_code == A_ERR
+
+def test_uploadphoto_invalid_img_url():
+def test_uploadphoto_invalid_x_start():
+def test_uploadphoto_invalid_y_start():
+def test_uploadphoto_invalid_x_end():
+def test_uploadphoto_invalid_y_end():
+def test_uploadphoto_invalid_format():
+'''
