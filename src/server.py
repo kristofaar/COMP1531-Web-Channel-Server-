@@ -363,6 +363,12 @@ def users_stats():
         'workspace_stats': users_stats_v1(request.args.get("token"))
     })
 
+@APP.route("/user/profile/uploadphoto/v1", methods=["POST"])
+def user_uploadphoto():
+    data = request.get_json()
+    user_profile_uploadphoto_v1(data["token"], data["img_url"], data["x_start"], data["y_start"], data["x_end"], data["y_end"])
+    return dumps({})
+
 
 # ADMIN WRAPPER FUNCTIONS
 @APP.route('/admin/user/remove/v1', methods=['DELETE'])
