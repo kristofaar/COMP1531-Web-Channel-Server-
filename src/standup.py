@@ -1,7 +1,7 @@
 from src.data_store import data_store
 from src.error import InputError
 from src.error import AccessError
-from src.other import read_token, check_if_valid
+from src.other import read_token, check_if_valid, standup_sendall
 import datetime
 from datetime import timezone
 import threading
@@ -57,10 +57,8 @@ def standup_start(token, channel_id, length):
 
     def thread_standup(channel_id, length):
         time.sleep(length)
-        #print(ch['standup_message'])
         if ch['standup_message']:
-            message_send_v1(token, channel_id, ch['standup_message'])
-        #print(ch["messages"])
+            standup_sendall(token, channel_id, ch['standup_message'])
         ch["standup_time"] = 0
         ch["standup_message"] = ""
         data_store.set(storage)
@@ -168,3 +166,4 @@ def standup_send(token, channel_id, message):
     ch["standup_message"] += (a_user["handle"]+": "+message+"\n")
     data_store.set(storage)
     return {}
+    
