@@ -184,3 +184,60 @@ def message_tags_update(message, message_id, channel_id, dm_id, name, tagger):
 
         
     data_store.set(storage)
+
+def standup_sendall(token, channel_id, message):
+    if not check_if_valid(token):
+        raise AccessError(description="Invalid Token")
+
+    # staging variables
+    storage = data_store.get()
+    auth_user_id = read_token(token)
+
+    channels = storage['channels']
+
+    # search through channels by id until id is matched
+    ch = None
+    for channel in channels:
+        if int(channel_id) == channel['channel_id_and_name']['channel_id']:
+            ch = channel
+    if ch == None:
+        raise InputError(description="Invalid Channel Id")
+
+    # check if auth_user_id is a member of the channel queried
+    if auth_user_id not in ch['members']:
+        raise AccessError(
+            description="Unauthorised User: User is not in channel")
+
+    if not 1 <= len(message) <= 1000:
+        raise InputError(description="Invalid message length")
+
+    time_sent = get_time()
+
+    # using session id generator to create unique message id
+    message_id = generate_new_session_id()
+
+    # inserting message
+    message_dict = {
+        'message_id': message_id,
+        'u_id': auth_user_id,
+        'message': message,
+        'time_sent': time_sent,
+        'reacts': [{'react_id': 1, 'u_ids': []}],
+        'pinned': False,
+    }
+    ch['messages'].insert(0, message_dict)
+
+    # stats
+    for user in storage['users']:
+        if user['id'] == auth_user_id:
+            user['user_stats']['messages_sent'].append({
+                'num_messages_sent': user['user_stats']['messages_sent'][len(user['user_stats']['messages_sent']) - 1]['num_messages_sent'] + 1,
+                'time_stamp': get_time()
+            })
+    storage['workspace_stats']['messages_exist'].append({
+        'num_messages_exist': storage['workspace_stats']['messages_exist'][len(storage['workspace_stats']['messages_exist']) - 1]['num_messages_exist'] + 1,
+        'time_stamp': get_time()
+    })
+
+    data_store.set(storage)
+    return {}
