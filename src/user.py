@@ -2,7 +2,7 @@ from src.data_store import data_store
 from src.error import InputError
 from src.error import AccessError
 from src.other import read_token, check_if_valid
-import src.config
+from src import config
 import re
 import hashlib, jwt
 import urllib.request
@@ -352,9 +352,9 @@ def user_profile_uploadphoto_v1(token, img_url, x_start, y_start, x_end, y_end):
     width, height = image_object.size
 
     # Check valid dimensions
-    if not (0 <= x_start < width) or (0 <= x_end < width):
+    if not (0 <= x_start < width) or not (0 <= x_end < width):
         raise InputError(description="Invalid width dimensions")
-    if not (0 <= y_start < height) or (0 <= y_end < height):
+    if not (0 <= y_start < height) or not (0 <= y_end < height):
         raise InputError(description="Invalid height dimensions")
     if x_end <= x_start or y_end <= y_start:
         raise InputError(description="Invalid dimension input(s)")
