@@ -253,7 +253,6 @@ def standup_sendall(token, channel_id, message):
     auth_user = None
     for user in storage['users']:
         if user['id'] == auth_user_id:
-            auth_user = user
             user['user_stats']['messages_sent'].append({
                 'num_messages_sent': user['user_stats']['messages_sent'][len(user['user_stats']['messages_sent']) - 1]['num_messages_sent'] + 1,
                 'time_stamp': get_time()
@@ -262,7 +261,7 @@ def standup_sendall(token, channel_id, message):
         'num_messages_exist': storage['workspace_stats']['messages_exist'][len(storage['workspace_stats']['messages_exist']) - 1]['num_messages_exist'] + 1,
         'time_stamp': get_time()
     })
-    
+
     data_store.set(storage)
     return {
         'message_id': message_id
