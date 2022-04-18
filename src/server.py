@@ -16,6 +16,7 @@ from src.message import message_send_v1, message_edit_v1, message_remove_v1, mes
 from src.user import users_all_v1, user_profile_v1, user_profile_setname_v1, user_profile_setemail_v1, user_profile_sethandle_v1, user_stats_v1, users_stats_v1
 from src.admin import admin_user_remove_v1, admin_userpermission_change_v1
 from src.standup import standup_start, standup_send, standup_active
+from src.search import search_v1
 import pickle
 
 
@@ -426,6 +427,12 @@ def notifications_get():
     return dumps({
         'notifications': notifications
     })
+
+# SEARCH FUNCTION WRAPPER
+@APP.route("/search/v1", methods=["GET"])
+def search():
+    search_result = search_v1(request.args.get("token"), request.args.get("query_str"))
+    return dumps({"messages": search_result["messages"]})
 
 #CLEAR FUNCTION WRAPPER
 @APP.route("/clear/v1", methods=['DELETE'])
