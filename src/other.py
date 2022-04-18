@@ -186,28 +186,6 @@ def message_tags_update(message, message_id, channel_id, dm_id, name, tagger):
     data_store.set(storage)
 
 def standup_sendall(token, channel_id, message):
-    '''
-    Sends a standup message from the authorised user to the channel specified by channel_id. 
-    Note: Each message should have its own unique ID, i.e. no messages should share an ID with another message, 
-    even if that other message is in a different channel.
-
-    Arguments:
-        token (String)        - passes in the unique session token of whoever ran the funtion
-        channel_id   (int)    - passes in the unique channel id of the channel we are enquiring about
-        message (String)      - message being sent
-
-    Exceptions:
-        InputError when:
-            channel_id does not refer to a valid channel
-            length of message is less than 1 or over 1000 characters
-        AccessError when:
-            token is invalid
-            channel_id is valid and the authorised user is not a member of the channel
-
-    Return Value:
-        Returns unique message_id.
-    '''
-
     if not check_if_valid(token):
         raise AccessError(description="Invalid Token")
 
@@ -263,6 +241,4 @@ def standup_sendall(token, channel_id, message):
     })
 
     data_store.set(storage)
-    return {
-        'message_id': message_id
-    }
+    return {}
