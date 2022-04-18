@@ -366,10 +366,4 @@ def user_profile_uploadphoto_v1(token, img_url, x_start, y_start, x_end, y_end):
     # Set the user's profile image URL as the cropped image URL
     user["profile_img_url"] = config.url + file_path
 
-    # Update the user's profile picture in all channels they are a member of
-    for channel in channels:
-        for member in channel["members"]:
-            if member["u_id"] == u_id:
-                member["profile_img_url"] = user["profile_img_url"]
-
     return {}
