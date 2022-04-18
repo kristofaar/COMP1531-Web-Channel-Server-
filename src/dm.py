@@ -51,7 +51,11 @@ def dm_create_v1(token, u_ids):
     handles.sort()
     name = ', '.join(handles) 
 
-    
+    #getting auth user
+    auth_user = None
+    for curr_user in users:
+        if curr_user['id'] == user_id:
+            auth_user = curr_user
     #updating the data store
     dm.append({'dm_id': dm_id, 'name' : name, 'owner': [user_id], 'members': u_ids, 'messages': []})
     
@@ -62,6 +66,13 @@ def dm_create_v1(token, u_ids):
             if u_id == user['id']:
                 curr_user = user
         curr_user['dms'].append({'dm_id' : dm_id, 'name' : name})
+        #notifs
+        if curr_user['id'] != user_id:
+            curr_user['notifications'].insert(0, {
+            'channel_id': -1,
+            'dm_id': dm_id,
+            'notification_message': f"{auth_user['handle']} added you to {name}"
+        })
         #stats
         curr_user['user_stats']['dms_joined'].append({
             'num_dms_joined': len(curr_user['dms']),
@@ -72,6 +83,8 @@ def dm_create_v1(token, u_ids):
         'num_dms_exist': len(dm),
         'time_stamp': get_time()
     })
+    #notifs
+
     data_store.set(storage)
     return{
         'dm_id' : dm_id

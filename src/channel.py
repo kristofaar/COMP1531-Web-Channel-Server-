@@ -43,6 +43,11 @@ Exceptions:
     # Check auth_user_id is a member
     if auth_user_id not in ch['members']:
         raise AccessError(description="Authorised user not in channel")
+    
+    auth_user = None
+    for usa in users:
+        if auth_user_id == usa['id']:
+            auth_user = usa
 
     # search through users until u_id is matched
     add_user = next((user for user in users if int(u_id) == user['id']), None)
@@ -59,6 +64,11 @@ Exceptions:
     # update user
     add_user['channels'].append({'channel_id': ch['channel_id_and_name']
                                 ['channel_id'], 'name': ch['channel_id_and_name']['name']})
+    add_user['notifications'].insert(0, {
+        'channel_id': channel_id,
+        'dm_id': -1,
+        'notification_message': f"{auth_user['handle']} added you to {ch['channel_id_and_name']['name']}"
+    })
     #stats
     add_user['user_stats']['channels_joined'].append({
         'num_channels_joined': len(add_user['channels']),
