@@ -186,8 +186,6 @@ def message_tags_update(message, message_id, channel_id, dm_id, name, tagger):
     data_store.set(storage)
 
 def standup_sendall(token, channel_id, message):
-    if not check_if_valid(token):
-        raise AccessError(description="Invalid Token")
 
     # staging variables
     storage = data_store.get()
@@ -200,16 +198,6 @@ def standup_sendall(token, channel_id, message):
     for channel in channels:
         if int(channel_id) == channel['channel_id_and_name']['channel_id']:
             ch = channel
-    if ch == None:
-        raise InputError(description="Invalid Channel Id")
-
-    # check if auth_user_id is a member of the channel queried
-    if auth_user_id not in ch['members']:
-        raise AccessError(
-            description="Unauthorised User: User is not in channel")
-
-    if not 1 <= len(message) <= 1000:
-        raise InputError(description="Invalid message length")
 
     time_sent = get_time()
 
