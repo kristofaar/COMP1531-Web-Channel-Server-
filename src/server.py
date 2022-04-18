@@ -13,7 +13,7 @@ from src.channel import channel_details_v1, channel_invite_v1, channel_join_v1, 
 from src.dm import dm_create_v1, dm_list_v1, dm_remove_v1, dm_details_v1, dm_leave_v1, dm_messages_v1
 from src.other import clear_v1, notifications_get_v1
 from src.message import message_send_v1, message_edit_v1, message_remove_v1, message_senddm_v1,  message_sendlater_v1, message_sendlaterdm_v1, message_share_v1, message_react_v1, message_unreact_v1, message_pin_v1, message_unpin_v1
-from src.user import users_all_v1, user_profile_v1, user_profile_setname_v1, user_profile_setemail_v1, user_profile_sethandle_v1, user_stats_v1, users_stats_v1
+from src.user import users_all_v1, user_profile_v1, user_profile_setname_v1, user_profile_setemail_v1, user_profile_sethandle_v1, user_stats_v1, users_stats_v1, user_profile_uploadphoto_v1
 from src.admin import admin_user_remove_v1, admin_userpermission_change_v1
 from src.standup import standup_start, standup_send, standup_active
 from src.search import search_v1
@@ -82,8 +82,6 @@ APP.config['MAIL_USE_SSL'] = True
 mail = Mail(APP)
 
 # AUTH FUNCTION WRAPPERS
-
-
 @APP.route("/auth/login/v2", methods=['POST'])
 def login():
     data = request.get_json()
@@ -106,14 +104,12 @@ def register():
         'auth_user_id': details['auth_user_id']
     })
 
-
 @APP.route('/auth/logout/v1', methods=['POST'])
 def logout():
     data = request.get_json()
     auth_logout_v1(data['token'])
     save()
     return dumps({})
-
 
 @APP.route('/auth/passwordreset/request/v1', methods=['POST'])
 def resetrequest():
@@ -126,7 +122,6 @@ def resetrequest():
         mail.send(msg)
     save()
     return dumps({})
-
 
 @APP.route('/auth/passwordreset/reset/v1', methods=['POST'])
 def resetpass():
@@ -233,6 +228,7 @@ def dm_leave():
 def dm_messages():
     return dumps(dm_messages_v1(request.args.get('token'), request.args.get('dm_id'), request.args.get('start')))
 
+
 # MESSAGES FUNCTION WRAPPERS
 @APP.route("/message/send/v1", methods=['POST'])
 def send_message():
@@ -244,7 +240,6 @@ def send_message():
         'message_id': details['message_id']
     })
 
-
 @APP.route("/message/edit/v1", methods=['PUT'])
 def edit_message():
     data = request.get_json()
@@ -252,14 +247,12 @@ def edit_message():
     save()
     return dumps({})
 
-
 @APP.route("/message/remove/v1", methods=['DELETE'])
 def remove_message():
     data = request.get_json()
     message_remove_v1(data['token'], data['message_id'])
     save()
     return dumps({})
-
 
 @APP.route("/message/senddm/v1", methods=['POST'])
 def senddm():
@@ -310,7 +303,6 @@ def sendlaterdm():
         'message_id': details['message_id']
     })
 
-
 @APP.route("/message/share/v1", methods=['POST'])
 def share():
     data = request.get_json()
@@ -321,6 +313,7 @@ def share():
         'shared_message_id': details['shared_message_id']
     })
 
+
 # USER FUNCTION WRAPPERS
 @APP.route('/users/all/v1', methods=['GET'])
 def users_all():
@@ -328,7 +321,6 @@ def users_all():
     return dumps({
         'users': users
     })
-
 
 @APP.route("/user/profile/v1", methods=["GET"])
 def user_profile():
@@ -338,7 +330,6 @@ def user_profile():
         'user': user
     })
 
-
 @APP.route("/user/profile/setname/v1", methods=["PUT"])
 def user_setname():
     data = request.get_json()
@@ -347,14 +338,12 @@ def user_setname():
     save()
     return dumps({})
 
-
 @APP.route("/user/profile/setemail/v1", methods=["PUT"])
 def user_setemail():
     data = request.get_json()
     user_profile_setemail_v1(data['token'], data['email'])
     save()
     return dumps({})
-
 
 @APP.route("/user/profile/sethandle/v1", methods=["PUT"])
 def user_sethandle():
@@ -363,19 +352,24 @@ def user_sethandle():
     save()
     return dumps({})
 
-
 @APP.route("/user/stats/v1", methods=["GET"])
 def user_stats():
     return dumps({
         'user_stats': user_stats_v1(request.args.get("token"))
     })
 
-
 @APP.route("/users/stats/v1", methods=["GET"])
 def users_stats():
     return dumps({
         'workspace_stats': users_stats_v1(request.args.get("token"))
     })
+
+@APP.route("/user/profile/uploadphoto/v1", methods=["POST"])
+def user_uploadphoto():
+    data = request.get_json()
+    user_profile_uploadphoto_v1(data["token"], data["img_url"], data["x_start"], data["y_start"], data["x_end"], data["y_end"])
+    return dumps({})
+
 
 # ADMIN WRAPPER FUNCTIONS
 @APP.route('/admin/user/remove/v1', methods=['DELETE'])
@@ -385,7 +379,6 @@ def admin_remove():
     save()
     return dumps({})
 
-
 @APP.route('/admin/userpermission/change/v1', methods=['POST'])
 def admin_perm_change():
     data = request.get_json()
@@ -394,9 +387,8 @@ def admin_perm_change():
     save()
     return dumps({})
 
+
 # STANDUP FUNCTION WRAPPERS
-
-
 @APP.route('/standup/start/v1', methods=['POST'])
 def start_standup():
     data = request.get_json()
@@ -405,13 +397,11 @@ def start_standup():
     save()
     return dumps({'time_finish': time_finish})
 
-
 @APP.route('/standup/active/v1', methods=['GET'])
 def active_standup():
     standup_details = standup_active(request.args.get(
         'token'), request.args.get('channel_id'))
     return dumps({'is_active': standup_details['is_active'], 'time_finish': standup_details['time_finish']})
-
 
 @APP.route('/standup/send/v1', methods=['POST'])
 def send_standup():
@@ -440,6 +430,8 @@ def clear():
     clear_v1()
     save()
     return dumps({})
+
+
 # NO NEED TO MODIFY BELOW THIS POINT
 
 if __name__ == "__main__":

@@ -455,6 +455,49 @@ def test_users_stats_message_send_later(reg_two_users):
     resp_data = resp.json()
     assert len(resp_data['workspace_stats']['messages_exist']) == 4
 
+
+# Tests for user/profile/uploadphoto/v1
+def test_uploadphoto_invalid_token(reg_user):
+    resp = requests.post(config.url + "user/profile/uploadphoto/v1", json={"token": "Invalid", "img_url": "http://abyss.uoregon.edu/~js/images/broglie.jpg", "x_start": 0, "y_start": 0, "x_end": 100, "y_end": 100})
+    assert resp.status_code == A_ERR
+
+def test_uploadphoto_invalid_img_url(reg_user):
+    resp = requests.post(config.url + "user/profile/uploadphoto/v1", json={"token": reg_user["token"], "img_url": "https://digitalcollections.library.unsw.edu.au/assets/display/294996-max", "x_start": 0, "y_start": 0, "x_end": 100, "y_end": 100})
+    assert resp.status_code == I_ERR
+    
+def test_uploadphoto_invalid_x_start(reg_user):
+    resp = requests.post(config.url + "user/profile/uploadphoto/v1", json={"token": reg_user["token"], "img_url": "http://abyss.uoregon.edu/~js/images/broglie.jpg", "x_start": 300, "y_start": 0, "x_end": 100, "y_end": 100})
+    assert resp.status_code == I_ERR
+
+def test_uploadphoto_invalid_y_start(reg_user):
+    resp = requests.post(config.url + "user/profile/uploadphoto/v1", json={"token": reg_user["token"], "img_url": "http://abyss.uoregon.edu/~js/images/broglie.jpg", "x_start": 0, "y_start": 300, "x_end": 100, "y_end": 100})
+    assert resp.status_code == I_ERR
+
+def test_uploadphoto_invalid_x_end(reg_user):
+    resp = requests.post(config.url + "user/profile/uploadphoto/v1", json={"token": reg_user["token"], "img_url": "http://abyss.uoregon.edu/~js/images/broglie.jpg", "x_start": 0, "y_start": 0, "x_end": 300, "y_end": 100})
+    assert resp.status_code == I_ERR
+
+def test_uploadphoto_invalid_y_end(reg_user):
+    resp = requests.post(config.url + "user/profile/uploadphoto/v1", json={"token": reg_user["token"], "img_url": "http://abyss.uoregon.edu/~js/images/broglie.jpg", "x_start": 0, "y_start": 0, "x_end": 100, "y_end": 300})
+    assert resp.status_code == I_ERR
+
+def test_uploadphoto_invalid_x_start_end(reg_user):
+    resp = requests.post(config.url + "user/profile/uploadphoto/v1", json={"token": reg_user["token"], "img_url": "http://abyss.uoregon.edu/~js/images/broglie.jpg", "x_start": 100, "y_start": 0, "x_end": 0, "y_end": 100})
+    assert resp.status_code == I_ERR
+
+def test_uploadphoto_invalid_y_start_end(reg_user):
+    resp = requests.post(config.url + "user/profile/uploadphoto/v1", json={"token": reg_user["token"], "img_url": "http://abyss.uoregon.edu/~js/images/broglie.jpg", "x_start": 0, "y_start": 100, "x_end": 100, "y_end": 0})
+    assert resp.status_code == I_ERR
+
+def test_uploadphoto_invalid_format(reg_user):
+    resp = requests.post(config.url + "user/profile/uploadphoto/v1", json={"token": reg_user["token"], "img_url": "https://www.cse.unsw.edu.au/~richardb/index_files/RichardBuckland-200.png", "x_start": 0, "y_start": 0, "x_end": 100, "y_end": 100})
+    assert resp.status_code == I_ERR
+
+def test_uploadphoto_valid(reg_user):
+    resp = requests.post(config.url + "user/profile/uploadphoto/v1", json={"token": reg_user["token"], "img_url": "http://abyss.uoregon.edu/~js/images/broglie.jpg", "x_start": 0, "y_start": 0, "x_end": 100, "y_end": 100})
+    assert resp.status_code == OK
+
+
 #tests for notifications
 def test_notifications_invalid_token(reg_two_users):
     resp = requests.get(config.url + "notifications/get/v1", params={"token": "invalid"})
