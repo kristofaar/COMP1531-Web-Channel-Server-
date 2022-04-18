@@ -2,7 +2,7 @@ from email import message
 from src.data_store import data_store
 from src.error import InputError
 from src.error import AccessError
-from src.other import read_token, check_if_valid, generate_new_session_id, owner_perms, get_time
+from src.other import read_token, check_if_valid, generate_new_session_id, owner_perms, get_time, message_tags_update
 import hashlib
 import jwt
 from datetime import timezone
@@ -80,8 +80,10 @@ def message_send_v1(token, channel_id, message):
     ch['messages'].insert(0, message_dict)
 
     # stats
+    auth_user = None
     for user in storage['users']:
         if user['id'] == auth_user_id:
+            auth_user = user
             user['user_stats']['messages_sent'].append({
                 'num_messages_sent': user['user_stats']['messages_sent'][len(user['user_stats']['messages_sent']) - 1]['num_messages_sent'] + 1,
                 'time_stamp': get_time()
@@ -90,6 +92,9 @@ def message_send_v1(token, channel_id, message):
         'num_messages_exist': storage['workspace_stats']['messages_exist'][len(storage['workspace_stats']['messages_exist']) - 1]['num_messages_exist'] + 1,
         'time_stamp': get_time()
     })
+
+    #notifs
+    message_tags_update(message, message_id, channel_id, -1, ch['channel_id_and_name']['name'], auth_user['handle'])
 
     data_store.set(storage)
     return {
@@ -185,6 +190,9 @@ def message_edit_v1(token, message_id, message):
         })
     else:
         msg['message'] = message
+    #notifs
+    message_tags_update(message, message_id, ch['channel_id_and_name']['channel_id'] if ch != None else -1, 
+    dm['dm_id'] if dm != None else -1, ch['channel_id_and_name']['name'] if ch != None else dm['name'], user['handle'])
     data_store.set(storage)
     return {}
 
@@ -341,8 +349,10 @@ def message_senddm_v1(token, dm_id, message):
     dm['messages'].insert(0, message_dict)
 
     # stats
+    auth_user = None
     for user in storage['users']:
         if user['id'] == auth_user_id:
+            auth_user = user
             user['user_stats']['messages_sent'].append({
                 'num_messages_sent': user['user_stats']['messages_sent'][len(user['user_stats']['messages_sent']) - 1]['num_messages_sent'] + 1,
                 'time_stamp': get_time()
@@ -351,6 +361,8 @@ def message_senddm_v1(token, dm_id, message):
         'num_messages_exist': storage['workspace_stats']['messages_exist'][len(storage['workspace_stats']['messages_exist']) - 1]['num_messages_exist'] + 1,
         'time_stamp': get_time()
     })
+    #notifs
+    message_tags_update(message, message_id, -1, dm_id, dm['name'], auth_user['handle'])
 
     data_store.set(storage)
     return {
@@ -371,8 +383,10 @@ def msg_send(auth_user_id, message_dict, storage, channel):  # helper function
     # inserting message
     channel['messages'].insert(0, message_dict)
     # stats
+    auth_user = None
     for user in storage['users']:
         if user['id'] == auth_user_id:
+            auth_user = user
             user['user_stats']['messages_sent'].append({
                 'num_messages_sent': user['user_stats']['messages_sent'][len(user['user_stats']['messages_sent']) - 1]['num_messages_sent'] + 1,
                 'time_stamp': get_time()
@@ -381,6 +395,11 @@ def msg_send(auth_user_id, message_dict, storage, channel):  # helper function
         'num_messages_exist': storage['workspace_stats']['messages_exist'][len(storage['workspace_stats']['messages_exist']) - 1]['num_messages_exist'] + 1,
         'time_stamp': get_time()
     })
+    #notifs
+    if 'channel_id_and_name' in channel:
+        message_tags_update(message, message_dict['message_id'], channel['channel_id_and_name']['channel_id'], -1, channel['channel_id_and_name']['name'], auth_user['handle'])
+    else:
+        message_tags_update(message, message_dict['message_id'], -1, channel['dm_id'], channel['name'], auth_user['handle'])
     data_store.set(storage)
 
 
@@ -660,10 +679,11 @@ def message_share_v1(token, og_message_id, message, channel_id, dm_id):
     message_id = generate_new_session_id()
 
     # new message
+    new_message = None
     if message == '':
-        message = msg['message']
+        new_message = msg['message']
     else:
-        message = msg['message'] + message
+        new_message = msg['message'] + message
 
      # Getting the current date
     # and time
@@ -673,7 +693,7 @@ def message_share_v1(token, og_message_id, message, channel_id, dm_id):
     message_dict = {
         'message_id': message_id,
         'u_id': auth_user_id,
-        'message': message,
+        'message': new_message,
         'time_sent': time_sent,
         'reacts': [{'react_id': 1, 'u_ids': []}],
         'pinned': False,
@@ -693,6 +713,11 @@ def message_share_v1(token, og_message_id, message, channel_id, dm_id):
         'num_messages_exist': storage['workspace_stats']['messages_exist'][len(storage['workspace_stats']['messages_exist']) - 1]['num_messages_exist'] + 1,
         'time_stamp': get_time()
     })
+
+     #notifs
+    message_tags_update(message, message_id, ch['channel_id_and_name']['channel_id'] if ch != None else -1, 
+    dm['dm_id'] if dm != None else -1, ch['channel_id_and_name']['name'] if ch != None else dm['name'], user['handle'])
+
     data_store.set(storage)
 
     return {
@@ -763,7 +788,20 @@ def message_react_v1(token, message_id, react_id):
         raise InputError(description="User Has Already Reacted")
     
     msg['reacts'][react_id -1]['u_ids'].append(user_id)
-    
+    reactor = None
+    for usa in users:
+        if usa['id'] == user_id:
+            reactor = usa
+    reactee = None
+    for usa in users:
+        if usa['id'] == msg['u_id']:
+            reactee = usa
+    reactee['notifications'].insert(0, {
+        'channel_id': ch['channel_id_and_name']['channel_id'] if ch != None else -1,
+        'dm_id': dm['dm_id'] if dm != None else -1,
+        'notification_message': f"{reactor['handle']} reacted to your message in {ch['channel_id_and_name']['name'] if ch != None else dm['name']}"
+    })
+    data_store.set(storage)
     return {}
     
 
@@ -831,7 +869,7 @@ def message_unreact_v1(token, message_id, react_id):
         raise InputError(description="User Has Not Reacted")
     
     msg['reacts'][react_id -1]['u_ids'].remove(user_id)
-    
+    data_store.set(storage)
     return {}
 
 def message_pin_v1(token, message_id):
@@ -902,7 +940,7 @@ def message_pin_v1(token, message_id):
         raise InputError(description="Message Has Already Been Pinned")
     
     msg['pinned'] = True
-    
+    data_store.set(storage)
     return {}
 
 def message_unpin_v1(token, message_id):
@@ -973,5 +1011,5 @@ def message_unpin_v1(token, message_id):
         raise InputError(description="Message Is Not Pinned")
     
     msg['pinned'] = True
-    
+    data_store.set(storage)
     return {}
