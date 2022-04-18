@@ -228,7 +228,6 @@ def standup_sendall(token, channel_id, message):
     ch['messages'].insert(0, message_dict)
 
     # stats
-    auth_user = None
     for user in storage['users']:
         if user['id'] == auth_user_id:
             user['user_stats']['messages_sent'].append({
