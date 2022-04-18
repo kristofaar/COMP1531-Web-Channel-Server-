@@ -50,3 +50,14 @@ def test_search_valid(send_message):
     assert resp.status_code == OK
     resp_data = resp.json()
     assert resp_data["messages"][0]["message"] == "The quick brown fox jumped over the lazy dog."
+
+def test_search_other_user(send_message):
+    resp2 = requests.post(config.url + "auth/register/v2", json={"email": "2@test.test", "password": "2testtest", "name_first": "austin", "name_last": "powers"})
+    assert resp2.status_code == OK
+    resp2_data = resp2.json()
+    resp4 = requests.post(config.url + "channel/join/v2", json={"token": resp2_data["token"], "channel_id": send_message["channel_id"]})
+    assert resp4.status_code == OK
+    resp3 = requests.get(config.url + "search/v1", params={"token": resp2_data["token"], "query_str": "Fox"})
+    assert resp3.status_code == OK
+    resp3_data = resp3.json()
+    assert resp3_data["messages"][0]["message"] == "The quick brown fox jumped over the lazy dog."
