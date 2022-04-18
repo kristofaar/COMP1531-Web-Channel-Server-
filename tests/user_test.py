@@ -276,7 +276,7 @@ def test_user_stats_message_send_later(reg_two_users):
     assert resp.status_code == OK
     resp_data = resp.json()
     assert len(resp_data['user_stats']['messages_sent']) == 1
-    t.sleep(1)
+    t.sleep(1.5)
     resp = requests.get(config.url + "user/stats/v1", params={"token": reg_two_users['token1']})
     assert resp.status_code == OK
     resp_data = resp.json()
@@ -449,7 +449,7 @@ def test_users_stats_message_send_later(reg_two_users):
     assert resp.status_code == OK
     resp_data = resp.json()
     assert len(resp_data['workspace_stats']['messages_exist']) == 1
-    t.sleep(1)
+    t.sleep(1.5)
     resp = requests.get(config.url + "users/stats/v1", params={"token": reg_two_users['token1']})
     assert resp.status_code == OK
     resp_data = resp.json()
