@@ -2,8 +2,14 @@ from src.data_store import data_store
 from src.error import InputError
 from src.error import AccessError
 from src.other import read_token, check_if_valid
+import src.config
 import re
 import hashlib, jwt
+import urllib.request
+import sys
+from PIL import Image
+import requests
+from pathlib import Path
 
 MIN_NAME_LENGTH = 1
 MAX_NAME_LENGTH = 50
@@ -309,3 +315,61 @@ def users_stats_v1(token):
 
     data_store.set(store)
     return workspace_stats
+
+def user_profile_uploadphoto_v1(token, img_url, x_start, y_start, x_end, y_end):
+    store = data_store.get()
+    users = store["users"]
+    channels = store["channels"]
+
+    # Check valid token
+    if not check_if_valid(token):
+        raise AccessError(description="Invalid token")
+
+    # Check valid HTTP status of img_url
+    if requests.head(img_url).status_code != 200:
+        raise InputError(description="img_url returns an HTTP status other than 200")
+
+    # Check valid image format
+    image_formats = ("image/jpeg", "image/jpg")
+    if requests.head(img_url).headers["content-type"] not in image_formats:
+        raise InputError(description="Invalid image format")
+
+    # Get user ID from token and user from user ID
+    u_id = read_token(token)
+    user = None
+    for i in users:
+        if u_id == i["id"]:
+            user = i
+
+    # Specify file path for fetching image
+    file_path = "static/" + str(u_id) + "_PFP.jpg"
+
+    # Fetch image via URL
+    urllib.request.urlretrieve(img_url, file_path)
+
+    # Open the image to crop
+    image_object = Image.open(file_path)
+    width, height = image_object.size
+
+    # Check valid dimensions
+    if not (0 <= x_start < width) or (0 <= x_end < width):
+        raise InputError(description="Invalid width dimensions")
+    if not (0 <= y_start < height) or (0 <= y_end < height):
+        raise InputError(description="Invalid height dimensions")
+    if x_end <= x_start or y_end <= y_start:
+        raise InputError(description="Invalid dimension input(s)")
+
+    # Crop the image
+    cropped = image_object.crop((x_start, y_start, x_end, y_end))
+    cropped.save(file_path)
+
+    # Set the user's profile image URL as the cropped image URL
+    user["profile_img_url"] = config.url + file_path
+
+    # Update the user's profile picture in all channels they are a member of
+    for channel in channels:
+        for member in channel["members"]:
+            if member["u_id"] == u_id:
+                member["profile_img_url"] = user["profile_img_url"]
+
+    return {}
