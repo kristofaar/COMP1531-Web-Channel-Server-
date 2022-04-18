@@ -454,3 +454,76 @@ def test_users_stats_message_send_later(reg_two_users):
     assert resp.status_code == OK
     resp_data = resp.json()
     assert len(resp_data['workspace_stats']['messages_exist']) == 4
+
+#tests for notifications
+def test_notifications_invalid_token(reg_two_users):
+    resp = requests.get(config.url + "notifications/get/v1", params={"token": "invalid"})
+    assert resp.status_code == A_ERR
+
+def test_notifications_invite(reg_two_users):
+    resp = requests.post(config.url + "channels/create/v2", json={"token": reg_two_users['token1'], "name": "name", "is_public": True})
+    assert resp.status_code == OK
+    ch_id1 = resp.json()['channel_id']
+    resp = requests.post(config.url + "channel/invite/v2", json={"token": reg_two_users['token1'], "channel_id": ch_id1, "u_id": reg_two_users["u_id2"]})
+    assert resp.status_code == OK
+    resp = requests.get(config.url + "notifications/get/v1", params={"token": reg_two_users['token2']})
+    assert resp.status_code == OK
+    resp_data = resp.json()
+    assert resp_data['notifications'][0]['channel_id'] == ch_id1
+    assert resp_data['notifications'][0]['dm_id'] == -1
+    assert resp_data['notifications'][0]['notification_message'] == "firsttestfirsttest added you to name"
+    resp = requests.post(config.url + "dm/create/v1", json={"token": reg_two_users['token1'], "u_ids": [reg_two_users['u_id2']]})
+    assert resp.status_code == OK
+    dm_id1 = resp.json()['dm_id']
+    resp = requests.get(config.url + "notifications/get/v1", params={"token": reg_two_users['token2']})
+    assert resp.status_code == OK
+    resp_data = resp.json()
+    assert resp_data['notifications'][0]['channel_id'] == -1
+    assert resp_data['notifications'][0]['dm_id'] == dm_id1
+    assert resp_data['notifications'][0]['notification_message'] == "firsttestfirsttest added you to firsttestfirsttest, secondjanesecondaust"
+
+def test_notifications_messages(reg_two_users):
+    resp = requests.post(config.url + "channels/create/v2", json={"token": reg_two_users['token1'], "name": "name", "is_public": True})
+    assert resp.status_code == OK
+    ch_id1 = resp.json()['channel_id']
+    resp = requests.post(config.url + "channel/invite/v2", json={"token": reg_two_users['token1'], "channel_id": ch_id1, "u_id": reg_two_users["u_id2"]})
+    assert resp.status_code == OK
+    resp = requests.post(config.url + "dm/create/v1", json={"token": reg_two_users['token1'], "u_ids": [reg_two_users['u_id2']]})
+    assert resp.status_code == OK
+    dm_id1 = resp.json()['dm_id']
+    resp = requests.post(config.url + "message/send/v1", json={"token": reg_two_users['token1'], "channel_id": ch_id1, "message": "12313Aw@@firsttestfirsttest"})
+    assert resp.status_code == OK
+    msg_id1 = resp.json()['message_id']
+    resp = requests.get(config.url + "notifications/get/v1", params={"token": reg_two_users['token1']})
+    assert resp.status_code == OK
+    resp_data = resp.json()
+    assert resp_data['notifications'][0]['notification_message'] == "firsttestfirsttest tagged you in name: 12313Aw@@firsttestfi"
+    resp = requests.put(config.url + "message/edit/v1", json={"token": reg_two_users['token1'], "message_id": msg_id1, 'message': "@firsttestfirsttest@secondjanesecondaust@firsttestfirsttest"})
+    assert resp.status_code == OK
+    resp = requests.get(config.url + "notifications/get/v1", params={"token": reg_two_users['token1']})
+    assert resp.status_code == OK
+    resp_data = resp.json()
+    assert len(resp_data['notifications']) == 1
+    resp = requests.get(config.url + "notifications/get/v1", params={"token": reg_two_users['token2']})
+    assert resp.status_code == OK
+    resp_data = resp.json()
+    assert resp_data['notifications'][0]['notification_message'] == "firsttestfirsttest tagged you in name: @firsttestfirsttest@"
+    resp = requests.post(config.url + "message/senddm/v1", json={"token": reg_two_users['token2'], "dm_id": dm_id1, "message": "@firsttestfirsttest"})
+    assert resp.status_code == OK
+    msg_id = resp.json()['message_id']
+    resp = requests.post(config.url + "message/share/v1", json={"token": reg_two_users['token1'], "og_message_id": msg_id, "message": "@secondjanesecondaust", "channel_id": ch_id1, "dm_id": -1})
+    assert resp.status_code == OK
+    resp = requests.get(config.url + "notifications/get/v1", params={"token": reg_two_users['token1']})
+    assert resp.status_code == OK
+    resp_data = resp.json()
+    assert resp_data['notifications'][0]['notification_message'] == "secondjanesecondaust tagged you in firsttestfirsttest, secondjanesecondaust: @firsttestfirsttest"
+    resp = requests.get(config.url + "notifications/get/v1", params={"token": reg_two_users['token2']})
+    assert resp.status_code == OK
+    resp_data = resp.json()
+    assert len(resp_data['notifications']) == 4
+    resp = requests.post(config.url + "message/react/v1", json={"token": reg_two_users['token2'], "message_id": msg_id1, "react_id": 1})
+    assert resp.status_code == OK
+    resp = requests.get(config.url + "notifications/get/v1", params={"token": reg_two_users['token1']})
+    assert resp.status_code == OK
+    resp_data = resp.json()
+    assert resp_data['notifications'][0]['notification_message'] == "secondjanesecondaust reacted to your message in name"

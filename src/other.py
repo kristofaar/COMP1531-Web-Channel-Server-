@@ -1,4 +1,5 @@
 from src.data_store import data_store
+from src.error import AccessError, InputError
 from datetime import timezone
 import datetime
 import re, hashlib, jwt
@@ -96,3 +97,90 @@ def get_time():
     time = datet.replace(tzinfo=timezone.utc)
     time_sent = time.timestamp()
     return round(time_sent)
+
+#notifications, channelinvite, messagesend, messageedit, dmcreate, senddm, messageshare, react, sendlatermessage/dm
+def notifications_get_v1(token):
+    '''Return the user's most recent 20 notifications, ordered from most recent to least recent.
+
+    Arguments:
+        token (String)         - The token of auth user whose notifications are to be displayed.
+
+    Exceptions:
+        AccessError  - Occurs when: 
+            -Token is invalid
+
+    Return Value:
+        Returns notifications, dict with shape {channel_id, dm_id, notification_message}.
+    '''
+    if not check_if_valid(token):
+        raise AccessError(description="Invalid Token")
+
+    # staging variables
+    storage = data_store.get()
+    auth_user_id = read_token(token)
+    users = storage['users']
+    user = None
+    for usa in users:
+        if auth_user_id == usa['id']:
+            user = usa
+    return {
+        'notifications': user['notifications']
+    }
+
+#message tagging helper
+def message_tags_update(message, message_id, channel_id, dm_id, name, tagger):
+    '''Updates user's notifications if tagged in a message'''
+    storage = data_store.get()
+    users = storage['users']
+    channels = storage['channels']
+    dms = storage['dms']
+    channel = None
+
+    if channel_id != -1 and dm_id != -1:
+        raise InputError(description='neither channel_id nor dm_id are -1')
+    elif dm_id == -1 and channel_id != -1:
+        # search through channels by id until id is matched
+        channel = next((channel for channel in channels if int(
+            channel_id) == channel['channel_id_and_name']['channel_id']), None)
+        if channel == None:
+            raise InputError(description="Invalid Channel Id")
+    elif channel_id == -1 and dm_id != -1:
+        channel = next((channel for channel in dms if int(
+            dm_id) == channel['dm_id']), None)
+        if channel == None:
+            raise InputError(description="Invalid dm Id")
+    else:
+        raise InputError(description="Both channel and dm id are invalid")
+    i = 0
+    reading = False
+    handle = ''
+    for i in range(len(message)):
+        if reading:
+            if not message[i].isalnum():
+                reading = False
+                for user in users:
+                    if handle == user['handle'] and user['id'] in channel['members'] and not message_id in user['tagged_msg']:
+                        user['tagged_msg'].append(message_id)
+                        user['notifications'].insert(0, {
+                            'channel_id': channel_id,
+                            'dm_id': dm_id,
+                            'notification_message': f"{tagger} tagged you in {name}: {message[:20]}"
+                        })
+                handle = ''
+            else:
+                handle += message[i]
+        if message[i] == '@':
+            reading = True
+            continue
+    if reading:
+        for user in users:
+            if handle == user['handle'] and user['id'] in channel['members'] and not message_id in user['tagged_msg']:
+                user['tagged_msg'].append(message_id)
+                user['notifications'].insert(0, {
+                    'channel_id': channel_id,
+                    'dm_id': dm_id,
+                    'notification_message': f"{tagger} tagged you in {name}: {message[:20]}"
+                })
+
+        
+    data_store.set(storage)

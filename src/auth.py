@@ -155,7 +155,7 @@ def auth_register_v1(email, password, name_first, name_last):
 
     storage['users'].append({'id': new_id, 'email': email, 'name_first': name_first, 'name_last': name_last, 'handle': handle, 
                             'channels' : [],'dms':[], 'global_owner': is_first, 'password': hashlib.sha256(password.encode()).hexdigest(), 'session_list': [session_id],
-                            'reset_code': None, 'user_stats': init_user_stats})
+                            'reset_code': None, 'user_stats': init_user_stats, 'notifications': [], 'tagged_msg': []})
     
     data_store.set(storage)
     return {
